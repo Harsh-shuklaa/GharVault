@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"primary-fixed-dim":"#b4c5ff","surface-container-lowest":"#ffffff","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5","tertiary-fixed":"#85f8c4","on-secondary":"#ffffff","on-error":"#ffffff","on-secondary-fixed-variant":"#3f465c","on-surface":"#0b1c30","surface-container-highest":"#d3e4fe","on-primary-fixed":"#00174b","secondary-container":"#dae2fd","on-primary-fixed-variant":"#003ea8","secondary":"#565e74","error-container":"#ffdad6","surface-tint":"#0053db","primary-fixed":"#dbe1ff","inverse-primary":"#b4c5ff","tertiary-container":"#007d57","surface-container-high":"#dce9ff","outline-variant":"#c3c6d7","primary":"#004ac6","tertiary":"#006243","on-background":"#0b1c30","background":"#f8f9ff","on-secondary-fixed":"#131b2e","on-tertiary-fixed":"#002114","on-primary":"#ffffff","inverse-on-surface":"#eaf1ff","surface-container":"#e5eeff","surface":"#f8f9ff","tertiary-fixed-dim":"#68dba9","on-tertiary":"#ffffff","on-surface-variant":"#434655","secondary-fixed":"#dae2fd","error":"#ba1a1a","secondary-fixed-dim":"#bec6e0","primary-container":"#2563eb","on-error-container":"#93000a","on-secondary-container":"#5c647a","surface-bright":"#f8f9ff","on-primary-container":"#eeefff","inverse-surface":"#213145","surface-container-low":"#eff4ff","outline":"#737686","on-tertiary-fixed-variant":"#005137","on-tertiary-container":"#bdffdc"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-xs":"0.25rem","space-lg":"1.5rem","space-md":"1rem","space-xl":"2.5rem","margin-sm":"1rem","gutter-sm":"1rem","margin":"2rem","space-sm":"0.5rem"},"fontFamily":{"headline-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"title-md":["Inter"],"label-md":["Inter"],"body-sm":["Inter"],"headline-xl-mobile":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"body-lg":["Inter"],"title-lg":["Inter"],"label-xs-mono":["Inter"]},"fontSize":{"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.025em","fontWeight":"600"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"title-md":["15px",{"lineHeight":"22px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","fontWeight":"500"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-xl-mobile":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"title-lg":["18px",{"lineHeight":"26px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-xs-mono":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen"><aside class="fixed left-0 top-0 h-full w-[260px] bg-[#0F172A] border-r border-[#1E293B] z-50 flex flex-col justify-between text-slate-300"><div class="flex flex-col"><div class="px-space-md py-space-md flex items-center justify-between border-b border-[#1E293B]"><div class="flex items-center gap-space-sm"><img alt="GharVault Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUlu11D9EdUdEMxRGjWxBb-cREUQvux0e_NLXO0ZwlN0BGwVpslTcA41BwG94mU84KCMcMVeKUji3ZhL9-3fqUUK_4w-bL8g1yofNAoY4KA1gJh7Ba-7F5I8mhHjyQhmw27qAJ1aovbS9B0WwWQAulqSTAcf90kF5nMx5AY-23UzhTBsWu8NQmuP376k48YVUcyd788vQU3uqMp8-9X7NEHZvaVc2D9-72ZA_yKqpY"/><span class="font-headline-md text-title-lg font-bold tracking-tight text-white">GharVault</span></div><span class="font-label-xs-mono text-label-xs-mono uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">v2.4</span></div><div class="px-space-md pt-space-md pb-space-sm"><button class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[#1E293B] hover:bg-slate-800 transition-colors text-left" type="button"><div class="flex flex-col min-w-0"><span class="font-title-md text-body-sm font-medium text-white truncate">Sharma Family Ghar</span><span class="font-label-md text-label-md text-slate-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>4 active members</span></div><span class="material-symbols-outlined text-slate-400 text-lg">unfold_more</span></button></div><nav class="px-space-sm py-space-sm space-y-1" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="dashboard" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">dashboard</span><span class="font-body-md text-body-md">Dashboard</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="all-documents" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">folder</span><span class="font-body-md text-body-md">All Documents</span></div><span class="font-label-md text-label-md px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">48</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="family-members" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">group</span><span class="font-body-md text-body-md">Family Members</span></div><span class="font-label-md text-label-md px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">4</span></a><a aria-current="page" class="flex items-center justify-between px-3 py-2 rounded-lg transition-all bg-primary-container text-on-primary-container font-semibold" data-path="upload-document" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">upload_file</span><span class="font-body-md text-body-md">Upload Document</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="document-categories" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">category</span><span class="font-body-md text-body-md">Document Categories</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="activity-audit" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">history</span><span class="font-body-md text-body-md">Activity Audit</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="permissions-matrix" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">key</span><span class="font-body-md text-body-md">Permissions Matrix</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="security-settings" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">settings</span><span class="font-body-md text-body-md">Settings</span></div></a></nav></div><div class="p-space-sm space-y-space-sm border-t border-[#1E293B]"><div class="p-3 rounded-lg bg-red-950/40 border border-red-900/60 flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400 text-lg">e911_emergency</span><div class="flex flex-col"><span class="font-label-md text-label-md font-semibold text-red-200">Break-Glass</span><span class="font-label-xs-mono text-label-xs-mono text-red-300/80">48h Protocol Ready</span></div></div><a class="px-2 py-1 rounded bg-red-800/60 hover:bg-red-700 text-white font-label-md text-label-md transition-colors" data-path="break-glass" href="#">Arm</a></div><div class="flex items-center justify-between p-2 rounded-lg bg-[#1E293B]/80 hover:bg-[#1E293B] transition-colors"><div class="flex items-center gap-2.5 min-w-0"><div class="relative flex-shrink-0"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIMPGmKk-ZCa-RoOFHu8OOweTKTYGHGkE4d8mka0oCttyV6_o4_j-2osUxUHE7qzpR5mRG4ZwsyPRlOIc7wJDeb9wpNqGyU9NqjADWJAyVHu6KKSpBS47tLBVqfMGCyD1k5u8XhiWSmKTyecMSgD8VNTGPMDNu4XPqKhx4GjvVmV0NKre3S0ON3_jU_4sqGcnsbM-tSMXY6jG1FJDsJk90Wrkolq8RXK7-RIJwbYhb"/><span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-[#1E293B]"></span></div><div class="flex flex-col min-w-0"><span class="font-title-md text-body-sm text-white font-medium truncate">Rajesh Sharma</span><span class="font-label-md text-label-md text-slate-400">Admin</span></div></div><button class="text-slate-400 hover:text-white p-1" type="button"><span class="material-symbols-outlined text-lg">more_vert</span></button></div></div></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-[#E2E8F0] z-40 flex items-center justify-between px-gutter shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="flex items-center gap-space-md"><div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant"><span class="material-symbols-outlined text-base text-secondary">shield</span><span>Vault</span><span class="material-symbols-outlined text-sm text-outline-variant">chevron_right</span><span class="text-on-surface font-medium">Sharma Ghar</span></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-label-md text-label-md"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>256-bit AES End-to-End Encrypted</span></div></div><div class="flex-1 max-w-lg mx-gutter"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-secondary text-lg pointer-events-none">search</span><input class="w-full h-10 pl-9 pr-20 bg-surface-container-low rounded-lg text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-surface-container-lowest transition-all" placeholder="Search Aadhaar, PAN, insurance, property records..." type="search"/><kbd class="absolute right-2.5 px-1.5 py-0.5 rounded bg-surface-container-highest border border-outline-variant font-label-xs-mono text-label-xs-mono text-on-surface-variant pointer-events-none">Ctrl + K</kbd></div></div><div class="flex items-center gap-space-sm"><a class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-title-md text-body-sm transition-all shadow-[0_1px_2px_rgba(37,99,235,0.2)]" data-path="upload-document" href="#"><span class="material-symbols-outlined text-lg leading-none">add</span><span>Upload Document</span></a><a class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="notifications" href="#"><span class="material-symbols-outlined text-xl">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-error text-on-error font-label-xs-mono text-[10px] flex items-center justify-center font-bold">3</span></a><a class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-title-md text-body-sm inline-flex items-center gap-1" data-path="help-and-docs" href="#"><span class="material-symbols-outlined text-xl">help</span></a></div></header><main class="w-full pt-16 bg-[#F8FAFC] min-h-screen"><div class="max-w-[1380px] mx-auto p-margin"><div class="flex flex-col w-full space-y-space-xl">
+<!-- Top Protocol Bar & Header Context -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="space-y-space-xs max-w-3xl">
+<div class="flex items-center gap-2 font-label-md text-label-md text-secondary">
+<span>Vault</span>
+<span class="material-symbols-outlined text-sm text-outline-variant">chevron_right</span>
+<span class="text-primary font-semibold">Upload Document</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Upload & Secure Document</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Client-side zero-knowledge encryption: your files are mathematically encrypted locally in your browser before syncing to the distributed vault.
+      </p>
+</div>
+<!-- Active Shield Cryptographic Indicator -->
+<div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-surface-container-high text-primary shadow-sm">
+<div class="relative flex items-center justify-center">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary animate-ping absolute"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary relative"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-xs-mono text-label-xs-mono uppercase tracking-wider text-secondary font-bold">Protocol Status</span>
+<span class="font-title-md text-body-sm text-on-surface font-semibold">AES-GCM 256-bit Active</span>
+</div>
+<span class="material-symbols-outlined text-xl text-primary ml-1" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+</div>
+<!-- Main Dual-Pane Ingestion Workbench -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Left Column: File Dropzone & Ingestion Telemetry (5 cols) -->
+<div class="lg:col-span-5 space-y-space-md">
+<!-- Drop Area -->
+<div class="relative group cursor-pointer rounded-xl bg-surface-container-lowest p-space-xl transition-all duration-300 shadow-sm hover:shadow-md hover:bg-surface-container-low text-center" id="drop-zone">
+<!-- Visual Dash Graphic via Vector Pattern -->
+<div class="absolute inset-2 rounded-lg pointer-events-none opacity-40 group-hover:opacity-80 transition-opacity">
+<svg class="w-full h-full" fill="none">
+<rect height="100%" rx="8" stroke="#2563eb" stroke-dasharray="8 6" stroke-linecap="round" stroke-width="2" width="100%"></rect>
+</svg>
+</div>
+<div class="relative z-10 flex flex-col items-center justify-center space-y-3 py-4">
+<div class="w-16 h-16 rounded-2xl bg-secondary-container flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300 shadow-sm">
+<span class="material-symbols-outlined text-3xl">cloud_upload</span>
+</div>
+<div class="space-y-1">
+<span class="font-title-md text-title-md text-on-surface block">Drag & drop document here</span>
+<span class="font-body-sm text-body-sm text-secondary">or <span class="text-primary font-semibold underline underline-offset-2">browse files</span> from secure local disk</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-xs-mono text-label-xs-mono tracking-wide">
+<span class="material-symbols-outlined text-sm">inventory_2</span>
+            PDF, JPG, PNG, HEIC up to 25MB
+          </span>
+</div>
+</div>
+<!-- Live Cryptographic Ingestion Card -->
+<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-lg text-tertiary">lock_clock</span>
+<span class="font-title-md text-body-sm text-on-surface uppercase tracking-wide">Staged In-Memory Object</span>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold">READY TO COMMIT</span>
+</div>
+<!-- Document Preview & File Breakdown -->
+<div class="flex items-start gap-space-sm p-3 rounded-lg bg-surface-container-low">
+<!-- Thumbnail Mockup with Image Placeholder -->
+<div class="relative w-16 h-20 rounded-md overflow-hidden flex-shrink-0 bg-surface-container-high shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Clear high resolution document scan of an official passport cover and internal biometric page with government seals, holographic watermarks, and blue security typography in a crisp corporate archival style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGZm5Alr1lDjahLZaak1gvcB9YqHnx_-yMKaenROe8QCn0llOnDFVvUCZIj-roWE1GXLQFO9CHqa5rTQ9fiByk0cjJa9z1DVIm-jlZVPgVYmAIgg30_Z5hpXUQx9BkyABrUUVT7KKJ2FlQtMIvi56xXQPuL9G34TTjovoYdh93QRrwdivavgwBy6UEEz6LdpH60CcGN_Z2pHKyA0h6s3g_fh3G0eapK8VypDR0dh9o"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-1">
+<span class="text-[9px] font-bold text-white tracking-widest uppercase">PDF</span>
+</div>
+</div>
+<div class="flex-1 min-w-0 space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-body-sm text-on-surface font-semibold truncate" title="Passport_Renewal_Application_2025.pdf">
+                Passport_Renewal_Application_2025.pdf
+              </span>
+<button class="text-secondary hover:text-error transition-colors p-1" title="Discard staged file" type="button">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+<p class="font-label-xs-mono text-label-xs-mono text-secondary">1.42 MB • application/pdf</p>
+<!-- Real-time OCR Classification Tag -->
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-md text-label-md mt-1">
+<span class="material-symbols-outlined text-sm text-primary">auto_awesome</span>
+<span class="truncate">AI detected: Passport / Travel Document</span>
+</div>
+</div>
+</div>
+<!-- Encryption Execution Metric Bar -->
+<div class="space-y-2 p-3 rounded-lg bg-surface-container">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="flex items-center gap-1.5 text-on-surface font-medium">
+<span class="material-symbols-outlined text-base text-tertiary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+              100% Uploaded • Client Encryption Complete
+            </span>
+<span class="font-label-xs-mono text-tertiary font-bold">256-BIT PBKDF2</span>
+</div>
+<!-- Gauge line -->
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full transition-all duration-500" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Verifiable Digest Footprint -->
+<div class="p-3 rounded-lg bg-surface-container-high space-y-1.5 font-label-xs-mono">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-bold tracking-wider uppercase text-[10px]">Deterministic Checksum</span>
+<span class="text-tertiary flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-tertiary inline-block"></span> MATCH</span>
+</div>
+<div class="flex items-center justify-between gap-2 text-on-surface font-semibold text-label-xs-mono">
+<span class="truncate select-all">SHA256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+<button class="text-primary hover:text-on-primary-fixed-variant" onclick="navigator.clipboard.writeText('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')" title="Copy Checksum" type="button">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Cryptographic Hardware Security Assurance -->
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-primary text-xl">key_vertical</span>
+<span>Zero knowledge: Keys never touch centralized persistence unencrypted.</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Structured Vault Metadata & Access Governance (7 cols) -->
+<div class="lg:col-span-7 space-y-space-md">
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm space-y-space-lg">
+<!-- SECTION 1: Document Details -->
+<div class="space-y-space-md">
+<div class="flex items-center gap-2 pb-2">
+<span class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed font-label-xs-mono text-label-xs-mono flex items-center justify-center font-bold">01</span>
+<h2 class="font-title-lg text-title-lg text-on-surface tracking-tight">Document Classification</h2>
+</div>
+<div class="space-y-4">
+<!-- Title -->
+<div class="space-y-1.5">
+<label class="block font-title-md text-body-sm text-on-surface font-semibold" for="doc-title">Document Title</label>
+<div class="relative">
+<input class="w-full h-11 px-3.5 rounded-lg bg-surface-container-lowest text-body-md text-on-surface font-medium shadow-sm focus:outline-none focus:bg-surface-bright transition-all" id="doc-title" type="text" value="Indian Passport (Re-issue)"/>
+<span class="material-symbols-outlined absolute right-3 top-3 text-secondary text-lg">edit</span>
+</div>
+</div>
+<!-- Category & Subtype Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+<div class="space-y-1.5">
+<label class="block font-title-md text-body-sm text-on-surface font-semibold" for="doc-category">Primary Vault Category</label>
+<div class="relative">
+<select class="w-full h-11 pl-3.5 pr-10 rounded-lg bg-surface-container-lowest text-body-md text-on-surface font-medium appearance-none shadow-sm focus:outline-none focus:bg-surface-bright transition-all" id="doc-category">
+<option selected="" value="identity">Identity & Civil</option>
+<option value="financial">Financial & Banking</option>
+<option value="property">Property & Real Estate</option>
+<option value="medical">Medical & Life Health</option>
+<option value="legal">Legal, Wills & Trusts</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 text-secondary pointer-events-none text-lg">expand_more</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="block font-title-md text-body-sm text-on-surface font-semibold" for="doc-subtype">Sub-Type / Label</label>
+<div class="relative">
+<input class="w-full h-11 px-3.5 rounded-lg bg-surface-container-lowest text-body-md text-on-surface font-medium shadow-sm focus:outline-none focus:bg-surface-bright transition-all" id="doc-subtype" type="text" value="Passport"/>
+<span class="material-symbols-outlined absolute right-3 top-3 text-secondary text-lg">sell</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="h-px bg-surface-variant w-full"></div>
+<!-- SECTION 2: Custody & Expiry Lifecycle -->
+<div class="space-y-space-md">
+<div class="flex items-center gap-2 pb-2">
+<span class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed font-label-xs-mono text-label-xs-mono flex items-center justify-center font-bold">02</span>
+<h2 class="font-title-lg text-title-lg text-on-surface tracking-tight">Custody & Expiry Governance</h2>
+</div>
+<!-- Owner Avatar Selection Matrix -->
+<div class="space-y-2">
+<label class="block font-title-md text-body-sm text-on-surface font-semibold">Assigned Family Member (Owner)</label>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+<!-- Rajesh Sharma (Selected) -->
+<label class="relative flex flex-col items-center p-3 rounded-xl bg-secondary-container cursor-pointer transition-all shadow-sm">
+<input checked="" class="sr-only" name="family-member" type="radio" value="rajesh"/>
+<span class="absolute top-2 right-2 material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="w-11 h-11 rounded-full overflow-hidden mb-2 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Portrait photo of an adult Indian man with glasses smiling gently wearing navy blue formal attire against a clean neutral studio background with soft lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaG7i0A6SB7X7mLdCif9Ew2-xIDGFKa3rGlLnSLvgJNjY6GK4kVqb7yUtOGOpPp_VdOB6fq68ueWGN5RIst29KtjrE5ORvAGVThmFepS2wmVw0P2ZxpexVYN78MOJG1VK--LcG-p6-cnT0lXfTOKHIhC1TKGeMdHb-VKleEdSdnVUAB5ScCG8wmasJYObRcJp5pHDM2rRU8kInjqW68RyAOcv-vSQ8ZixgDelNKwdj"/>
+</div>
+<span class="font-title-md text-body-sm text-on-surface font-bold text-center leading-tight truncate w-full">Rajesh</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary mt-0.5">Admin • Self</span>
+</label>
+<!-- Sunita Sharma -->
+<label class="relative flex flex-col items-center p-3 rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all">
+<input class="sr-only" name="family-member" type="radio" value="sunita"/>
+<div class="w-11 h-11 rounded-full overflow-hidden mb-2 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Professional warm portrait of a mid-forties Indian woman with subtle jewelry smiling softly with soft daylight illumination against architectural cream stone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQqTXeaI60JG15VZmRCaUYXLbPy175Qwc7DnJeN4KWX0x35VI5fqn4tUwb7Ct8T7ji_0zgqOX8bPUFluL-K8oglqL8TUfgOUGzreF0D_yDLFh5nUM-2i97BaAkDlxL5QTXWE08NgDhEgo1vXQcU7CyUnlT3900VOHHHLYSgP3n5sAIhigHH7f3SscsbfrxBC9vuZ1OcIav7eo2-acnNr1aTCcNYttN1zHNz2Yscumm"/>
+</div>
+<span class="font-title-md text-body-sm text-on-surface font-medium text-center leading-tight truncate w-full">Sunita</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary mt-0.5">Spouse</span>
+</label>
+<!-- Aarav Sharma -->
+<label class="relative flex flex-col items-center p-3 rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all">
+<input class="sr-only" name="family-member" type="radio" value="aarav"/>
+<div class="w-11 h-11 rounded-full overflow-hidden mb-2 bg-surface-variant">
+<div class="w-full h-full bg-primary-fixed-dim text-on-primary-fixed font-title-md text-body-sm flex items-center justify-center font-bold">AS</div>
+</div>
+<span class="font-title-md text-body-sm text-on-surface font-medium text-center leading-tight truncate w-full">Aarav</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary mt-0.5">Son (16y)</span>
+</label>
+<!-- Ananya Sharma -->
+<label class="relative flex flex-col items-center p-3 rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all">
+<input class="sr-only" name="family-member" type="radio" value="ananya"/>
+<div class="w-11 h-11 rounded-full overflow-hidden mb-2 bg-surface-variant">
+<div class="w-full h-full bg-tertiary-fixed text-on-tertiary-fixed font-title-md text-body-sm flex items-center justify-center font-bold">AN</div>
+</div>
+<span class="font-title-md text-body-sm text-on-surface font-medium text-center leading-tight truncate w-full">Ananya</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary mt-0.5">Daughter (12y)</span>
+</label>
+</div>
+</div>
+<!-- Date Matrix -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-1">
+<div class="space-y-1.5">
+<label class="block font-title-md text-body-sm text-on-surface font-semibold" for="issue-date">Issue Date</label>
+<div class="relative">
+<input class="w-full h-11 px-3.5 rounded-lg bg-surface-container-lowest text-body-md text-on-surface font-medium shadow-sm focus:outline-none focus:bg-surface-bright transition-all" id="issue-date" type="date" value="2025-03-12"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="block font-title-md text-body-sm text-on-surface font-semibold" for="expiry-date">Expiry Date</label>
+<div class="relative">
+<input class="w-full h-11 px-3.5 rounded-lg bg-surface-container-lowest text-body-md text-on-surface font-medium shadow-sm focus:outline-none focus:bg-surface-bright transition-all" id="expiry-date" type="date" value="2035-03-11"/>
+</div>
+</div>
+</div>
+<!-- Automated Expiry Reminders Toggle Bar -->
+<div class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between gap-space-md">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-2xl mt-0.5">notifications_active</span>
+<div>
+<span class="font-title-md text-body-sm text-on-surface font-semibold block">Enable Lifecycle Renewal Alerts</span>
+<span class="font-body-sm text-body-sm text-secondary">Dispatch SMS & encrypted email notifications 60, 30, and 7 days prior to expiry.</span>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant rounded-full peer peer-checked:bg-primary-container peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+</label>
+</div>
+</div>
+<div class="h-px bg-surface-variant w-full"></div>
+<!-- SECTION 3: Access Permissions & Security Level -->
+<div class="space-y-space-md">
+<div class="flex items-center gap-2 pb-2">
+<span class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed font-label-xs-mono text-label-xs-mono flex items-center justify-center font-bold">03</span>
+<h2 class="font-title-lg text-title-lg text-on-surface tracking-tight">Access Control & Protocol Arming</h2>
+</div>
+<!-- Permission Matrix Dropdown -->
+<div class="space-y-1.5">
+<label class="block font-title-md text-body-sm text-on-surface font-semibold" for="access-level">Security Clearance Level</label>
+<div class="relative">
+<select class="w-full h-11 pl-3.5 pr-10 rounded-lg bg-surface-container-lowest text-body-md text-on-surface font-medium appearance-none shadow-sm focus:outline-none focus:bg-surface-bright transition-all" id="access-level">
+<option selected="" value="confidential">Confidential (Only Vault Owner & Assigned Member)</option>
+<option value="family-shared">Family Shared (All 4 household members can view)</option>
+<option value="restricted-admin">Restricted Admin Only (Rajesh Sharma)</option>
+<option value="legal-custody">Legal Custody Escrow (Accessible by appointed executor)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 text-secondary pointer-events-none text-lg">security</span>
+</div>
+</div>
+<!-- Break-Glass Protocol Safeguard Box -->
+<div class="p-4 rounded-xl bg-error-container text-on-error-container space-y-2">
+<div class="flex items-start gap-3">
+<div class="p-2 rounded-lg bg-error text-on-error flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-lg leading-none">emergency_home</span>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-body-sm text-on-error-container font-bold">Emergency "Break-Glass" Authorization</span>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-error text-on-error font-bold uppercase">48h Challenge</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-error-container opacity-90 leading-snug">
+                  Permit designated family successors to initiate an emergency access challenge to decrypt this record if primary owner is medically incapacitated or deceased.
+                </p>
+<div class="pt-2 flex items-center">
+<label class="inline-flex items-center gap-2 cursor-pointer font-title-md text-body-sm text-on-error-container font-semibold">
+<input checked="" class="w-4 h-4 rounded text-error accent-error focus:ring-0" type="checkbox"/>
+<span>Arm Break-Glass protection for this document</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Document Tags (Semantic Indexing) -->
+<div class="space-y-1.5">
+<label class="block font-title-md text-body-sm text-on-surface font-semibold">Indexed Tags (Zero-Knowledge Hash Indexed)</label>
+<div class="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-surface-container-low min-h-12">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-md text-label-md font-semibold">
+                #Identity
+                <button class="text-secondary hover:text-on-surface flex items-center" type="button"><span class="material-symbols-outlined text-sm">close</span></button>
+</span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-md text-label-md font-semibold">
+                #Travel
+                <button class="text-secondary hover:text-on-surface flex items-center" type="button"><span class="material-symbols-outlined text-sm">close</span></button>
+</span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-md text-label-md font-semibold">
+                #Government-ID
+                <button class="text-secondary hover:text-on-surface flex items-center" type="button"><span class="material-symbols-outlined text-sm">close</span></button>
+</span>
+<div class="flex-1 min-w-[120px]">
+<input class="w-full bg-transparent border-none text-body-sm text-on-surface focus:outline-none placeholder:text-secondary" placeholder="Add custom tag + Enter..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<div class="h-px bg-surface-variant w-full"></div>
+<!-- ACTION FOOTER: Vault Commit Bar -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-md pt-2">
+<div class="flex items-center gap-2 w-full sm:w-auto">
+<a class="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-title-md text-body-sm text-center transition-colors" href="#">
+              Cancel
+            </a>
+<button class="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-title-md text-body-sm text-center shadow-sm transition-colors" type="button">
+              Save as Draft
+            </button>
+</div>
+<button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-title-md text-body-sm font-semibold shadow-md transition-all group" id="encrypt-btn" type="button">
+<span class="material-symbols-outlined text-lg group-hover:rotate-12 transition-transform">lock</span>
+<span>Encrypt & Save to Vault</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for Commit Button feedback
+  const encryptBtn = document.getElementById('encrypt-btn');
+  if (encryptBtn) {
+    encryptBtn.addEventListener('click', function() {
+      const originalHtml = this.innerHTML;
+      this.innerHTML = `
+        <span class="material-symbols-outlined text-lg animate-spin">sync</span>
+        <span>Securing Locally (AES-GCM)...</span>
+      `;
+      this.disabled = true;
+      setTimeout(() => {
+        this.innerHTML = `
+          <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">check</span>
+          <span>Encrypted & Ingested!</span>
+        `;
+        this.classList.remove('bg-primary-container');
+        this.classList.add('bg-tertiary-container');
+        setTimeout(() => {
+          this.innerHTML = originalHtml;
+          this.disabled = false;
+          this.classList.remove('bg-tertiary-container');
+          this.classList.add('bg-primary-container');
+        }, 2500);
+      }, 1200);
+    });
+  }
+
+  // Interactive drop zone drag styling
+  const dropZone = document.getElementById('drop-zone');
+  if (dropZone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('scale-[1.01]', 'bg-surface-container');
+      }, false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('scale-[1.01]', 'bg-surface-container');
+      }, false);
+    });
+  }
+</script></div></main></div></body></html>

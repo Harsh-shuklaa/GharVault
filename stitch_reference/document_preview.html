@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"primary-fixed-dim":"#b4c5ff","surface-container-lowest":"#ffffff","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5","tertiary-fixed":"#85f8c4","on-secondary":"#ffffff","on-error":"#ffffff","on-secondary-fixed-variant":"#3f465c","on-surface":"#0b1c30","surface-container-highest":"#d3e4fe","on-primary-fixed":"#00174b","secondary-container":"#dae2fd","on-primary-fixed-variant":"#003ea8","secondary":"#565e74","error-container":"#ffdad6","surface-tint":"#0053db","primary-fixed":"#dbe1ff","inverse-primary":"#b4c5ff","tertiary-container":"#007d57","surface-container-high":"#dce9ff","outline-variant":"#c3c6d7","primary":"#004ac6","tertiary":"#006243","on-background":"#0b1c30","background":"#f8f9ff","on-secondary-fixed":"#131b2e","on-tertiary-fixed":"#002114","on-primary":"#ffffff","inverse-on-surface":"#eaf1ff","surface-container":"#e5eeff","surface":"#f8f9ff","tertiary-fixed-dim":"#68dba9","on-tertiary":"#ffffff","on-surface-variant":"#434655","secondary-fixed":"#dae2fd","error":"#ba1a1a","secondary-fixed-dim":"#bec6e0","primary-container":"#2563eb","on-error-container":"#93000a","on-secondary-container":"#5c647a","surface-bright":"#f8f9ff","on-primary-container":"#eeefff","inverse-surface":"#213145","surface-container-low":"#eff4ff","outline":"#737686","on-tertiary-fixed-variant":"#005137","on-tertiary-container":"#bdffdc"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-xs":"0.25rem","space-lg":"1.5rem","space-md":"1rem","space-xl":"2.5rem","margin-sm":"1rem","gutter-sm":"1rem","margin":"2rem","space-sm":"0.5rem"},"fontFamily":{"headline-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"title-md":["Inter"],"label-md":["Inter"],"body-sm":["Inter"],"headline-xl-mobile":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"body-lg":["Inter"],"title-lg":["Inter"],"label-xs-mono":["Inter"]},"fontSize":{"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.025em","fontWeight":"600"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"title-md":["15px",{"lineHeight":"22px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","fontWeight":"500"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-xl-mobile":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"title-lg":["18px",{"lineHeight":"26px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-xs-mono":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen"><aside class="fixed left-0 top-0 h-full w-[260px] bg-[#0F172A] border-r border-[#1E293B] z-50 flex flex-col justify-between text-slate-300"><div class="flex flex-col"><div class="px-space-md py-space-md flex items-center justify-between border-b border-[#1E293B]"><div class="flex items-center gap-space-sm"><img alt="GharVault Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUlu11D9EdUdEMxRGjWxBb-cREUQvux0e_NLXO0ZwlN0BGwVpslTcA41BwG94mU84KCMcMVeKUji3ZhL9-3fqUUK_4w-bL8g1yofNAoY4KA1gJh7Ba-7F5I8mhHjyQhmw27qAJ1aovbS9B0WwWQAulqSTAcf90kF5nMx5AY-23UzhTBsWu8NQmuP376k48YVUcyd788vQU3uqMp8-9X7NEHZvaVc2D9-72ZA_yKqpY"/><span class="font-headline-md text-title-lg font-bold tracking-tight text-white">GharVault</span></div><span class="font-label-xs-mono text-label-xs-mono uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">v2.4</span></div><div class="px-space-md pt-space-md pb-space-sm"><button class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[#1E293B] hover:bg-slate-800 transition-colors text-left" type="button"><div class="flex flex-col min-w-0"><span class="font-title-md text-body-sm font-medium text-white truncate">Sharma Family Ghar</span><span class="font-label-md text-label-md text-slate-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>4 active members</span></div><span class="material-symbols-outlined text-slate-400 text-lg">unfold_more</span></button></div><nav class="px-space-sm py-space-sm space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold"><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="dashboard" href="#"><span class="font-body-md text-body-md">Dashboard</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="all-documents-vault" href="#"><span class="font-body-md text-body-md">All Documents</span><span class="font-label-md text-label-md px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">48</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="family-members-directory" href="#"><span class="font-body-md text-body-md">Family Members</span><span class="font-label-md text-label-md px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">4</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="upload-document" href="#"><span class="font-body-md text-body-md">Upload Document</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="document-categories" href="#"><span class="font-body-md text-body-md">Document Categories</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="activity-audit" href="#"><span class="font-body-md text-body-md">Activity Audit</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="permissions-matrix" href="#"><span class="font-body-md text-body-md">Permissions Matrix</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="security-settings" href="#"><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-space-sm space-y-space-sm border-t border-[#1E293B]"><div class="p-3 rounded-lg bg-red-950/40 border border-red-900/60 flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400 text-lg">e911_emergency</span><div class="flex flex-col"><span class="font-label-md text-label-md font-semibold text-red-200">Break-Glass</span><span class="font-label-xs-mono text-label-xs-mono text-red-300/80">48h Protocol Ready</span></div></div><a class="px-2 py-1 rounded bg-red-800/60 hover:bg-red-700 text-white font-label-md text-label-md transition-colors" data-path="break-glass" href="#">Arm</a></div><div class="flex items-center justify-between p-2 rounded-lg bg-[#1E293B]/80 hover:bg-[#1E293B] transition-colors"><div class="flex items-center gap-2.5 min-w-0"><div class="relative flex-shrink-0"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIMPGmKk-ZCa-RoOFHu8OOweTKTYGHGkE4d8mka0oCttyV6_o4_j-2osUxUHE7qzpR5mRG4ZwsyPRlOIc7wJDeb9wpNqGyU9NqjADWJAyVHu6KKSpBS47tLBVqfMGCyD1k5u8XhiWSmKTyecMSgD8VNTGPMDNu4XPqKhx4GjvVmV0NKre3S0ON3_jU_4sqGcnsbM-tSMXY6jG1FJDsJk90Wrkolq8RXK7-RIJwbYhb"/><span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-[#1E293B]"></span></div><div class="flex flex-col min-w-0"><span class="font-title-md text-body-sm text-white font-medium truncate">Rajesh Sharma</span><span class="font-label-md text-label-md text-slate-400">Admin</span></div></div><button class="text-slate-400 hover:text-white p-1" type="button"><span class="material-symbols-outlined text-lg">more_vert</span></button></div></div></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-[#E2E8F0] z-40 flex items-center justify-between px-gutter shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="flex items-center gap-space-md"><div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant"><span class="material-symbols-outlined text-base text-secondary">shield</span><span>Vault</span><span class="material-symbols-outlined text-sm text-outline-variant">chevron_right</span><span class="text-on-surface font-medium">Sharma Ghar</span></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-label-md text-label-md"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>256-bit AES End-to-End Encrypted</span></div></div><div class="flex-1 max-w-lg mx-gutter"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-secondary text-lg pointer-events-none">search</span><input class="w-full h-10 pl-9 pr-20 bg-surface-container-low rounded-lg text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-surface-container-lowest transition-all" placeholder="Search Aadhaar, PAN, insurance, property records..." type="search"/><kbd class="absolute right-2.5 px-1.5 py-0.5 rounded bg-surface-container-highest border border-outline-variant font-label-xs-mono text-label-xs-mono text-on-surface-variant pointer-events-none">Ctrl + K</kbd></div></div><div class="flex items-center gap-space-sm"><a class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-title-md text-body-sm transition-all shadow-[0_1px_2px_rgba(37,99,235,0.2)]" data-path="upload-document" href="#"><span class="material-symbols-outlined text-lg leading-none">add</span><span>Upload Document</span></a><a class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="notifications" href="#"><span class="material-symbols-outlined text-xl">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-error text-on-error font-label-xs-mono text-[10px] flex items-center justify-center font-bold">3</span></a><a class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-title-md text-body-sm inline-flex items-center gap-1" data-path="help-and-docs" href="#"><span class="material-symbols-outlined text-xl">help</span></a></div></header><main class="w-full pt-16 bg-[#F8FAFC] min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Command Context Bar -->
+<header class="w-full bg-surface-container-lowest px-gutter py-space-sm flex flex-wrap items-center justify-between gap-4 shadow-sm z-10">
+<div class="flex items-center gap-space-md min-w-0">
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-title-md text-body-sm transition-colors" data-path="all-documents-vault" href="#">
+<span class="material-symbols-outlined text-lg">arrow_back</span>
+<span>Back to Vault</span>
+</a>
+<div class="h-4 w-px bg-outline-variant/30 hidden sm:block"></div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<h1 class="font-headline-md text-title-lg text-on-surface truncate font-semibold">Indian Passport — Rajesh S.</h1>
+<span class="font-label-xs-mono text-label-xs-mono uppercase px-2 py-0.5 rounded-full bg-surface-container text-secondary font-semibold">#Z4819201</span>
+</div>
+<div class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+<span>Vault</span>
+<span>/</span>
+<span>Civil &amp; Legal Identities</span>
+<span>/</span>
+<span class="text-on-surface font-medium">Doc-4819</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2.5 flex-wrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-md text-label-md">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+        Verified SHA-256
+      </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 font-label-md text-label-md">
+<span class="material-symbols-outlined text-sm text-amber-700">warning</span>
+        Expires in 18 Days
+      </span>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-title-md text-body-sm transition-colors" id="lockToggleBtn">
+<span class="material-symbols-outlined text-base text-secondary">lock</span>
+<span>Re-Seal</span>
+</button>
+</div>
+</header>
+<!-- Split Screen Stage -->
+<div class="w-full flex flex-col lg:flex-row min-h-[calc(100vh-8.5rem)]">
+<!-- LEFT ~65% VIEWER STAGE -->
+<section class="flex-1 lg:w-[65%] flex flex-col bg-[#0B132B]/5 relative p-4 lg:p-6 overflow-hidden select-none">
+<!-- Floating Glass Toolbar -->
+<div class="w-full max-w-2xl mx-auto mb-4 bg-surface-container-lowest/90 backdrop-blur-md rounded-xl p-1.5 shadow-md flex items-center justify-between gap-2 z-20">
+<!-- Pagination -->
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container-low transition-colors" id="prevPageBtn" title="Previous page">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<span class="font-label-md text-label-md text-on-surface px-2">Page <strong id="curPageNum">1</strong> of 2</span>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container-low transition-colors" id="nextPageBtn" title="Next page">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+<div class="h-4 w-px bg-outline-variant/30"></div>
+<!-- Zoom Controls -->
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container-low transition-colors" id="zoomOutBtn" title="Zoom Out">
+<span class="material-symbols-outlined text-lg">zoom_out</span>
+</button>
+<span class="font-label-xs-mono text-label-xs-mono text-on-surface w-12 text-center" id="zoomLevelDisplay">100%</span>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container-low transition-colors" id="zoomInBtn" title="Zoom In">
+<span class="material-symbols-outlined text-lg">zoom_in</span>
+</button>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container-low transition-colors" id="rotateBtn" title="Rotate Clockwise">
+<span class="material-symbols-outlined text-lg">rotate_right</span>
+</button>
+</div>
+<div class="h-4 w-px bg-outline-variant/30 hidden sm:block"></div>
+<!-- Watermark Badge / Toggle -->
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-md text-label-md hover:bg-emerald-100 transition-colors" id="watermarkToggle">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span class="hidden md:inline">Dynamic Watermark</span>
+<span class="text-[10px] uppercase font-bold tracking-wider">Active</span>
+</button>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container-low transition-colors" id="fsBtn" title="Toggle Fullscreen">
+<span class="material-symbols-outlined text-lg">fullscreen</span>
+</button>
+</div>
+</div>
+<!-- Main Canvas Stage with Passport Preview -->
+<div class="flex-1 flex items-center justify-center relative overflow-auto py-2">
+<div class="relative transition-transform duration-200 origin-center max-w-full" id="docViewerWrapper">
+<!-- Document Glass Card Shell -->
+<div class="relative w-[340px] sm:w-[480px] md:w-[560px] aspect-[1/1.42] bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden flex flex-col">
+<!-- Dynamic Diagonal Security Watermark Overlay -->
+<div class="absolute inset-0 pointer-events-none z-30 flex flex-col justify-around rotate-[-25deg] scale-125 opacity-25 select-none overflow-hidden" id="watermarkOverlay">
+<div class="whitespace-nowrap font-label-xs-mono text-[10px] tracking-widest text-slate-800 font-bold uppercase py-2">
+                CONFIDENTIAL • VIEWED BY RAJESH SHARMA • 2025-05-18 10:44 UTC • IP: 103.21.58.114 • CLIENT-SIDE DECRYPTED
+              </div>
+<div class="whitespace-nowrap font-label-xs-mono text-[10px] tracking-widest text-slate-800 font-bold uppercase py-2">
+                GHARVAULT ZERO-KNOWLEDGE ENCRYPTED REPOSITORY • RESTRICTED ESTATE ACCESS • SHA256: E3B0C44298FC
+              </div>
+<div class="whitespace-nowrap font-label-xs-mono text-[10px] tracking-widest text-slate-800 font-bold uppercase py-2">
+                CONFIDENTIAL • VIEWED BY RAJESH SHARMA • 2025-05-18 10:44 UTC • IP: 103.21.58.114 • CLIENT-SIDE DECRYPTED
+              </div>
+<div class="whitespace-nowrap font-label-xs-mono text-[10px] tracking-widest text-slate-800 font-bold uppercase py-2">
+                ESTATE ASSET REPOSITORY • UNLAWFUL DISTRIBUTION PENALIZED BY CYBER SECURITY ACT 2000
+              </div>
+<div class="whitespace-nowrap font-label-xs-mono text-[10px] tracking-widest text-slate-800 font-bold uppercase py-2">
+                CONFIDENTIAL • VIEWED BY RAJESH SHARMA • 2025-05-18 10:44 UTC • IP: 103.21.58.114 • CLIENT-SIDE DECRYPTED
+              </div>
+</div>
+<!-- Authentic Passport Header Bar -->
+<div class="bg-[#112347] text-white px-5 py-3 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-400 text-xl">stars</span>
+<div class="flex flex-col leading-none">
+<span class="font-headline-md text-label-xs-mono uppercase tracking-widest text-amber-200">Republic of India</span>
+<span class="font-label-md text-label-md text-slate-300">Passport / पासपोर्ट</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-xs-mono text-[10px] tracking-wider text-amber-300/80">Type / Type: P</span>
+<div class="font-label-xs-mono text-label-xs-mono font-bold text-white">IND</div>
+</div>
+</div>
+<!-- Passport Bio Page Visual Layout -->
+<div class="flex-1 bg-[#FFFDF5] p-5 sm:p-6 flex flex-col justify-between relative">
+<!-- Subtle Guilloche pattern background simulation -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:12px_12px]"></div>
+<!-- Top Identification Row -->
+<div class="flex justify-between items-start gap-4">
+<!-- Photo Area -->
+<div class="flex flex-col items-center">
+<div class="w-24 sm:w-28 h-32 sm:h-36 rounded-lg bg-surface-container-high overflow-hidden shadow-sm relative">
+<img class="w-full h-full object-cover" data-alt="Official passport biometric headshot portrait photograph of Rajesh Sharma, a 46-year-old Indian man wearing a dark tailored collared shirt against an off-white plain studio background with neutral soft institutional lighting and direct frontal gaze." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL_tL65G_93HxQZ00uznZf477WYrhubjMe0lgT_bxuY1cqSFRoTryR0fML08MFIXPK03fmAazuR3wyqeAgUxDHPvCtN8H-Q5Hcgq5W9aY3Yi1Gp5ODSRdq9Cr2vbv_c416vNqzTuWCvpPY8guZV0IxsyLvTd5zK6cRa3MmNTFxK_nXryfJ1K-eJa9eSG0mJO-cUqaP6M83thVFVaYWX95R6Wm-P8YLpq26scqWd1f9"/>
+<!-- Hologram Stamp overlay -->
+<div class="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400/40 via-emerald-400/40 to-blue-500/40 backdrop-blur-[1px] flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[12px]">verified</span>
+</div>
+</div>
+<span class="font-label-xs-mono text-[9px] text-slate-500 mt-1.5 uppercase tracking-tighter">Sign: R. Sharma</span>
+</div>
+<!-- Personal Information Table Grid -->
+<div class="flex-1 grid grid-cols-2 gap-x-3 gap-y-2 text-left">
+<div>
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Surname / उपनाम</span>
+<span class="font-title-md text-body-sm font-bold text-slate-900 tracking-wide">SHARMA</span>
+</div>
+<div>
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Passport No. / पासपोर्ट सं.</span>
+<span class="font-label-xs-mono text-body-sm font-bold text-blue-900">Z4819201</span>
+</div>
+<div class="col-span-2">
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Given Name(s) / दिया गया नाम</span>
+<span class="font-title-md text-body-sm font-semibold text-slate-900">RAJESH KUMAR</span>
+</div>
+<div>
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Nationality / राष्ट्रीयता</span>
+<span class="font-title-md text-body-sm text-slate-800">INDIAN</span>
+</div>
+<div>
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Sex / लिंग</span>
+<span class="font-title-md text-body-sm text-slate-800">M</span>
+</div>
+<div>
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Date of Birth / जन्म तिथि</span>
+<span class="font-label-xs-mono text-body-sm text-slate-900 font-medium">14/08/1978</span>
+</div>
+<div>
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Place of Birth / जन्म स्थान</span>
+<span class="font-title-md text-body-sm text-slate-800">NEW DELHI</span>
+</div>
+<div>
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Date of Issue / जारी तिथि</span>
+<span class="font-label-xs-mono text-body-sm text-slate-800">12/03/2014</span>
+</div>
+<div>
+<span class="block font-label-xs-mono text-[9px] uppercase text-slate-400">Date of Expiry / समाप्ति तिथि</span>
+<span class="font-label-xs-mono text-body-sm font-bold text-error">11/03/2024</span>
+</div>
+</div>
+</div>
+<!-- Optical Machine Readable Zone (MRZ) -->
+<div class="mt-4 pt-3 bg-slate-900 text-emerald-400 p-2.5 rounded-lg font-label-xs-mono text-[11px] sm:text-[12px] leading-tight tracking-[0.2em] uppercase select-all overflow-x-auto shadow-inner">
+<div>P&lt;INDSHARMA&lt;&lt;RAJESH&lt;KUMAR&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+<div>Z4819201&lt;4IND7808142M2403112&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;06</div>
+</div>
+</div>
+<!-- Subtle In-Memory Tag Footer -->
+<div class="bg-surface-container-high px-4 py-1.5 flex items-center justify-between text-secondary">
+<span class="font-label-xs-mono text-[10px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-emerald-600">lock</span>
+                Zero-Knowledge Local Buffer Decryption
+              </span>
+<span class="font-label-xs-mono text-[10px]">Page 1 / 2 (Bio-Data Page)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Action Floating Dock at Bottom of Viewer -->
+<div class="w-full max-w-xl mx-auto mt-4 bg-surface-container-lowest rounded-xl p-2 shadow-lg flex items-center justify-around gap-2 z-20">
+<button class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-title-md text-body-sm transition-colors" id="downloadModalOpenBtn">
+<span class="material-symbols-outlined text-base text-primary">file_download</span>
+<span class="hidden sm:inline">Export Copy</span>
+</button>
+<button class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-title-md text-body-sm transition-colors" id="shareLinkOpenBtn">
+<span class="material-symbols-outlined text-base text-tertiary">share</span>
+<span>48h Access Link</span>
+</button>
+<button class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-title-md text-body-sm transition-colors" onclick="window.print()">
+<span class="material-symbols-outlined text-base text-secondary">print</span>
+<span class="hidden sm:inline">Watermarked Print</span>
+</button>
+</div>
+</section>
+<!-- RIGHT ~35% INSPECTOR / METADATA PANEL -->
+<aside class="flex-1 lg:w-[35%] bg-surface-container-lowest p-6 flex flex-col gap-6 overflow-y-auto">
+<!-- Section 1: Classification & Specs -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="font-label-xs-mono text-label-xs-mono uppercase tracking-wider text-secondary">Document Metadata</span>
+<span class="font-label-md text-label-md px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-semibold">Tier 1 Sovereign Asset</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div>
+<h2 class="font-headline-md text-title-md font-bold text-on-surface">Indian Passport (Re-issue)</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Original Biometric Microchip Document</span>
+</div>
+<span class="p-2 rounded-lg bg-surface-container text-primary material-symbols-outlined">badge</span>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-2">
+<div class="flex flex-col">
+<span class="font-label-xs-mono text-[10px] text-secondary uppercase">Category</span>
+<span class="font-title-md text-body-sm text-on-surface">Identity &amp; Civil</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-xs-mono text-[10px] text-secondary uppercase">Format / Size</span>
+<span class="font-title-md text-body-sm text-on-surface">PDF / 3.8 MB</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-xs-mono text-[10px] text-secondary uppercase">Ingestion Date</span>
+<span class="font-title-md text-body-sm text-on-surface">12 Mar 2024</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-xs-mono text-[10px] text-secondary uppercase">Vault Origin</span>
+<span class="font-title-md text-body-sm text-on-surface">Sharma Ghar Primary</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Cryptographic Verification Card -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-700 text-lg">verified_user</span>
+<span class="font-title-md text-body-sm font-semibold text-on-surface">Cryptographic Proof</span>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-semibold">AES-GCM 256</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Decrypted client-side in volatile sandbox memory. Zero unencrypted payload transmitted over the wire.</p>
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-xs-mono text-[10px] uppercase">SHA-256 Checksum</span>
+<button class="font-label-xs-mono text-[10px] text-primary flex items-center gap-0.5 hover:underline" id="copyHashBtn" title="Copy full digest">
+<span class="material-symbols-outlined text-[12px]">content_copy</span>
+<span>Copy Hash</span>
+</button>
+</div>
+<div class="bg-surface-container-highest p-2 rounded-lg font-label-xs-mono text-[11px] text-on-surface break-all select-all font-mono leading-relaxed">
+            e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          </div>
+</div>
+<div class="flex items-center justify-between pt-1 text-secondary">
+<span class="font-label-xs-mono text-label-xs-mono flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-primary">token</span>
+            Merkle Root Linked: Block #184,209
+          </span>
+<span class="font-label-xs-mono text-label-xs-mono text-emerald-700 font-medium">Immutable</span>
+</div>
+</div>
+<!-- Section 3: Custody & Access Permissions Matrix -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="font-label-xs-mono text-label-xs-mono uppercase tracking-wider text-secondary">Custody &amp; Entitlements</span>
+<a class="font-label-md text-label-md text-primary hover:underline" data-path="permissions-matrix" href="#">Manage</a>
+</div>
+<div class="space-y-2">
+<!-- Member 1: Rajesh -->
+<div class="p-2.5 rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2.5 min-w-0">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Avatar portrait of Rajesh Sharma, household administrator, warm lighting, professional headshot with eyeglasses." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBikZS1iAvll3DVEeh-yHPvLjA8rKztS3LJQJFA8a0NamoC24Rf8yETuEjOwNoe4TomzwCTHNmPjweNPqXlFuA045XlBWLj9dn6MfGkngSkOJ06p14d6BnXDCIV5BP0IVqPA2Abbz59TUTxRt85dWb4_PQ4fo2w__G8l8YUsRYPuYjgrF7zrpGVCFa2KzX7m8MRvTwu12eoAKeVV2bl9N2FmSwLbOp-N1hfoac6zCYp"/>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-body-sm text-on-surface truncate">Rajesh Sharma</span>
+<span class="font-label-md text-label-md text-secondary">Primary Owner • Self</span>
+</div>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-primary text-on-primary">Admin</span>
+</div>
+<!-- Member 2: Priya -->
+<div class="p-2.5 rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2.5 min-w-0">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Avatar portrait of Priya Sharma, family co-administrator, smiling, modern lighting, clear elegant composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyN4GsdsiyAmIJJ9-xr-nynkMgEg5Ua39_nrHZmxsUE2KFER3yhPW4Q3AHtVVQSOH-b54OS0x-gCScMiosi5P_LDiZlKnfCVSdJJAVBC9fTLg4LPlFuLZgmuGmsSDGlnC5FSnyxSV1X44P1DTfHw1jDo6iZd-0pMZLUA82jqh0sHWy2nyXv5HDpMCjpRni1bWdKM-NTJlxCM_n3VEHWNo2B1EiDl9R2XCDd85VPiEW"/>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-body-sm text-on-surface truncate">Priya Sharma</span>
+<span class="font-label-md text-label-md text-secondary">Spouse • Co-Signer</span>
+</div>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900">Full Access</span>
+</div>
+<!-- Member 3: Aarav -->
+<div class="p-2.5 rounded-lg bg-surface-container-low flex items-center justify-between opacity-70">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant font-bold text-xs">AS</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-body-sm text-on-surface truncate">Aarav Sharma</span>
+<span class="font-label-md text-label-md text-secondary">Minor Son • Juvenile Gated</span>
+</div>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary">No Access</span>
+</div>
+<!-- Member 4: Break Glass Nominee -->
+<div class="p-2.5 rounded-lg bg-red-50 flex items-center justify-between">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-8 h-8 rounded-full bg-red-200 text-red-900 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">e911_emergency</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-body-sm text-red-950 font-medium truncate">Amit Sharma (Brother)</span>
+<span class="font-label-md text-label-md text-red-800">Emergency Protocol Nominee</span>
+</div>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-red-200 text-red-950 font-bold">48h Timer Gated</span>
+</div>
+</div>
+</div>
+<!-- Section 4: Expiry & Automated Renewal Lifeline -->
+<div class="p-4 rounded-xl bg-amber-50/70 flex flex-col gap-2.5">
+<div class="flex items-center justify-between text-amber-900">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-lg">event_busy</span>
+<span class="font-title-md text-body-sm font-semibold">Renewal Lifeline</span>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono font-bold uppercase text-amber-800">Action Urged</span>
+</div>
+<p class="font-body-sm text-body-sm text-amber-950">Valid until <strong>11 Mar 2024</strong>. Indian diplomatic missions require ≥6 months passport validity for international departures.</p>
+<!-- Progress bar toward expiry -->
+<div class="w-full bg-amber-200/80 h-2 rounded-full overflow-hidden mt-1">
+<div class="bg-amber-600 h-full w-[96%]" title="96% elapsed"></div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-xs-mono text-[10px] text-amber-900">Auto-Alerts: Set (60d • 30d • 7d)</span>
+<button class="font-title-md text-body-sm text-amber-900 hover:text-amber-950 font-semibold underline">Schedule PSK Appointment</button>
+</div>
+</div>
+<!-- Section 5: Recent Document Audit Ledger -->
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<span class="font-label-xs-mono text-label-xs-mono uppercase tracking-wider text-secondary">Document Audit Ledger</span>
+<a class="font-label-md text-label-md text-primary hover:underline" data-path="activity-audit" href="#">Full Log</a>
+</div>
+<div class="space-y-2">
+<div class="p-2.5 rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-base text-primary">visibility</span>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-body-sm text-on-surface truncate">Decrypted &amp; Viewed</span>
+<span class="font-label-xs-mono text-[10px] text-secondary">Rajesh S. • Chrome MacOS • IP: 103.21.58.114</span>
+</div>
+</div>
+<span class="font-label-xs-mono text-[10px] text-secondary whitespace-nowrap">Just now</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-base text-emerald-600">verified</span>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-body-sm text-on-surface truncate">Merkle Checksum Confirmed</span>
+<span class="font-label-xs-mono text-[10px] text-secondary">Automated Background Integrity Scanner</span>
+</div>
+</div>
+<span class="font-label-xs-mono text-[10px] text-secondary whitespace-nowrap">Yesterday</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-base text-tertiary">share</span>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-body-sm text-on-surface truncate">Temporary Share Generated</span>
+<span class="font-label-xs-mono text-[10px] text-secondary">Recipient: Standard Chartered Visa Dept</span>
+</div>
+</div>
+<span class="font-label-xs-mono text-[10px] text-secondary whitespace-nowrap">4 days ago</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- MODAL 1: Password-Prompt Encrypted Copy Download -->
+<div class="fixed inset-0 z-50 bg-[#0F172A]/60 backdrop-blur-sm hidden items-center justify-center p-4" id="downloadModal">
+<div class="bg-surface-container-lowest w-full max-w-md rounded-xl shadow-2xl p-6 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">enhanced_encryption</span>
+</div>
+<h2 class="font-headline-md text-title-lg font-semibold text-on-surface">Export Encrypted PDF</h2>
+</div>
+<button class="p-1 rounded-lg text-secondary hover:bg-surface-container-low" id="closeDownloadModal">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        To prevent unauthorized leaks, GharVault will encapsulate this export inside an AES-256 password-protected ZIP archive before decrypting it from the enclave.
+      </p>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface font-medium">Create One-Time Decryption Passphrase</label>
+<input class="w-full h-10 px-3 bg-surface-container-low rounded-lg text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container" id="exportPassphrase" placeholder="Minimum 12 characters..." type="password"/>
+<span class="font-label-xs-mono text-[10px] text-secondary">Share this passphrase out-of-band with the recipient (e.g. Signal).</span>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">water_drop</span>
+<div class="flex flex-col">
+<span class="font-title-md text-body-sm text-on-surface">Stamper Settings</span>
+<span class="font-label-xs-mono text-[10px] text-secondary">Recipient identifier embedded in invisible micro-metadata</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-2 pt-2">
+<button class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-title-md text-body-sm" id="cancelExportBtn">
+          Cancel
+        </button>
+<button class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-title-md text-body-sm shadow-sm" id="confirmExportBtn">
+<span class="material-symbols-outlined text-base">lock_open</span>
+<span>Generate Secure Download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- MODAL 2: 48h Time-Limited Share Link Generator -->
+<div class="fixed inset-0 z-50 bg-[#0F172A]/60 backdrop-blur-sm hidden items-center justify-center p-4" id="shareModal">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-2xl p-6 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-900 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">timer</span>
+</div>
+<h2 class="font-headline-md text-title-lg font-semibold text-on-surface">Time-Limited Direct Link</h2>
+</div>
+<button class="p-1 rounded-lg text-secondary hover:bg-surface-container-low" id="closeShareModal">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Generate a zero-knowledge web link with an automatic cryptographic self-destruct countdown timer. Access terminates unconditionally at expiration.
+      </p>
+<div class="grid grid-cols-2 gap-3">
+<div class="p-3 rounded-lg bg-surface-container-low flex flex-col gap-1">
+<span class="font-label-xs-mono text-[10px] uppercase text-secondary">Link Expiration</span>
+<span class="font-title-md text-body-sm font-semibold text-on-surface">Strict 48 Hours</span>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low flex flex-col gap-1">
+<span class="font-label-xs-mono text-[10px] uppercase text-secondary">Max Views Allowed</span>
+<span class="font-title-md text-body-sm font-semibold text-on-surface">Single View (Burn on open)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<span class="font-label-md text-label-md text-on-surface font-medium">Generated Vault Link</span>
+<div class="flex items-center gap-2">
+<input class="flex-1 h-10 px-3 bg-surface-container-low rounded-lg font-label-xs-mono text-body-sm text-on-surface select-all focus:outline-none" readonly="" type="text" value="https://gharvault.internal/ephemeral/t-849102-ind-passport-seal"/>
+<button class="px-3 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-title-md text-body-sm flex items-center gap-1" id="copyShareLinkBtn">
+<span class="material-symbols-outlined text-base">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-2 p-2.5 rounded-lg bg-amber-50 text-amber-900 text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-amber-700 text-lg">info</span>
+<span>A push notification will ping your active devices the moment this link is accessed.</span>
+</div>
+<div class="flex justify-end pt-2">
+<button class="px-5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-title-md text-body-sm" id="doneShareBtn">
+          Done
+        </button>
+</div>
+</div>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+    (function initDocumentViewer() {
+      // Zoom Controls State
+      let zoomLevel = 100;
+      let rotation = 0;
+      const docWrapper = document.getElementById('docViewerWrapper');
+      const zoomDisplay = document.getElementById('zoomLevelDisplay');
+      
+      const updateTransform = () => {
+        if (docWrapper) {
+          docWrapper.style.transform = `scale(${zoomLevel / 100}) rotate(${rotation}deg)`;
+        }
+        if (zoomDisplay) {
+          zoomDisplay.textContent = `${zoomLevel}%`;
+        }
+      };
+
+      document.getElementById('zoomInBtn')?.addEventListener('click', () => {
+        if (zoomLevel < 180) {
+          zoomLevel += 15;
+          updateTransform();
+        }
+      });
+
+      document.getElementById('zoomOutBtn')?.addEventListener('click', () => {
+        if (zoomLevel > 60) {
+          zoomLevel -= 15;
+          updateTransform();
+        }
+      });
+
+      document.getElementById('rotateBtn')?.addEventListener('click', () => {
+        rotation = (rotation + 90) % 360;
+        updateTransform();
+      });
+
+      // Watermark toggle
+      const watermarkToggle = document.getElementById('watermarkToggle');
+      const watermarkOverlay = document.getElementById('watermarkOverlay');
+      let watermarkActive = true;
+
+      watermarkToggle?.addEventListener('click', () => {
+        watermarkActive = !watermarkActive;
+        if (watermarkOverlay) {
+          watermarkOverlay.style.display = watermarkActive ? 'flex' : 'none';
+        }
+        if (watermarkToggle) {
+          watermarkToggle.innerHTML = watermarkActive
+            ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span class="hidden md:inline">Dynamic Watermark</span><span class="text-[10px] uppercase font-bold tracking-wider">Active</span>'
+            : '<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span><span class="hidden md:inline">Dynamic Watermark</span><span class="text-[10px] uppercase font-bold tracking-wider">Hidden</span>';
+        }
+      });
+
+      // Pagination Mock
+      let currentPage = 1;
+      const curPageNum = document.getElementById('curPageNum');
+      document.getElementById('prevPageBtn')?.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          if (curPageNum) curPageNum.textContent = currentPage;
+        }
+      });
+      document.getElementById('nextPageBtn')?.addEventListener('click', () => {
+        if (currentPage < 2) {
+          currentPage++;
+          if (curPageNum) curPageNum.textContent = currentPage;
+        }
+      });
+
+      // Fullscreen
+      document.getElementById('fsBtn')?.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          docWrapper?.requestFullscreen?.().catch(() => {});
+        } else {
+          document.exitFullscreen?.().catch(() => {});
+        }
+      });
+
+      // Modal Triggers
+      const downloadModal = document.getElementById('downloadModal');
+      const shareModal = document.getElementById('shareModal');
+
+      document.getElementById('downloadModalOpenBtn')?.addEventListener('click', () => {
+        downloadModal?.classList.remove('hidden');
+        downloadModal?.classList.add('flex');
+      });
+
+      document.getElementById('closeDownloadModal')?.addEventListener('click', () => {
+        downloadModal?.classList.add('hidden');
+        downloadModal?.classList.remove('flex');
+      });
+
+      document.getElementById('cancelExportBtn')?.addEventListener('click', () => {
+        downloadModal?.classList.add('hidden');
+        downloadModal?.classList.remove('flex');
+      });
+
+      document.getElementById('confirmExportBtn')?.addEventListener('click', () => {
+        const btn = document.getElementById('confirmExportBtn');
+        if (btn) {
+          btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span> Decrypting Archive...';
+          setTimeout(() => {
+            btn.innerHTML = '<span class="material-symbols-outlined text-base">check</span> Download Started';
+            setTimeout(() => {
+              downloadModal?.classList.add('hidden');
+              downloadModal?.classList.remove('flex');
+              btn.innerHTML = '<span class="material-symbols-outlined text-base">lock_open</span> Generate Secure Download';
+            }, 800);
+          }, 900);
+        }
+      });
+
+      document.getElementById('shareLinkOpenBtn')?.addEventListener('click', () => {
+        shareModal?.classList.remove('hidden');
+        shareModal?.classList.add('flex');
+      });
+
+      document.getElementById('closeShareModal')?.addEventListener('click', () => {
+        shareModal?.classList.add('hidden');
+        shareModal?.classList.remove('flex');
+      });
+
+      document.getElementById('doneShareBtn')?.addEventListener('click', () => {
+        shareModal?.classList.add('hidden');
+        shareModal?.classList.remove('flex');
+      });
+
+      // Hash copy
+      document.getElementById('copyHashBtn')?.addEventListener('click', () => {
+        const btn = document.getElementById('copyHashBtn');
+        navigator.clipboard?.writeText('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+        if (btn) {
+          const original = btn.innerHTML;
+          btn.innerHTML = '<span class="material-symbols-outlined text-[12px] text-emerald-600">done</span> Copied';
+          setTimeout(() => { btn.innerHTML = original; }, 1500);
+        }
+      });
+
+      // Link copy
+      document.getElementById('copyShareLinkBtn')?.addEventListener('click', () => {
+        const btn = document.getElementById('copyShareLinkBtn');
+        navigator.clipboard?.writeText('https://gharvault.internal/ephemeral/t-849102-ind-passport-seal');
+        if (btn) {
+          const original = btn.innerHTML;
+          btn.innerHTML = '<span class="material-symbols-outlined text-base">check</span> Copied';
+          setTimeout(() => { btn.innerHTML = original; }, 1500);
+        }
+      });
+
+      // Re-Seal Toast action
+      document.getElementById('lockToggleBtn')?.addEventListener('click', () => {
+        const btn = document.getElementById('lockToggleBtn');
+        if (btn) {
+          btn.innerHTML = '<span class="material-symbols-outlined text-base text-emerald-600">lock_clock</span> Enclave Purged';
+          setTimeout(() => {
+            btn.innerHTML = '<span class="material-symbols-outlined text-base text-secondary">lock</span><span>Re-Seal</span>';
+          }, 1800);
+        }
+      });
+    })();
+  </script>
+</div></main></div></body></html>

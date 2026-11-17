@@ -1,0 +1,309 @@
+import React, { useState, useEffect } from 'react';
+import { api } from '../lib/api';
+
+export default function BreakGlassPage() {
+  const [session, setSession] = useState(null);
+  const [delayHours, setDelayHours] = useState(48);
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
+  const [reason, setReason] = useState('Medical Emergency / Hospitalization');
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ hours: 47, minutes: 59, seconds: 40 });
+
+  useEffect(() => {
+    loadBreakGlassState();
+  }, []);
+
+  const loadBreakGlassState = async () => {
+    try {
+      const res = await api.getBreakGlass();
+      setSession(res.session);
+      setDelayHours(res.delayHours || 48);
+      setEmergencyContacts(res.emergencyContacts || []);
+    } catch (err) {
+      console.error('Failed to load break glass:', err);
+    }
+  };
+
+  // Live timer tick
+  useEffect(() => {
+    if (session && session.status === 'COUNTDOWN_ACTIVE') {
+      const interval = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+          if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+          if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+          return prev;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [session]);
+
+  const handleArm = async (e) => {
+    e.preventDefault();
+    if (window.confirm('Are you sure you want to arm the 48-Hour Emergency Break-Glass Protocol? All family guardians will be notified immediately.')) {
+      try {
+        setLoading(true);
+        const res = await api.armBreakGlass({ reason, notes });
+        setSession(res.session);
+      } catch (err) {
+        alert('Failed to arm protocol: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleCancel = async () => {
+    if (window.confirm('Cancel and disarm the emergency break-glass countdown?')) {
+      try {
+        setLoading(true);
+        const res = await api.cancelBreakGlass();
+        setSession(res.session);
+      } catch (err) {
+        alert('Failed to cancel: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleForceTrigger = async () => {
+    if (window.confirm('EMERGENCY OVERRIDE: Immediately unlock all sealed records for medical/succession handover?')) {
+      try {
+        setLoading(true);
+        const res = await api.triggerBreakGlass();
+        setSession(res.session);
+      } catch (err) {
+        alert('Failed to trigger override: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const isCountdownActive = session && session.status === 'COUNTDOWN_ACTIVE';
+  const isUnlocked = session && session.status === 'COMPLETED_UNLOCKED';
+
+  return (
+    <div className="max-w-[1380px] mx-auto p-6 lg:p-8 space-y-6">
+      {/* Red Warning Header */}
+      <div className="bg-red-950 text-white rounded-2xl p-6 border border-red-800 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-red-600/30 border border-red-500/50 text-red-400 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-3xl">e911_emergency</span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-white">
+                Emergency Break-Glass Protocol
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full bg-red-500 text-white font-mono text-[10px] font-bold uppercase animate-pulse">
+                Critical Safety Net
+              </span>
+            </div>
+            <p className="text-xs text-red-200 mt-1 max-w-2xl leading-relaxed">
+              Designed for sudden medical emergencies, hospitalizations, or incapacitation under Indian succession law.
+              Provides a structured 48-hour challenge window before digital custody transfer.
+            </p>
+          </div>
+        </div>
+
+        {isCountdownActive && (
+          <button
+            onClick={handleCancel}
+            className="px-5 py-2.5 rounded-xl bg-white text-red-900 font-bold text-xs hover:bg-slate-100 transition-colors shadow-xs shrink-0"
+          >
+            Disarm / Cancel Protocol
+          </button>
+        )}
+      </div>
+
+      {/* Main Split Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Active Countdown / Form (7 Cols) */}
+        <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-6">
+          {isUnlocked ? (
+            /* Unlocked state */
+            <div className="text-center py-8 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                <span className="material-symbols-outlined text-4xl">lock_open</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Emergency Access Active</h2>
+              <p className="text-xs text-slate-600 max-w-md mx-auto">
+                All high-value deeds, medical directives, and registered wills are accessible to designated custodians.
+              </p>
+              <button
+                onClick={handleCancel}
+                className="px-6 py-2.5 rounded-xl bg-slate-800 text-white text-xs font-semibold hover:bg-slate-900"
+              >
+                Reset / Re-Seal Vault
+              </button>
+            </div>
+          ) : isCountdownActive ? (
+            /* Active Countdown State */
+            <div className="space-y-6">
+              <div className="text-center py-4 space-y-3">
+                <span className="text-xs font-bold text-red-600 uppercase tracking-widest block animate-pulse">
+                  Countdown Timer Running
+                </span>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center min-w-[70px]">
+                    <span className="text-3xl font-extrabold font-mono text-red-700">{timeLeft.hours}</span>
+                    <span className="block text-[10px] uppercase font-bold text-red-600">Hours</span>
+                  </div>
+                  <span className="text-2xl font-bold text-red-400">:</span>
+                  <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center min-w-[70px]">
+                    <span className="text-3xl font-extrabold font-mono text-red-700">{timeLeft.minutes}</span>
+                    <span className="block text-[10px] uppercase font-bold text-red-600">Minutes</span>
+                  </div>
+                  <span className="text-2xl font-bold text-red-400">:</span>
+                  <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center min-w-[70px]">
+                    <span className="text-3xl font-extrabold font-mono text-red-700">{timeLeft.seconds}</span>
+                    <span className="block text-[10px] uppercase font-bold text-red-600">Seconds</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  Emergency custody will automatically unlock on{' '}
+                  <strong className="text-slate-900">
+                    {new Date(session.unlocksAt).toLocaleString()}
+                  </strong>
+                </p>
+              </div>
+
+              {/* Notification Broadcast Details */}
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+                <span className="font-bold text-slate-700 uppercase tracking-wider block text-[11px]">
+                  Emergency Broadcast Dispatch
+                </span>
+                <div className="space-y-1.5 text-slate-600">
+                  <div className="flex items-center justify-between">
+                    <span>SMS Pings to Emergency Contacts:</span>
+                    <span className="font-mono text-emerald-700 font-bold">Delivered (2/2)</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Email Directives to Guardians:</span>
+                    <span className="font-mono text-emerald-700 font-bold">Dispatched</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>WhatsApp HSM Broadcast:</span>
+                    <span className="font-mono text-emerald-700 font-bold">Confirmed</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  onClick={handleCancel}
+                  className="flex-1 py-3 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50"
+                >
+                  Cancel Protocol
+                </button>
+                <button
+                  onClick={handleForceTrigger}
+                  className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md"
+                >
+                  Force Immediate Override
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Arm Form */
+            <form onSubmit={handleArm} className="space-y-5">
+              <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">
+                Arm Emergency Break-Glass Countdown
+              </h2>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Emergency Crisis Justification *
+                </label>
+                <select
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 bg-white"
+                >
+                  <option value="Medical Emergency / Hospitalization">Medical Emergency / Hospitalization</option>
+                  <option value="Unforeseen Critical Accident">Unforeseen Critical Accident</option>
+                  <option value="Legal & Succession Mandate">Legal & Succession Mandate</option>
+                  <option value="Loss of Primary Custodian Contact">Loss of Primary Custodian Contact</option>
+                  <option value="Other Critical Life Event">Other Critical Life Event</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Emergency Hospital / Case Notes
+                </label>
+                <textarea
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="e.g. Admitted to Lilavati Hospital ICU, attending Dr. Mehta..."
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-900"
+                />
+              </div>
+
+              <div className="p-4 bg-red-50/70 border border-red-200 rounded-xl text-xs text-red-900 space-y-1">
+                <span className="font-bold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-base">warning</span>
+                  Important Protocol Notice:
+                </span>
+                <p className="text-[11px] text-red-800 leading-relaxed">
+                  Arming this protocol initiates a strict {delayHours}-hour verification period. Broadcast notifications are sent to all designated family nominees. If the primary admin is available, they can cancel at any point before countdown completion.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-lg">shield_lock</span>
+                <span>{loading ? 'Arming Protocol...' : `Arm ${delayHours}-Hour Break-Glass Countdown`}</span>
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* Right: Nominees & Escalation Rules (5 Cols) */}
+        <div className="lg:col-span-5 space-y-5">
+          {/* Emergency Nominees Card */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+              <span className="material-symbols-outlined text-red-600 text-lg">contact_phone</span>
+              <span>Designated Emergency Nominees</span>
+            </h3>
+
+            <div className="space-y-3">
+              {emergencyContacts.map((contact) => (
+                <div key={contact._id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                  <div className="flex items-center gap-2.5">
+                    <img src={contact.avatar} alt={contact.name} className="w-8 h-8 rounded-full object-cover" />
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">{contact.name}</div>
+                      <div className="text-[11px] text-slate-500">{contact.relationship} • {contact.role}</div>
+                    </div>
+                  </div>
+                  <span className="font-mono text-xs font-semibold text-slate-700">{contact.phone}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Legal Compliance Directive */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-3 text-xs text-slate-600">
+            <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+              <span className="material-symbols-outlined text-blue-600 text-lg">gavel</span>
+              <span>Indian Succession Act Compliance</span>
+            </h3>
+            <p className="leading-relaxed">
+              In accordance with Section 63 of the Indian Succession Act 1925, digitally stored testamentary records and health directives are held in trust. The break-glass countdown prevents unauthorized takeover while guaranteeing immediate availability during critical life events.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

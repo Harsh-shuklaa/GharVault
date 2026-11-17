@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"primary-fixed-dim":"#b4c5ff","surface-container-lowest":"#ffffff","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5","tertiary-fixed":"#85f8c4","on-secondary":"#ffffff","on-error":"#ffffff","on-secondary-fixed-variant":"#3f465c","on-surface":"#0b1c30","surface-container-highest":"#d3e4fe","on-primary-fixed":"#00174b","secondary-container":"#dae2fd","on-primary-fixed-variant":"#003ea8","secondary":"#565e74","error-container":"#ffdad6","surface-tint":"#0053db","primary-fixed":"#dbe1ff","inverse-primary":"#b4c5ff","tertiary-container":"#007d57","surface-container-high":"#dce9ff","outline-variant":"#c3c6d7","primary":"#004ac6","tertiary":"#006243","on-background":"#0b1c30","background":"#f8f9ff","on-secondary-fixed":"#131b2e","on-tertiary-fixed":"#002114","on-primary":"#ffffff","inverse-on-surface":"#eaf1ff","surface-container":"#e5eeff","surface":"#f8f9ff","tertiary-fixed-dim":"#68dba9","on-tertiary":"#ffffff","on-surface-variant":"#434655","secondary-fixed":"#dae2fd","error":"#ba1a1a","secondary-fixed-dim":"#bec6e0","primary-container":"#2563eb","on-error-container":"#93000a","on-secondary-container":"#5c647a","surface-bright":"#f8f9ff","on-primary-container":"#eeefff","inverse-surface":"#213145","surface-container-low":"#eff4ff","outline":"#737686","on-tertiary-fixed-variant":"#005137","on-tertiary-container":"#bdffdc"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-xs":"0.25rem","space-lg":"1.5rem","space-md":"1rem","space-xl":"2.5rem","margin-sm":"1rem","gutter-sm":"1rem","margin":"2rem","space-sm":"0.5rem"},"fontFamily":{"headline-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"title-md":["Inter"],"label-md":["Inter"],"body-sm":["Inter"],"headline-xl-mobile":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"body-lg":["Inter"],"title-lg":["Inter"],"label-xs-mono":["Inter"]},"fontSize":{"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.025em","fontWeight":"600"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"title-md":["15px",{"lineHeight":"22px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","fontWeight":"500"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-xl-mobile":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"title-lg":["18px",{"lineHeight":"26px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-xs-mono":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen"><aside class="fixed left-0 top-0 h-full w-[260px] bg-[#0F172A] border-r border-[#1E293B] z-50 flex flex-col justify-between text-slate-300"><div class="flex flex-col"><div class="px-space-md py-space-md flex items-center justify-between border-b border-[#1E293B]"><div class="flex items-center gap-space-sm"><img alt="GharVault Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUlu11D9EdUdEMxRGjWxBb-cREUQvux0e_NLXO0ZwlN0BGwVpslTcA41BwG94mU84KCMcMVeKUji3ZhL9-3fqUUK_4w-bL8g1yofNAoY4KA1gJh7Ba-7F5I8mhHjyQhmw27qAJ1aovbS9B0WwWQAulqSTAcf90kF5nMx5AY-23UzhTBsWu8NQmuP376k48YVUcyd788vQU3uqMp8-9X7NEHZvaVc2D9-72ZA_yKqpY"/><span class="font-headline-md text-title-lg font-bold tracking-tight text-white">GharVault</span></div><span class="font-label-xs-mono text-label-xs-mono uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">v2.4</span></div><div class="px-space-md pt-space-md pb-space-sm"><button class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[#1E293B] hover:bg-slate-800 transition-colors text-left" type="button"><div class="flex flex-col min-w-0"><span class="font-title-md text-body-sm font-medium text-white truncate">Sharma Family Ghar</span><span class="font-label-md text-label-md text-slate-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>4 active members</span></div><span class="material-symbols-outlined text-slate-400 text-lg">unfold_more</span></button></div><nav class="px-space-sm py-space-sm space-y-1" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center justify-between px-3 py-2 rounded-lg transition-all bg-primary-container text-on-primary-container font-semibold" data-path="dashboard" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">dashboard</span><span class="font-body-md text-body-md">Dashboard</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="all-documents" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">folder</span><span class="font-body-md text-body-md">All Documents</span></div><span class="font-label-md text-label-md px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">48</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="family-members" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">group</span><span class="font-body-md text-body-md">Family Members</span></div><span class="font-label-md text-label-md px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">4</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="upload-document" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">upload_file</span><span class="font-body-md text-body-md">Upload Document</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="document-categories" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">category</span><span class="font-body-md text-body-md">Document Categories</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="activity-audit" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">history</span><span class="font-body-md text-body-md">Activity Audit</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="permissions-matrix" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">key</span><span class="font-body-md text-body-md">Permissions Matrix</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="security-settings" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-xl">settings</span><span class="font-body-md text-body-md">Settings</span></div></a></nav></div><div class="p-space-sm space-y-space-sm border-t border-[#1E293B]"><div class="p-3 rounded-lg bg-red-950/40 border border-red-900/60 flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400 text-lg">e911_emergency</span><div class="flex flex-col"><span class="font-label-md text-label-md font-semibold text-red-200">Break-Glass</span><span class="font-label-xs-mono text-label-xs-mono text-red-300/80">48h Protocol Ready</span></div></div><a class="px-2 py-1 rounded bg-red-800/60 hover:bg-red-700 text-white font-label-md text-label-md transition-colors" data-path="break-glass" href="#">Arm</a></div><div class="flex items-center justify-between p-2 rounded-lg bg-[#1E293B]/80 hover:bg-[#1E293B] transition-colors"><div class="flex items-center gap-2.5 min-w-0"><div class="relative flex-shrink-0"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIMPGmKk-ZCa-RoOFHu8OOweTKTYGHGkE4d8mka0oCttyV6_o4_j-2osUxUHE7qzpR5mRG4ZwsyPRlOIc7wJDeb9wpNqGyU9NqjADWJAyVHu6KKSpBS47tLBVqfMGCyD1k5u8XhiWSmKTyecMSgD8VNTGPMDNu4XPqKhx4GjvVmV0NKre3S0ON3_jU_4sqGcnsbM-tSMXY6jG1FJDsJk90Wrkolq8RXK7-RIJwbYhb"/><span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-[#1E293B]"></span></div><div class="flex flex-col min-w-0"><span class="font-title-md text-body-sm text-white font-medium truncate">Rajesh Sharma</span><span class="font-label-md text-label-md text-slate-400">Admin</span></div></div><button class="text-slate-400 hover:text-white p-1" type="button"><span class="material-symbols-outlined text-lg">more_vert</span></button></div></div></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-[#E2E8F0] z-40 flex items-center justify-between px-gutter shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="flex items-center gap-space-md"><div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant"><span class="material-symbols-outlined text-base text-secondary">shield</span><span>Vault</span><span class="material-symbols-outlined text-sm text-outline-variant">chevron_right</span><span class="text-on-surface font-medium">Sharma Ghar</span></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-label-md text-label-md"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>256-bit AES End-to-End Encrypted</span></div></div><div class="flex-1 max-w-lg mx-gutter"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-secondary text-lg pointer-events-none">search</span><input class="w-full h-10 pl-9 pr-20 bg-surface-container-low rounded-lg text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-surface-container-lowest transition-all" placeholder="Search Aadhaar, PAN, insurance, property records..." type="search"/><kbd class="absolute right-2.5 px-1.5 py-0.5 rounded bg-surface-container-highest border border-outline-variant font-label-xs-mono text-label-xs-mono text-on-surface-variant pointer-events-none">Ctrl + K</kbd></div></div><div class="flex items-center gap-space-sm"><a class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-title-md text-body-sm transition-all shadow-[0_1px_2px_rgba(37,99,235,0.2)]" data-path="upload-document" href="#"><span class="material-symbols-outlined text-lg leading-none">add</span><span>Upload Document</span></a><a class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="notifications" href="#"><span class="material-symbols-outlined text-xl">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-error text-on-error font-label-xs-mono text-[10px] flex items-center justify-center font-bold">3</span></a><a class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-title-md text-body-sm inline-flex items-center gap-1" data-path="help-and-docs" href="#"><span class="material-symbols-outlined text-xl">help</span></a></div></header><main class="w-full pt-16 bg-[#F8FAFC] min-h-screen"><div class="max-w-[1380px] mx-auto p-margin"><div class="flex flex-col w-full space-y-space-lg">
+<!-- Urgent Expiry Warning Banner (Amber Tone with soft elevation & zero-border aesthetic) -->
+<div class="w-full bg-secondary-container/40 rounded-xl p-space-md shadow-sm relative overflow-hidden transition-all duration-300">
+<div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-secondary-container/60 blur-2xl pointer-events-none"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md relative z-10">
+<div class="flex items-start gap-3.5">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-center shrink-0 text-error">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">warning_amber</span>
+</div>
+<div class="flex flex-col space-y-1">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold tracking-tight">Attention: 1 critical document expires within the next 30 days</span>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-xs-mono text-label-xs-mono uppercase tracking-wider font-bold">Action Required</span>
+</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-on-surface-variant font-body-sm text-body-sm"><span class="inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-error"></span><strong class="font-medium text-on-surface">Term Life Policy #8821 - Priya Sharma</strong> (Expires in 27 days)</span></div>
+</div>
+</div>
+<div class="flex items-center gap-2 self-end lg:self-center shrink-0">
+<a class="px-3.5 py-2 rounded-lg bg-primary-container text-on-primary-container hover:bg-primary text-white font-title-md text-body-sm transition-all shadow-sm flex items-center gap-1.5" data-path="all-documents" href="#">
+<span class="material-symbols-outlined text-base">published_with_changes</span>
+<span>Renew / Re-upload</span>
+</a>
+<button class="px-3 py-2 rounded-lg bg-surface-container-lowest/80 hover:bg-surface-container-lowest text-secondary font-title-md text-body-sm transition-colors shadow-sm" onclick="this.closest('.w-full').remove()" type="button">
+          Dismiss
+        </button>
+</div>
+</div>
+</div>
+<!-- Metrics Cards Grid (4 columns) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Card 1: Family Members -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex items-center justify-between text-on-surface-variant mb-3">
+<span class="font-label-md text-label-md uppercase tracking-wider text-secondary">Family Members</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-lg">group</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">4 Active</span>
+<span class="font-label-xs-mono text-label-xs-mono text-tertiary font-medium bg-tertiary-fixed/30 px-1.5 py-0.5 rounded">All Synced</span>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-surface-container-low">
+<div class="flex -space-x-2 overflow-hidden">
+<img class="inline-block h-6 w-6 rounded-full ring-2 ring-surface-container-lowest object-cover" data-alt="Close up portrait photograph of Rajesh Sharma, a middle aged Indian father wearing navy shirt, soft daylight studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWDPlkrTYBvEwC5ESz1Hn_l83zCfAED7aLg54k3FO0VxQkZIxPmA6GjwHavjYAkKoE7pdSl6MUXsqwHErEkOZnzzusvlvf5m519VzMU2VMfUgNGqKvVXCxQ8XesA0h4Pj_AWvc0JTGpX1zfOmZBHvYpHPD0i-LQlvn5MCEt_yf3VIKKB2blWy6xbvj_NQ5fwU2vEXGY82fPFHFvjCyuil9Wr0F7sybcUFW4GGf3f6h"/>
+<img class="inline-block h-6 w-6 rounded-full ring-2 ring-surface-container-lowest object-cover" data-alt="Portrait photograph of Priya Sharma, modern Indian woman in her late thirties with subtle warm smile, cream studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGiX8r6EzSYpg1gbPQ7_K9da7ekupm92bB-ZnwV2Eqr_e6HWDcJurc7dzgoG2d8scUvvKfVRxzjLuwAbG0fon2wlBvvzGPO7KCps3qhjut1MpEZhqCpSbIDeNao11RKjNwkanCHqRnovD52sdQ1Q3nBaa7GfQO4eJvCg9Gvw-Y65O_xG2RFyb1mPER0aE8Dvdb46BzQ0OVUYNTaGrvjEDSn3pB5wfG1YJXb76wqr_5"/>
+<img class="inline-block h-6 w-6 rounded-full ring-2 ring-surface-container-lowest object-cover" data-alt="Portrait photograph of Aarav Sharma, energetic young teenager boy smiling casually, bright clean backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYIeVE06NlHh-reKf4Abm5w27njZ08SLB8JTR9OvBaI7wGJcGzh3V9TpJHYaG3vRz0VlTRLfALvO1e1afK4OhjytAbf9BvRq2hOjLntQmY0r_D5xPYdgsr3w81YLRuykV1e0C3FmIUH6ToL1ocT4xh7y2QLke5IZuW22aIbWVkJAFuk24pQjrz_2WbajO76S0MAXbRIQBkIm1c6t4kthF8WZLEfK3nFcH6aeVUkTj1"/>
+<img class="inline-block h-6 w-6 rounded-full ring-2 ring-surface-container-lowest object-cover" data-alt="Gentle portrait photograph of Sunita Sharma, senior Indian matriarch grandmother with gracious warm expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaYJaAeSPRA49luedk5VV1A8ztbucyatmNrP_p-94CVoSA41jQy4fQXlSGH5RDUc8milzj0NZ8laOF3D30o9a1Dcuk45E_PWjrsSZhr8WGNQ9vVA-qh6nl-2ln0eWBkhhlwdRo6m11h_iZK1ZENDMhq8QUChywmPBD5YwkM1ZB5RcudU0XF5SeOuvguglc_BQtsXJ5SAhEoNhqapZ4w5b5prCQepKe9Wpxvm57L-e-"/>
+</div>
+<span class="font-body-sm text-body-sm text-secondary truncate max-w-[120px]">Rajesh, Priya +2</span>
+</div>
+</div>
+<!-- Card 2: Stored Documents -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-center justify-between text-on-surface-variant mb-3">
+<span class="font-label-md text-label-md uppercase tracking-wider text-secondary">Stored Documents</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-tertiary group-hover:bg-tertiary-fixed transition-colors">
+<span class="material-symbols-outlined text-lg">folder_shared</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">48 Files</span>
+<span class="font-label-xs-mono text-label-xs-mono text-primary font-medium bg-secondary-container px-1.5 py-0.5 rounded">6 Categories</span>
+</div>
+<div class="flex items-center gap-1.5 pt-2 border-t border-surface-container-low text-tertiary">
+<span class="material-symbols-outlined text-base">verified_user</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">100% Zero-Knowledge Verified</span>
+</div>
+</div>
+<!-- Card 3: Vault Storage -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-center justify-between text-on-surface-variant mb-3">
+<span class="font-label-md text-label-md uppercase tracking-wider text-secondary">Vault Storage</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-lg">cloud_done</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-2">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">3.4 GB</span>
+<span class="font-body-sm text-body-sm text-secondary">/ 50 GB</span>
+</div>
+<div class="w-full bg-surface-container-low h-1.5 rounded-full overflow-hidden mb-2 mt-1">
+<div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 6.8%;"></div>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant font-label-md text-label-md">
+<span>6.8% Used</span>
+<span class="text-secondary font-label-xs-mono">46.6 GB Available</span>
+</div>
+</div>
+<!-- Card 4: Pending Actions -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-center justify-between text-on-surface-variant mb-3">
+<span class="font-label-md text-label-md uppercase tracking-wider text-secondary">Pending Actions</span>
+<div class="w-8 h-8 rounded-lg bg-error-container/40 flex items-center justify-center text-error group-hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined text-lg">pending_actions</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">1 Approval</span>
+<span class="w-2 h-2 rounded-full bg-error animate-ping"></span>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-surface-container-low text-on-surface-variant font-body-sm text-body-sm">
+<span class="truncate">1 Access req pending review</span>
+<span class="material-symbols-outlined text-base text-secondary">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Quick-Action Grid (4 Interactive Cards with hover lift) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Action 1 -->
+<a class="group bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-between" data-path="upload-document" href="#">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-primary-fixed/50 group-hover:bg-primary-container text-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-xl">cloud_upload</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary transition-colors">Upload Document</span>
+<span class="font-body-sm text-body-sm text-secondary">Instant OCR &amp; Hash</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</a>
+<!-- Action 2 -->
+<a class="group bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-between" data-path="family-members" href="#">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-secondary-fixed/50 group-hover:bg-secondary text-on-secondary-fixed group-hover:text-white flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-xl">person_add</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-secondary transition-colors">Add Family Member</span>
+<span class="font-body-sm text-body-sm text-secondary">Manage Nominees</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-secondary transition-colors">chevron_right</span>
+</a>
+<!-- Action 3 -->
+<a class="group bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-between" data-path="break-glass" href="#">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-error-container/30 group-hover:bg-error text-error group-hover:text-white flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-xl">shield_lock</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-error transition-colors">Emergency Protocol</span>
+<span class="font-body-sm text-body-sm text-secondary">Break-Glass 48h</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-error transition-colors">chevron_right</span>
+</a>
+<!-- Action 4 -->
+<a class="group bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-between" data-path="security-settings" href="#">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-tertiary-fixed/40 group-hover:bg-tertiary text-tertiary group-hover:text-white flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-xl">inventory_2</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-tertiary transition-colors">Export Vault Backup</span>
+<span class="font-body-sm text-body-sm text-secondary">Cold Storage ZIP</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-tertiary transition-colors">chevron_right</span>
+</a>
+</div>
+<!-- Split Bottom Section (Two Columns: 7 cols & 5 cols) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Left Column: Recent Documents (7 Cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-space-md">
+<div>
+<h2 class="font-title-lg text-title-lg font-bold text-on-surface tracking-tight">Recent Vault Documents</h2>
+<p class="font-body-sm text-body-sm text-secondary">Direct cryptographic access to family records</p>
+</div>
+<!-- Category Tabs -->
+<div class="inline-flex p-1 rounded-lg bg-surface-container-low text-secondary text-label-md font-label-md">
+<button class="px-3 py-1.5 rounded-md bg-surface-container-lowest text-on-surface shadow-xs font-semibold">All</button>
+<button class="px-3 py-1.5 rounded-md hover:text-on-surface transition-colors">Identity</button>
+<button class="px-3 py-1.5 rounded-md hover:text-on-surface transition-colors">Financial</button>
+<button class="px-3 py-1.5 rounded-md hover:text-on-surface transition-colors">Health</button>
+</div>
+</div>
+<!-- Document Preview List -->
+<div class="space-y-2.5">
+<!-- Row 1 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low/60 hover:bg-surface-container-low transition-colors flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest text-primary flex items-center justify-center shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-2xl">badge</span>
+</div>
+<div class="flex flex-col min-w-0"><div class="flex items-center gap-2"><span class="font-title-md text-title-md font-semibold text-on-surface truncate group-hover:text-primary transition-colors">Indian Passport - Rajesh</span><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-xs-mono text-label-xs-mono font-medium"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Renewed • Valid thru 2035</span></div><span class="font-body-sm text-body-sm text-secondary">Identity • PDF • Updated just now • Biometric e-Passport #V6924108</span></div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:text-primary">visibility</span>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:text-primary">download</span>
+<span class="material-symbols-outlined text-outline-variant text-lg">lock</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low/60 hover:bg-surface-container-low transition-colors flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest text-tertiary flex items-center justify-center shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-2xl">health_and_safety</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md font-semibold text-on-surface truncate group-hover:text-primary transition-colors">HDFC Ergo Health Policy 2025</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-xs-mono text-label-xs-mono font-medium">
+                    Active
+                  </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">Insurance • PDF • 1.8 MB • Updated 5 days ago</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:text-primary">visibility</span>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:text-primary">download</span>
+<span class="material-symbols-outlined text-outline-variant text-lg">lock</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low/60 hover:bg-surface-container-low transition-colors flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest text-primary flex items-center justify-center shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-2xl">real_estate_agent</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md font-semibold text-on-surface truncate group-hover:text-primary transition-colors">Flat 402 Registry Deed</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-xs-mono text-label-xs-mono font-medium">
+                    Encrypted
+                  </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">Property • PDF • 14.1 MB • Updated 2 weeks ago</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:text-primary">visibility</span>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:text-primary">download</span>
+<span class="material-symbols-outlined text-outline-variant text-lg">lock</span>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low/60 hover:bg-surface-container-low transition-colors flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest text-secondary flex items-center justify-center shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-2xl">fingerprint</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md font-semibold text-on-surface truncate group-hover:text-primary transition-colors">Aadhaar Card - Aarav</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-xs-mono text-label-xs-mono font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Verified
+                  </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">Identity • PDF • 1.1 MB • Updated 1 month ago</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:text-primary">visibility</span>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:text-primary">download</span>
+<span class="material-symbols-outlined text-outline-variant text-lg">lock</span>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 mt-4 border-t border-surface-container-low flex items-center justify-between">
+<span class="font-label-md text-label-md text-secondary">Showing 4 of 48 documents</span>
+<a class="font-title-md text-body-sm text-primary hover:text-primary-container font-semibold inline-flex items-center gap-1 transition-colors" data-path="all-documents" href="#">
+<span>Browse All Documents</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Right Column: Secure Audit Activity (5 Cols) -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<h2 class="font-title-lg text-title-lg font-bold text-on-surface tracking-tight">Secure Audit Activity</h2>
+<p class="font-body-sm text-body-sm text-secondary">Real-time immutable ledger</p>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-xs-mono text-label-xs-mono">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            LIVE
+          </span>
+</div>
+<!-- Activity Timeline Stream -->
+<div class="space-y-4 relative"><div class="flex gap-3.5 items-start"><div class="w-8 h-8 rounded-full bg-tertiary-fixed/30 flex items-center justify-center text-tertiary shrink-0 mt-0.5"><span class="material-symbols-outlined text-base">verified</span></div><div class="flex flex-col min-w-0"><p class="font-body-sm text-body-sm text-on-surface leading-snug"><strong class="font-semibold text-on-surface">Passport Renewal Ingested &amp; Sealed:</strong> Biometric e-Passport #V6924108 renewed for Rajesh Sharma • Valid to Feb 2035</p><div class="flex items-center gap-2 mt-1"><span class="font-label-xs-mono text-label-xs-mono text-tertiary font-semibold">Just now</span><span class="text-outline-variant">•</span><span class="font-label-xs-mono text-label-xs-mono text-secondary bg-surface-container-low px-1.5 py-0.5 rounded">SHA-256 Validated</span></div></div></div>
+<!-- Item 1 -->
+<div class="flex gap-3.5 items-start">
+<div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-base">lock_open</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="font-body-sm text-body-sm text-on-surface leading-snug">
+<strong class="font-semibold text-on-surface">Rajesh Sharma</strong> accessed Flat 402 Registry Deed
+              </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">12 mins ago</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary bg-surface-container-low px-1.5 py-0.5 rounded">IP 103.21.x.x</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex gap-3.5 items-start">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed/30 flex items-center justify-center text-tertiary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-base">cloud_upload</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="font-body-sm text-body-sm text-on-surface leading-snug">
+<strong class="font-semibold text-on-surface">Priya Sharma</strong> uploaded Pediatric Immunization Record
+              </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">2 hours ago</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary bg-surface-container-low px-1.5 py-0.5 rounded">SHA-256 Validated</span>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex gap-3.5 items-start">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-fixed shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-base">fact_check</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="font-body-sm text-body-sm text-on-surface leading-snug">
+<strong class="font-semibold text-on-surface">Automated Vault Health Check:</strong> All 48 hashes matched master chain
+              </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">6 hours ago</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-xs-mono text-label-xs-mono text-tertiary font-semibold">Integrity 100%</span>
+</div>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="flex gap-3.5 items-start">
+<div class="w-8 h-8 rounded-full bg-error-container/40 flex items-center justify-center text-error shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-base">verified</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                Emergency break-glass contact <strong class="font-semibold text-on-surface">Sunita Sharma</strong> verified via 2FA OTP
+              </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">Yesterday, 18:42</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary bg-surface-container-low px-1.5 py-0.5 rounded">SMS Auth</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 mt-6 border-t border-surface-container-low">
+<a class="w-full py-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-title-md text-body-sm font-semibold flex items-center justify-center gap-2 transition-colors" data-path="activity-audit" href="#">
+<span>View Full Activity Audit</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div></div></main></div></body></html>

@@ -1,0 +1,55 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+
+import AppLayout from './components/layout/AppLayout';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import FamilySetupPage from './pages/FamilySetupPage';
+import DashboardPage from './pages/DashboardPage';
+import VaultPage from './pages/VaultPage';
+import DocumentUploadPage from './pages/DocumentUploadPage';
+import DocumentPreviewPage from './pages/DocumentPreviewPage';
+import FamilyDirectoryPage from './pages/FamilyDirectoryPage';
+import MemberProfilePage from './pages/MemberProfilePage';
+import CategoriesPage from './pages/CategoriesPage';
+import ActivityAuditPage from './pages/ActivityAuditPage';
+import PermissionsMatrixPage from './pages/PermissionsMatrixPage';
+import BreakGlassPage from './pages/BreakGlassPage';
+import SettingsPage from './pages/SettingsPage';
+import NotificationsPage from './pages/NotificationsPage';
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Landing & Auth */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/family/setup" element={<FamilySetupPage />} />
+          <Route path="/family/join" element={<FamilySetupPage />} />
+
+          {/* Authenticated Vault App (Sidebar + Topbar) */}
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/vault" element={<VaultPage />} />
+            <Route path="/vault/upload" element={<DocumentUploadPage />} />
+            <Route path="/vault/documents/:id" element={<DocumentPreviewPage />} />
+            <Route path="/family" element={<FamilyDirectoryPage />} />
+            <Route path="/family/:memberId" element={<MemberProfilePage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/activity" element={<ActivityAuditPage />} />
+            <Route path="/permissions" element={<PermissionsMatrixPage />} />
+            <Route path="/break-glass" element={<BreakGlassPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+          </Route>
+
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}

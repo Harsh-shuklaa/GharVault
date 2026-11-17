@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"primary-fixed-dim":"#b4c5ff","surface-container-lowest":"#ffffff","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5","tertiary-fixed":"#85f8c4","on-secondary":"#ffffff","on-error":"#ffffff","on-secondary-fixed-variant":"#3f465c","on-surface":"#0b1c30","surface-container-highest":"#d3e4fe","on-primary-fixed":"#00174b","secondary-container":"#dae2fd","on-primary-fixed-variant":"#003ea8","secondary":"#565e74","error-container":"#ffdad6","surface-tint":"#0053db","primary-fixed":"#dbe1ff","inverse-primary":"#b4c5ff","tertiary-container":"#007d57","surface-container-high":"#dce9ff","outline-variant":"#c3c6d7","primary":"#004ac6","tertiary":"#006243","on-background":"#0b1c30","background":"#f8f9ff","on-secondary-fixed":"#131b2e","on-tertiary-fixed":"#002114","on-primary":"#ffffff","inverse-on-surface":"#eaf1ff","surface-container":"#e5eeff","surface":"#f8f9ff","tertiary-fixed-dim":"#68dba9","on-tertiary":"#ffffff","on-surface-variant":"#434655","secondary-fixed":"#dae2fd","error":"#ba1a1a","secondary-fixed-dim":"#bec6e0","primary-container":"#2563eb","on-error-container":"#93000a","on-secondary-container":"#5c647a","surface-bright":"#f8f9ff","on-primary-container":"#eeefff","inverse-surface":"#213145","surface-container-low":"#eff4ff","outline":"#737686","on-tertiary-fixed-variant":"#005137","on-tertiary-container":"#bdffdc"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-xs":"0.25rem","space-lg":"1.5rem","space-md":"1rem","space-xl":"2.5rem","margin-sm":"1rem","gutter-sm":"1rem","margin":"2rem","space-sm":"0.5rem"},"fontFamily":{"headline-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"title-md":["Inter"],"label-md":["Inter"],"body-sm":["Inter"],"headline-xl-mobile":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"body-lg":["Inter"],"title-lg":["Inter"],"label-xs-mono":["Inter"]},"fontSize":{"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.025em","fontWeight":"600"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"title-md":["15px",{"lineHeight":"22px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","fontWeight":"500"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-xl-mobile":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"title-lg":["18px",{"lineHeight":"26px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-xs-mono":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen"><aside class="fixed left-0 top-0 h-full w-[260px] bg-[#0F172A] border-r border-[#1E293B] z-50 flex flex-col justify-between text-slate-300"><div class="flex flex-col"><div class="px-space-md py-space-md flex items-center justify-between border-b border-[#1E293B]"><div class="flex items-center gap-space-sm"><img alt="GharVault Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUlu11D9EdUdEMxRGjWxBb-cREUQvux0e_NLXO0ZwlN0BGwVpslTcA41BwG94mU84KCMcMVeKUji3ZhL9-3fqUUK_4w-bL8g1yofNAoY4KA1gJh7Ba-7F5I8mhHjyQhmw27qAJ1aovbS9B0WwWQAulqSTAcf90kF5nMx5AY-23UzhTBsWu8NQmuP376k48YVUcyd788vQU3uqMp8-9X7NEHZvaVc2D9-72ZA_yKqpY"/><span class="font-headline-md text-title-lg font-bold tracking-tight text-white">GharVault</span></div><span class="font-label-xs-mono text-label-xs-mono uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">v2.4</span></div><div class="px-space-md pt-space-md pb-space-sm"><button class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[#1E293B] hover:bg-slate-800 transition-colors text-left" type="button"><div class="flex flex-col min-w-0"><span class="font-title-md text-body-sm font-medium text-white truncate">Sharma Family Ghar</span><span class="font-label-md text-label-md text-slate-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>4 active members</span></div><span class="material-symbols-outlined text-slate-400 text-lg">unfold_more</span></button></div><nav class="px-space-sm py-space-sm space-y-1" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="main-dashboard" href="#"><span class="font-body-md text-body-md">Dashboard</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="all-documents-vault" href="#"><span class="font-body-md text-body-md">All Documents</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="family-members-directory" href="#"><span class="font-body-md text-body-md">Family Members</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="document-upload-and-ingestion" href="#"><span class="font-body-md text-body-md">Upload Document</span></a><div class="pt-3 pb-1 px-3"><span class="font-label-xs-mono text-label-xs-mono uppercase tracking-wider text-slate-500 font-semibold">Governance &amp; Security</span></div><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="permissions-matrix" href="#"><span class="font-body-md text-body-md">Permissions Matrix</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="activity-audit" href="#"><span class="font-body-md text-body-md">Activity Audit</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all" data-path="security-settings" href="#"><span class="font-body-md text-body-md">Security Settings</span></a></nav></div><div class="p-space-sm space-y-space-sm border-t border-[#1E293B]"><nav data-active-classes="ring-2 ring-error"><a aria-current="page" class="block p-3 rounded-lg bg-red-950/40 border border-red-900/60 hover:bg-red-950/60 transition-colors ring-2 ring-error" data-path="emergency-break-glass-protocol" href="#"><div class="flex items-center justify-between"><div class="flex flex-col"><span class="font-label-md text-label-md font-semibold text-red-200">Emergency Break-Glass</span><span class="font-label-xs-mono text-label-xs-mono text-red-300/80">48h Custody Protocol</span></div><span class="px-2 py-1 rounded bg-red-800/80 text-white font-label-md text-label-md">Review Protocol</span></div></a></nav><div class="flex items-center justify-between p-2 rounded-lg bg-[#1E293B]/80 hover:bg-[#1E293B] transition-colors"><div class="flex items-center gap-2.5 min-w-0"><div class="relative flex-shrink-0"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIMPGmKk-ZCa-RoOFHu8OOweTKTYGHGkE4d8mka0oCttyV6_o4_j-2osUxUHE7qzpR5mRG4ZwsyPRlOIc7wJDeb9wpNqGyU9NqjADWJAyVHu6KKSpBS47tLBVqfMGCyD1k5u8XhiWSmKTyecMSgD8VNTGPMDNu4XPqKhx4GjvVmV0NKre3S0ON3_jU_4sqGcnsbM-tSMXY6jG1FJDsJk90Wrkolq8RXK7-RIJwbYhb"/><span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-[#1E293B]"></span></div><div class="flex flex-col min-w-0"><span class="font-title-md text-body-sm text-white font-medium truncate">Rajesh Sharma</span><span class="font-label-md text-label-md text-slate-400">Vault Admin</span></div></div><button class="text-slate-400 hover:text-white p-1" type="button"><span class="material-symbols-outlined text-lg">more_vert</span></button></div></div></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-[#E2E8F0] z-40 flex items-center justify-between px-gutter shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="flex items-center gap-space-md"><div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant"><span class="material-symbols-outlined text-base text-secondary">shield</span><span>Vault</span><span class="material-symbols-outlined text-sm text-outline-variant">chevron_right</span><span class="text-on-surface font-medium">Sharma Family Ghar</span></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-label-md text-label-md"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>256-bit AES End-to-End Encrypted</span></div></div><div class="flex-1 max-w-lg mx-gutter"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-secondary text-lg pointer-events-none">search</span><input class="w-full h-10 pl-9 pr-20 bg-surface-container-low rounded-lg text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-surface-container-lowest transition-all" placeholder="Search Aadhaar, PAN, insurance, property records..." type="search"/><kbd class="absolute right-2.5 px-1.5 py-0.5 rounded bg-surface-container-highest border border-outline-variant font-label-xs-mono text-label-xs-mono text-on-surface-variant pointer-events-none">Ctrl + K</kbd></div></div><div class="flex items-center gap-space-sm"><nav data-active-classes="ring-2 ring-primary-container"><a class="inline-flex items-center px-3.5 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-title-md text-body-sm transition-all shadow-[0_1px_2px_rgba(37,99,235,0.2)]" data-path="document-upload-and-ingestion" href="#">Upload Document</a></nav><a class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="notifications" href="#"><span class="material-symbols-outlined text-xl">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-error text-on-error font-label-xs-mono text-[10px] flex items-center justify-center font-bold">3</span></a><a class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-title-md text-body-sm inline-flex items-center gap-1" data-path="help-and-docs" href="#"><span class="material-symbols-outlined text-xl">help</span></a></div></header><main class="w-full pt-16 bg-[#F8FAFC] min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Ambient Glow Accents (Contained) -->
+<div class="relative w-full max-w-[1440px] mx-auto px-margin py-space-lg">
+<div class="absolute -top-10 right-10 w-96 h-96 bg-error-container/40 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-48 left-12 w-80 h-80 bg-secondary-container/30 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Protocol Breadcrumb & Monospace Meta -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-2">
+<span class="font-label-xs-mono text-label-xs-mono uppercase tracking-wider text-secondary">Security &amp; Governance</span>
+<span class="material-symbols-outlined text-sm text-outline-variant">chevron_right</span>
+<span class="font-label-xs-mono text-label-xs-mono uppercase tracking-wider text-error font-bold flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span>
+          Emergency Break-Glass Protocol
+        </span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-xs-mono text-label-xs-mono text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-full">
+          PROTOCOL ID: GV-ENG-BG-4091-B
+        </span>
+<span class="font-label-xs-mono text-label-xs-mono text-tertiary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">verified_user</span> SHA-256 AIR-GAPPED VERIFIED
+        </span>
+</div>
+</div>
+<!-- Title and Subtitle Block -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md mb-space-lg">
+<div class="max-w-3xl">
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
+          Emergency Break-Glass Custody Protocol
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2 leading-relaxed">
+          Automated fail-safe mechanism enabling designated family trustees or legal heirs to challenge and unlock encrypted life records in event of medical incapacitation, disappearance, or death.
+        </p>
+</div>
+<div class="flex items-center gap-3">
+<button class="group relative px-4 py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-title-md text-title-md shadow-sm transition-all duration-200 flex items-center gap-2" id="dryRunTrigger" type="button">
+<span class="material-symbols-outlined text-primary text-xl group-hover:rotate-12 transition-transform">science</span>
+<span>Simulate Dry-Run Challenge</span>
+</button>
+<button class="px-4 py-2.5 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-title-md text-title-md shadow-md transition-all duration-200 flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+<span>Protocol Safeguards Verified</span>
+</button>
+</div>
+</div>
+<!-- Status Hero Banner: Armed 48-Hour Challenge Window -->
+<div class="relative w-full rounded-2xl bg-gradient-to-r from-error/10 via-surface-container-lowest to-surface-container-lowest p-space-lg shadow-sm overflow-hidden mb-space-xl">
+<div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-error/5 to-transparent pointer-events-none"></div>
+<div class="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-space-lg">
+<div class="flex items-start sm:items-center gap-space-md">
+<div class="relative flex-shrink-0 w-14 h-14 rounded-2xl bg-error text-on-error flex items-center justify-center shadow-lg shadow-error/25">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+<span class="absolute -top-1 -right-1 flex h-4 w-4">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+<span class="relative inline-flex rounded-full h-4 w-4 bg-error text-on-error"></span>
+</span>
+</div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-2 mb-1">
+<span class="font-label-xs-mono text-label-xs-mono uppercase px-2.5 py-0.5 rounded-full bg-error text-on-error font-bold tracking-wider">
+                CRITICAL STATE
+              </span>
+<span class="font-label-md text-label-md text-on-surface font-semibold tracking-wide">
+                PROTOCOL ARMED • 48-HOUR CHALLENGE WINDOW ACTIVE
+              </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+              Zero unauthorized attempts logged. Any trustee challenge triggers immediate multi-carrier SMS, Push notifications, and end-to-end encrypted voice confirmations to Rajesh Sharma before decryption starts.
+            </p>
+</div>
+</div>
+<!-- Telemetry Pill / Challenge Grace Status -->
+<div class="flex items-center gap-space-md bg-surface-container-lowest/80 backdrop-blur-md px- space-md py-3 rounded-xl shadow-sm self-start xl:self-auto">
+<div class="flex flex-col text-left">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary uppercase">Challenge Window</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold">48h : 00m</span>
+</div>
+<div class="h-8 w-px bg-surface-variant"></div>
+<div class="flex flex-col text-left">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary uppercase">Quorum Rule</span>
+<span class="font-title-md text-title-md text-primary font-bold">2 of 3 Trustees</span>
+</div>
+<div class="h-8 w-px bg-surface-variant"></div>
+<div class="flex items-center">
+<span class="w-3 h-3 rounded-full bg-tertiary-container animate-pulse mr-2"></span>
+<span class="font-label-md text-label-md text-tertiary font-semibold">Armed &amp; Idle</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Dry Run Interactive Modal / Simulation Toast (Default Hidden / Triggered via JS) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-background/40 backdrop-blur-md" id="dryRunModal">
+<div class="relative w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-xl p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">troubleshoot</span>
+<h3 class="font-title-lg text-title-lg text-on-surface font-bold">Dry-Run Challenge Sandbox</h3>
+</div>
+<button class="text-secondary hover:text-on-surface" id="closeModalBtn">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Simulating an inbound emergency claim from <span class="font-semibold text-on-surface">Priya Sharma (Co-Executor)</span>. Test verifies SMS dispatch, hardware security keys, and the 48-hour veto counter.
+        </p>
+<div class="bg-surface-container-low rounded-xl p-space-md space-y-2">
+<div class="flex items-center justify-between font-label-xs-mono text-label-xs-mono text-on-surface-variant">
+<span>DISPATCHING SECURE PUSH TO HEAD-OF-HOUSEHOLD</span>
+<span class="text-tertiary font-bold">SENT (0.3s)</span>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-1000" style="width: 85%"></div>
+</div>
+<span class="font-body-sm text-body-sm text-secondary block">
+            Owner has 48 hours to click <strong class="text-on-surface">"Veto &amp; Secure Vault"</strong>. No records are revealed during testing.
+          </span>
+</div>
+<div class="flex justify-end gap-2 pt-2">
+<button class="px-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-title-md text-body-sm" id="cancelModalBtn">
+            Close Simulation
+          </button>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary font-title-md text-body-sm" onclick="alert('Synthetic test signal transmitted to Rajesh Sharma +91-98200-XXXXX.')">
+            Transmit Signal
+          </button>
+</div>
+</div>
+</div>
+<!-- MAIN GRID: 12-Column Responsive Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT COLUMN: Section 1 - Trigger Conditions & Safeguards (5 cols) -->
+<section class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- Trigger Conditions Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm flex flex-col">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">tune</span>
+<h2 class="font-title-lg text-title-lg text-on-surface font-bold">
+                1. Trigger Conditions &amp; Safeguards
+              </h2>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed font-semibold">
+              CONFIGURABLE
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+            Cryptographic countdown safeguards prevent unintended triggers. Multiple independent verification channels run parallel checks prior to releasing master decryption keys.
+          </p>
+<!-- Parameter 1: Inactivity Timeout -->
+<div class="bg-surface-container-low rounded-xl p-space-md mb-space-md">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">history_toggle_off</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold">Inactivity Timeout</span>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono text-primary font-bold">CURRENT: 45 DAYS</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mb-3">
+              Duration of zero check-in on GharVault mobile app or biometric device before Break-Glass eligibility unlocks.
+            </p>
+<!-- Interactive Duration Selector -->
+<div class="grid grid-cols-4 gap-2">
+<button class="py-2 text-center rounded-lg bg-surface-container-lowest text-secondary font-title-md text-body-sm hover:text-on-surface transition-colors" type="button">
+                30d
+              </button>
+<button class="py-2 text-center rounded-lg bg-primary text-on-primary font-title-md text-body-sm shadow-sm ring-2 ring-primary/20" type="button">
+                45d
+              </button>
+<button class="py-2 text-center rounded-lg bg-surface-container-lowest text-secondary font-title-md text-body-sm hover:text-on-surface transition-colors" type="button">
+                60d
+              </button>
+<button class="py-2 text-center rounded-lg bg-surface-container-lowest text-secondary font-title-md text-body-sm hover:text-on-surface transition-colors" type="button">
+                90d
+              </button>
+</div>
+</div>
+<!-- Parameter 2: Challenge Grace Period -->
+<div class="bg-surface-container-low rounded-xl p-space-md mb-space-md">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">timer</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold">Challenge Grace Window</span>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono bg-error-container text-on-error-container px-2 py-0.5 rounded-full font-bold">
+                48 HOURS
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mb-3">
+              Time elapsed after trustee trigger during which vault owner can veto and disarm with a single tap.
+            </p>
+<div class="flex flex-col gap-2 pt-1">
+<div class="flex items-center justify-between text-body-sm text-on-surface bg-surface-container-lowest px-3 py-2 rounded-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-base">sms</span>
+<span class="font-body-sm text-body-sm">Priority SMS (Multi-SIM failover)</span>
+</div>
+<span class="material-symbols-outlined text-tertiary text-lg">check</span>
+</div>
+<div class="flex items-center justify-between text-body-sm text-on-surface bg-surface-container-lowest px-3 py-2 rounded-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-base">mail</span>
+<span class="font-body-sm text-body-sm">PGP-Signed Alert to 2 Secure Inboxes</span>
+</div>
+<span class="material-symbols-outlined text-tertiary text-lg">check</span>
+</div>
+<div class="flex items-center justify-between text-body-sm text-on-surface bg-surface-container-lowest px-3 py-2 rounded-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-base">phone_in_talk</span>
+<span class="font-body-sm text-body-sm">Automated Voice Verification Call</span>
+</div>
+<span class="material-symbols-outlined text-tertiary text-lg">check</span>
+</div>
+</div>
+</div>
+<!-- Parameter 3: Multi-Signature Quorum -->
+<div class="bg-surface-container-low rounded-xl p-space-md">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">group_work</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold">Multi-Sig Quorum Rule</span>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono text-tertiary font-bold">ACTIVE</span>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center font-headline-md font-bold text-headline-md">
+                  2
+                </div>
+<div class="flex flex-col">
+<span class="font-title-md text-body-md text-on-surface font-semibold">2 of 3 Nominated Trustees</span>
+<span class="font-body-sm text-body-sm text-secondary">
+                    Must independently present hardware token &amp; notarized ID before key release.
+                  </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Protocol Visual Flow Diagram -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between mb-space-md">
+<span class="font-title-md text-title-md text-on-surface font-bold">Release Sequence Pipeline</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">AIR-GAPPED KMS</span>
+</div>
+<!-- SVG Visual Flow Chart -->
+<div class="w-full py-2">
+<svg class="w-full h-auto text-primary" fill="none" viewbox="0 0 420 110" xmlns="http://www.w3.org/2000/svg">
+<!-- Step 1 -->
+<rect fill="#F8FAFC" height="70" rx="10" stroke="#E2E8F0" stroke-width="1.5" width="85" x="4" y="20"></rect>
+<text fill="#0B1C30" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" text-anchor="middle" x="46" y="44">TRIGGER</text>
+<text fill="#565E74" font-family="Inter" font-size="8" text-anchor="middle" x="46" y="62">45d Inactivity</text>
+<text fill="#565E74" font-family="Inter" font-size="8" text-anchor="middle" x="46" y="74">or Heir Claim</text>
+<!-- Arrow 1 -->
+<path d="M92 55 H 122" stroke="#737686" stroke-dasharray="3 3" stroke-width="1.5"></path>
+<polygon fill="#737686" points="120,51 127,55 120,59"></polygon>
+<!-- Step 2 -->
+<rect fill="#FFDAD6" fill-opacity="0.3" height="70" rx="10" stroke="#BA1A1A" stroke-width="1.5" width="95" x="130" y="20"></rect>
+<text fill="#BA1A1A" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" text-anchor="middle" x="177" y="44">48H VETO</text>
+<text fill="#565E74" font-family="Inter" font-size="8" text-anchor="middle" x="177" y="62">Multi-channel</text>
+<text fill="#BA1A1A" font-family="Inter" font-size="8" font-weight="600" text-anchor="middle" x="177" y="74">Owner Alert</text>
+<!-- Arrow 2 -->
+<path d="M228 55 H 258" stroke="#737686" stroke-dasharray="3 3" stroke-width="1.5"></path>
+<polygon fill="#737686" points="256,51 263,55 256,59"></polygon>
+<!-- Step 3 -->
+<rect fill="#F8FAFC" height="70" rx="10" stroke="#E2E8F0" stroke-width="1.5" width="85" x="266" y="20"></rect>
+<text fill="#0B1C30" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" text-anchor="middle" x="308" y="44">QUORUM</text>
+<text fill="#565E74" font-family="Inter" font-size="8" text-anchor="middle" x="308" y="62">2 of 3 Trustees</text>
+<text fill="#004AC6" font-family="Inter" font-size="8" font-weight="600" text-anchor="middle" x="308" y="74">Sign Off</text>
+<!-- Arrow 3 -->
+<path d="M354 55 H 378" stroke="#007D57" stroke-width="1.5"></path>
+<polygon fill="#007D57" points="376,51 383,55 376,59"></polygon>
+<!-- Step 4 -->
+<circle cx="398" cy="55" fill="#85F8C4" fill-opacity="0.4" r="16" stroke="#006243" stroke-width="1.5"></circle>
+<path d="M394 55 L 397 58 L 403 52" stroke="#006243" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div class="mt-2 text-center">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">
+              Zero-knowledge envelope decryption takes place client-side on the trustee's verified terminal.
+            </span>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: Section 2 & 3 - Trustees, Package & Scope (7 cols) -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- SECTION 2: Nominated Trustees & Heirs Quorum -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-sm mb-space-md gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">supervisor_account</span>
+<h2 class="font-title-lg text-title-lg text-on-surface font-bold">
+                  2. Nominated Trustees &amp; Heirs (Quorum)
+                </h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Authorized key-holders required to execute Shamir secret recovery splits.
+              </p>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-semibold self-start sm:self-auto">
+              2 ACTIVE / 1 PENDING
+            </span>
+</div>
+<!-- Trustee Cards Stack -->
+<div class="space-y-space-sm">
+<!-- Card 1: Priya Sharma -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-xs">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Close up photographic portrait of an Indian woman in her late thirties with a gentle, intelligent expression, softly lit against a warm minimal interior, conveying trust and dependability in a modern aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2A_0W2lujXPTr_H0EWs95pe9gpoYNs7DzQyk9VVtOtZkxf9jY0gQ4TjdufT74nrcII5PDra1l9zsjGZcfQZfKVltxhBjeaYr7Rz6tKaCRDQb-csDPKFQ5K8u6BdrL26RUAchJW1DfT8iBqeUkFtANrXuhyDyCM5pVv0b1cJjJ2GYHW2iQOjwc7ni0VyCdZ5VQHPB9AN5PSCSmILDs0c5IVq0BeXgbnLhhUJ5vEQ4V"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-tertiary-container ring-2 ring-surface-container-lowest"></span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold">Priya Sharma</span>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-surface-container-lowest text-primary font-semibold">
+                        SPOUSE &amp; PRIMARY CO-EXECUTOR
+                      </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">
+                      priya.sharma@domain.in • +91 98201 ••••••
+                    </span>
+</div>
+</div>
+<div class="flex sm:flex-col items-end justify-between sm:justify-center">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-tertiary font-bold bg-tertiary-fixed/40 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-sm">verified</span> 100% Verified
+                  </span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary mt-1">Biometrics &amp; FIDO2 Active</span>
+</div>
+</div>
+<div class="mt-2 pt-2 bg-surface-container-lowest/60 rounded-lg px-3 py-2 flex items-center justify-between">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">DECRYPTION SCOPE:</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Full Vault Package (Immediate upon valid quorum)</span>
+</div>
+</div>
+<!-- Card 2: Amit Sharma -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-xs">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Close up photographic portrait of a professional South Asian man in his forties wearing minimal glasses, neutral natural studio lighting, calm analytical demeanor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR41OBjyANJ9Om1vvwCqsPIA0v-L-03_vEPBVNem3TIXhCDNyZ7P5JWOgfyF5D59A_9sicf9E1RqNTMEcrIb8VymZ5fs7oS0s037xcYYH03oQYewThqV04tZcMjJccehTuKByDeXpUbdeTXA7ZLHVI0PwKY5xcrRM02tHWaqR73MAi7Lu4O7ABk-DutaQPaeLI3wYbg7j_cKOuzmGlEmoPsJkThu9WIYTsn5SBQyoE"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-error ring-2 ring-surface-container-lowest"></span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold">Amit Sharma</span>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-surface-container-lowest text-secondary font-semibold">
+                        BROTHER &amp; LEGAL TRUSTEE
+                      </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">
+                      amit.sharma@lawchambers.in • +91 97110 ••••••
+                    </span>
+</div>
+</div>
+<div class="flex sm:flex-col items-end justify-between sm:justify-center">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-on-secondary-fixed bg-secondary-container px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-sm">schedule</span> Pending Acceptance
+                  </span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary mt-1">Invitation Token valid 5d</span>
+</div>
+</div>
+<div class="mt-2 pt-2 bg-surface-container-lowest/60 rounded-lg px-3 py-2 flex items-center justify-between">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">DECRYPTION SCOPE:</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Financial Assets &amp; Property Title Records</span>
+</div>
+</div>
+<!-- Card 3: Dr. Ramesh Verma -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-xs">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Portrait photo of a senior Indian doctor in a clinic setting, graying hair, stethoscope, warm reassuring smile, authentic lighting representing high institutional credibility" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoae94v0naib5UMk-9Vrq_Y2rateiRZ4PV89_9pEdNdtU9Or87XoO-VkOgonvFT3kpzepCo3Gd-X3at8GL2eAbHx0XHT9_HLHzDwFRByKBrYAveuX5SEkYn0eV5SIihs2XjXBGXGs3nbOhyElQe5Y7ZFCk2SzRMBdBsDc_IxcTSXzHteZHX4wkKYFbNK39Am-RCEz3uT1z8AfdBjQoyu7E2ofFrkCPwJby94Wmhlcu"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-tertiary-container ring-2 ring-surface-container-lowest"></span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold">Dr. Ramesh Verma</span>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-surface-container-lowest text-tertiary font-semibold">
+                        PHYSICIAN &amp; ATTESTOR
+                      </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">
+                      Max Healthcare Reg #MH-88219 • +91 98100 ••••••
+                    </span>
+</div>
+</div>
+<div class="flex sm:flex-col items-end justify-between sm:justify-center">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-tertiary font-bold bg-tertiary-fixed/40 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-sm">verified_user</span> Verified Key Holder
+                  </span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary mt-1">Attestation Token Enrolled</span>
+</div>
+</div>
+<div class="mt-2 pt-2 bg-surface-container-lowest/60 rounded-lg px-3 py-2 flex items-center justify-between">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">DECRYPTION SCOPE:</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Medical Incapacitation Directives &amp; Living Will Only</span>
+</div>
+</div>
+</div>
+<!-- Add Trustee Action Button -->
+<div class="mt-space-md pt-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<button class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-primary font-title-md text-body-sm shadow-sm transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-lg">person_add</span>
+<span>+ Nominate Additional Backup Trustee</span>
+</button>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary text-center sm:text-right">
+              Requires Aadhaar e-KYC &amp; Hardware Key Registration
+            </span>
+</div>
+</div>
+<!-- SECTION 3: Covered Emergency Documents Package -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">folder_zip</span>
+<h2 class="font-title-lg text-title-lg text-on-surface font-bold">
+                  3. Covered Emergency Documents Package
+                </h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Granular decryption boundaries. Only earmarked packages are unlocked; personal private vaults remain locked.
+              </p>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-semibold">
+              4 SCOPES INCLUDED
+            </span>
+</div>
+<!-- Decryption Items List -->
+<div class="space-y-space-sm">
+<!-- Item 1: Medical Directives -->
+<div class="flex items-start justify-between p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest flex items-center justify-center text-error flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-xl">medical_services</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Medical Directives &amp; Living Will</span>
+<span class="font-label-xs-mono text-label-xs-mono px-1.5 py-0.5 rounded bg-tertiary-fixed/60 text-on-tertiary-fixed font-bold">
+                      FAST TRACK
+                    </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary">
+                    DNR Orders, Max Hospital Mumbai Healthcare Proxy, Critical Allergen Sheet.
+                  </span>
+</div>
+</div>
+<div class="text-right flex-shrink-0 ml-2">
+<span class="font-label-xs-mono text-label-xs-mono font-bold text-tertiary block">IMMEDIATE RELEASE</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">Upon Physician Attestation</span>
+</div>
+</div>
+<!-- Item 2: Term Life Insurance -->
+<div class="flex items-start justify-between p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-xl">policy</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface font-semibold block">Term Life &amp; Family Floater Health Policies</span>
+<span class="font-body-sm text-body-sm text-secondary">
+                    HDFC Ergo Health Card (Sum ₹1.5 Cr), LIC Jeevan Anand Policy originals &amp; claim forms.
+                  </span>
+</div>
+</div>
+<div class="text-right flex-shrink-0 ml-2">
+<span class="font-label-xs-mono text-label-xs-mono font-bold text-on-surface block">48H DELAY</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">Standard Safe Period</span>
+</div>
+</div>
+<!-- Item 3: Financial Assets -->
+<div class="flex items-start justify-between p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-xl">account_balance</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface font-semibold block">Bank Accounts, Mutual Funds &amp; Asset Register</span>
+<span class="font-body-sm text-body-sm text-secondary">
+                    Consolidated CAS statements, ICICI Private Banking nominee sheets, Demat account holdings.
+                  </span>
+</div>
+</div>
+<div class="text-right flex-shrink-0 ml-2">
+<span class="font-label-xs-mono text-label-xs-mono font-bold text-on-surface block">48H + 2 TRUSTEES</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">Double Verification</span>
+</div>
+</div>
+<!-- Item 4: Property Registry -->
+<div class="flex items-start justify-between p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-xl">real_estate_agent</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface font-semibold block">Property Registry Deeds &amp; Society Share Certificates</span>
+<span class="font-body-sm text-body-sm text-secondary">
+                    Registered Sale Deed Flat 402 Sea Breeze Towers, Pune Farmland Index II records.
+                  </span>
+</div>
+</div>
+<div class="text-right flex-shrink-0 ml-2">
+<span class="font-label-xs-mono text-label-xs-mono font-bold text-on-surface block">48H + 2 TRUSTEES</span>
+<span class="font-label-xs-mono text-label-xs-mono text-secondary">Original e-Stamp Certs</span>
+</div>
+</div>
+</div>
+<!-- Explicitly Excluded (Kept Encrypted) Notice -->
+<div class="mt-space-md p-space-md rounded-xl bg-surface-container-highest/60 flex items-start gap-3">
+<span class="material-symbols-outlined text-error text-xl flex-shrink-0">lock</span>
+<div class="flex flex-col">
+<span class="font-title-md text-body-sm text-on-surface font-bold">Explicitly Excluded from Emergency Release</span>
+<p class="font-body-sm text-body-sm text-secondary mt-0.5">
+<strong class="text-on-surface">Private Personal Journals, Business Confidential NDAs &amp; Unmarked Photos:</strong> These containers remain permanently encrypted under Rajesh Sharma's isolated master password and will never decrypt via Break-Glass protocol.
+              </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 4: Emergency Access Drill & Audit Trail (Full Width Bento Footer) -->
+<div class="mt-space-xl grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Readiness Check / Audit Log (8 cols) -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">checklist</span>
+<h2 class="font-title-lg text-title-lg text-on-surface font-bold">
+                4. Annual Readiness Check &amp; Audit Trail
+              </h2>
+</div>
+<span class="font-label-xs-mono text-label-xs-mono px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold">
+              SOC-2 TYPE II COMPLIANT
+            </span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md mb-space-md">
+<div class="p-space-md rounded-xl bg-surface-container-low">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary uppercase block mb-1">Last Complete Drill</span>
+<div class="flex items-center gap-2">
+<span class="font-title-lg text-title-lg text-on-surface font-bold">Nov 14, 2024</span>
+<span class="font-label-xs-mono text-label-xs-mono text-tertiary bg-tertiary-fixed/40 px-2 py-0.5 rounded-full font-bold">100% PASS</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mt-1">
+                Priya &amp; Dr. Verma successfully acknowledged the simulated trigger within 14 minutes.
+              </p>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-low">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary uppercase block mb-1">Next Scheduled Mandatory Drill</span>
+<div class="flex items-center gap-2">
+<span class="font-title-lg text-title-lg text-on-surface font-bold">May 14, 2025</span>
+<span class="font-label-xs-mono text-label-xs-mono text-primary bg-surface-container-high px-2 py-0.5 rounded-full font-bold">IN 180 DAYS</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mt-1">
+                Automated calendar reminders will ping all keyholders 14 days in advance.
+              </p>
+</div>
+</div>
+<!-- Micro Audit Ledger -->
+<div class="bg-surface-container-low rounded-xl p-3">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary uppercase block mb-2 px-1">Recent Integrity Heartbeats</span>
+<div class="space-y-1.5 font-label-xs-mono text-label-xs-mono">
+<div class="flex items-center justify-between text-on-surface-variant bg-surface-container-lowest px-3 py-1.5 rounded">
+<span>[2024-11-20 04:12 UTC] AIR-GAP INTEGRITY CHECK OK (HASH 0x9bf4...e18a)</span>
+<span class="text-tertiary font-bold">VALID</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant bg-surface-container-lowest px-3 py-1.5 rounded">
+<span>[2024-11-14 10:45 UTC] SYNTHETIC EMERGENCY SIMULATION COMPLETED BY TRUSTEE #1</span>
+<span class="text-primary font-bold">LOGGED</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-secondary">
+            Audited tamper-evident append-only ledger hosted on distributed secure enclave.
+          </span>
+<a class="font-title-md text-body-sm text-primary hover:underline flex items-center gap-1 font-semibold" href="#">
+<span>Download Cryptographic Proof (.sig)</span>
+<span class="material-symbols-outlined text-sm">download</span>
+</a>
+</div>
+</div>
+<!-- Danger Zone / Panic Actions (4 cols) -->
+<div class="lg:col-span-4 bg-error-container/20 rounded-2xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 mb-space-sm">
+<span class="material-symbols-outlined text-error text-2xl">gpp_maybe</span>
+<h3 class="font-title-lg text-title-lg text-on-error-container font-bold">
+              Emergency Override Controls
+            </h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+            Critical destructive safeguards. Use only in event of physical coercion, compromised hardware tokens, or revoked trust.
+          </p>
+<div class="space-y-space-sm">
+<!-- Disarm Protocol Button -->
+<button class="w-full p-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container text-left transition-colors flex items-center justify-between shadow-sm" onclick="confirm('Disarm Protocol: This will halt the automated countdown and disengage all trustees. Continue?') &amp;&amp; alert('Protocol successfully disarmed.')" type="button">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-bold">Disarm Protocol</span>
+<span class="font-body-sm text-body-sm text-secondary">Requires TOTP + Master Key</span>
+</div>
+<span class="material-symbols-outlined text-secondary">lock_reset</span>
+</button>
+<!-- Emergency Panic Lock Button -->
+<button class="w-full p-3 rounded-xl bg-error hover:bg-error/90 text-on-error text-left transition-colors flex items-center justify-between shadow-md shadow-error/20" onclick="confirm('CRITICAL PANIC LOCK: This will instantly purge local cached biometric keys and lock all web sessions globally. Proceed?') &amp;&amp; alert('Global lockdown engaged.')" type="button">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-error font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-base">warning</span> Panic Lock: Purge Keys
+                </span>
+<span class="font-body-sm text-body-sm text-on-error/80">Wipes local biometric cache &amp; locks vault</span>
+</div>
+<span class="material-symbols-outlined text-on-error">lock</span>
+</button>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm">
+<span class="font-label-xs-mono text-label-xs-mono text-secondary block text-center">
+            LAST ARMED BY RAJESH SHARMA ON OCT 02, 2024
+          </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive JavaScript for Simulation Sandbox Modal -->
+<script>
+    (function initBreakGlassInteractions() {
+      const trigger = document.getElementById('dryRunTrigger');
+      const modal = document.getElementById('dryRunModal');
+      const closeBtn = document.getElementById('closeModalBtn');
+      const cancelBtn = document.getElementById('cancelModalBtn');
+
+      if (trigger && modal) {
+        trigger.addEventListener('click', () => {
+          modal.classList.remove('hidden');
+        });
+      }
+
+      function closeModal() {
+        if (modal) modal.classList.add('hidden');
+      }
+
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal();
+        });
+      }
+    })();
+  </script>
+</div></main></div></body></html>
