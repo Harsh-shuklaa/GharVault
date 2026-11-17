@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
+import { HeartPulse, Copy, Check, Phone, X, AlertCircle } from 'lucide-react';
 
 export default function EmergencyCardModal({ isOpen, onClose }) {
   const { family } = useAuth();
@@ -45,20 +46,23 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-xs p-4 animate-fadeIn">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-xs p-0 sm:p-4 animate-fadeIn"
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-red-200 overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-2xl bg-white dark:bg-[#1C1C1C] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-red-200 dark:border-red-900/40 overflow-hidden flex flex-col max-h-[90vh] transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="bg-red-700 px-6 py-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs">
-              <span className="material-symbols-outlined text-2xl">local_hospital</span>
+              <HeartPulse size={24} strokeWidth={2.2} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold">Family Emergency Medical Card</h2>
+                <h2 className="text-base sm:text-lg font-bold">Family Emergency Medical Card</h2>
                 <span className="px-2 py-0.5 rounded-full bg-white text-red-700 font-mono text-[10px] font-extrabold uppercase">
                   Fast Access
                 </span>
@@ -70,28 +74,26 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
           >
-            <span className="material-symbols-outlined text-xl">close</span>
+            <X size={18} />
           </button>
         </div>
 
         {/* Body Content */}
-        <div className="p-6 overflow-y-auto space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
           {loading ? (
-            <div className="py-12 text-center text-slate-500 text-sm">
-              <span className="material-symbols-outlined text-3xl text-red-600 animate-spin mb-2 block">
-                refresh
-              </span>
+            <div className="py-12 text-center text-slate-500 dark:text-neutral-400 text-sm">
+              <HeartPulse size={28} className="text-red-600 animate-pulse mx-auto mb-2" />
               Loading emergency credentials...
             </div>
           ) : data.members.length === 0 ? (
             <div className="py-12 text-center space-y-3">
-              <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
-                <span className="material-symbols-outlined text-3xl">medical_information</span>
+              <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-600 flex items-center justify-center mx-auto">
+                <AlertCircle size={28} />
               </div>
-              <h3 className="text-base font-bold text-slate-900">No Family Members Added Yet</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">No Family Members Added Yet</h3>
+              <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-sm mx-auto">
                 Add your family members under <strong>Family Members</strong> to see their Blood Group and Health Insurance policies here.
               </p>
             </div>
@@ -100,28 +102,28 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
               {data.members.map((member) => (
                 <div
                   key={member.id}
-                  className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-red-300 transition-colors space-y-3"
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] hover:border-red-400 dark:hover:border-red-500/40 transition-colors space-y-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <img
                         src={member.avatar}
                         alt={member.name}
-                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-white shadow-xs shrink-0"
+                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-white dark:ring-[#262626] shadow-xs shrink-0"
                       />
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-bold text-slate-900">{member.name}</h4>
-                          <span className="text-xs px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-semibold">
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">{member.name}</h4>
+                          <span className="text-xs px-2 py-0.5 rounded-md bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-neutral-300 font-semibold">
                             {member.relationship}
                           </span>
                         </div>
-                        <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                        <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 flex items-center gap-2">
                           <span>Phone: {member.phone}</span>
                           {member.phone && member.phone !== 'Not set' && (
                             <button
                               onClick={() => copyToClipboard(member.phone, member.id + '-phone')}
-                              className="text-[11px] text-blue-600 hover:underline font-semibold"
+                              className="text-[11px] text-[#3ECF8E] hover:underline font-semibold cursor-pointer"
                             >
                               {copiedText === member.id + '-phone' ? 'Copied' : 'Copy'}
                             </button>
@@ -131,37 +133,38 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                     </div>
 
                     {/* Blood Group Badge */}
-                    <div className="px-3.5 py-1.5 rounded-xl bg-red-100 text-red-800 text-center shrink-0 border border-red-200">
-                      <span className="text-[10px] uppercase font-bold text-red-600 block">Blood Group</span>
-                      <span className="text-base font-extrabold font-mono text-red-700">
+                    <div className="px-3.5 py-1.5 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-center shrink-0 border border-red-200 dark:border-red-500/30">
+                      <span className="text-[10px] uppercase font-bold text-red-600 dark:text-red-400 block">Blood Group</span>
+                      <span className="text-base font-extrabold font-mono text-red-700 dark:text-red-300">
                         {member.bloodGroup || '—'}
                       </span>
                     </div>
                   </div>
 
                   {/* Medical Insurance & Emergency Contact Line */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/70 text-xs">
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200/60">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/70 dark:border-[#262626] text-xs">
+                    <div className="bg-white dark:bg-[#1C1C1C] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#262626]">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block mb-0.5">
                         Health Insurance / TPA Card
                       </span>
-                      <div className="font-semibold text-slate-900 truncate">
+                      <div className="font-semibold text-slate-900 dark:text-neutral-200 truncate">
                         {member.healthInsurancePolicy || 'No policy added'}
                       </div>
                     </div>
 
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200/60">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                    <div className="bg-white dark:bg-[#1C1C1C] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#262626]">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block mb-0.5">
                         Emergency Contact Phone
                       </span>
-                      <div className="font-semibold text-slate-900 truncate flex items-center justify-between">
+                      <div className="font-semibold text-slate-900 dark:text-neutral-200 truncate flex items-center justify-between">
                         <span>{member.emergencyContactPhone || 'Same as primary'}</span>
                         {member.emergencyContactPhone && (
                           <a
                             href={`tel:${member.emergencyContactPhone}`}
-                            className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold hover:bg-emerald-100"
+                            className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2 py-0.5 rounded font-bold hover:bg-emerald-100"
                           >
-                            Call
+                            <Phone size={10} />
+                            <span>Call</span>
                           </a>
                         )}
                       </div>
@@ -174,15 +177,15 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
         </div>
 
         {/* Footer with One-Tap Copy All */}
-        <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-          <span className="text-xs text-slate-500">
+        <div className="px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-200 dark:border-[#262626] flex items-center justify-between">
+          <span className="text-xs text-slate-500 dark:text-neutral-400 hidden sm:inline">
             Keep this accessible during hospital check-ins.
           </span>
           <button
             onClick={copyAllSummary}
-            className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
           >
-            <span className="material-symbols-outlined text-base">content_copy</span>
+            {copiedText === 'all' ? <Check size={14} /> : <Copy size={14} />}
             <span>{copiedText === 'all' ? 'Copied to Clipboard!' : 'Copy All Emergency Details'}</span>
           </button>
         </div>

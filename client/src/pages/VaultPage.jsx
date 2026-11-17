@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
+import { Plus, Search, X, Table, Grid, Copy, Check, Share2, Trash2 } from 'lucide-react';
 
 export default function VaultPage() {
   const [searchParams] = useSearchParams();
@@ -127,14 +128,14 @@ export default function VaultPage() {
 
     if (diffDays < 0) {
       return (
-        <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold">
+        <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-[10px] font-bold">
           Expired
         </span>
       );
     }
     if (diffDays <= 30) {
       return (
-        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+        <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 text-[10px] font-bold">
           Expires in {diffDays}d
         </span>
       );
@@ -143,45 +144,45 @@ export default function VaultPage() {
   };
 
   return (
-    <div className="max-w-[1380px] mx-auto p-6 lg:p-8 space-y-6">
+    <div className="max-w-[1380px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">All Documents</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">All Documents</h1>
+          <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
             Family ID cards, medical policies, bank passbooks, and certificates stored securely.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             to="/vault/upload"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
           >
-            <span className="material-symbols-outlined text-lg">upload</span>
-            <span>+ Upload Document</span>
+            <Plus size={16} strokeWidth={2.5} />
+            <span>Upload Document</span>
           </Link>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-4 transition-colors">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Large Search Box */}
           <div className="relative flex-1">
-            <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">search</span>
+            <Search size={18} className="absolute left-3.5 top-2.5 text-slate-400 dark:text-neutral-500" />
             <input
               type="text"
               placeholder="Search by document name, number (Aadhaar, PAN), or person..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-[#3ECF8E] focus:bg-white dark:focus:bg-[#141414] transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300"
               >
-                <span className="material-symbols-outlined text-sm">close</span>
+                <X size={15} />
               </button>
             )}
           </div>
@@ -191,7 +192,7 @@ export default function VaultPage() {
             <select
               value={selectedMember}
               onChange={(e) => setSelectedMember(e.target.value)}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 bg-white"
+              className="px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] text-xs font-bold text-slate-700 dark:text-neutral-300"
             >
               <option value="All">All Family Members</option>
               {members.map(m => (
@@ -200,27 +201,27 @@ export default function VaultPage() {
             </select>
 
             {/* Table / Grid Toggle */}
-            <div className="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-600">
+            <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] text-slate-600 dark:text-neutral-400">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-xs' : 'hover:text-slate-900'}`}
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-white dark:bg-[#262626] text-[#10B981] dark:text-[#3ECF8E] shadow-xs' : 'hover:text-slate-900 dark:hover:text-white'}`}
                 title="Grid Cards"
               >
-                <span className="material-symbols-outlined text-lg">grid_view</span>
+                <Grid size={16} />
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white text-blue-600 shadow-xs' : 'hover:text-slate-900'}`}
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === 'table' ? 'bg-white dark:bg-[#262626] text-[#10B981] dark:text-[#3ECF8E] shadow-xs' : 'hover:text-slate-900 dark:hover:text-white'}`}
                 title="Table View"
               >
-                <span className="material-symbols-outlined text-lg">table_rows</span>
+                <Table size={16} />
               </button>
             </div>
           </div>
         </div>
 
         {/* Category Tabs */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-[#262626]">
           {categories.map((cat) => {
             const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
             const count = cat.name === 'All'
@@ -231,16 +232,16 @@ export default function VaultPage() {
               <button
                 key={cat.name}
                 onClick={() => setSelectedCategory(cat.name)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-slate-50 hover:bg-slate-100 text-slate-600'
+                    ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
+                    : 'bg-slate-50 dark:bg-[#141414] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-400 border border-transparent dark:border-[#262626]'
                 }`}
               >
                 <span className="material-symbols-outlined text-sm">{cat.icon}</span>
                 <span>{cat.name}</span>
                 <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded-full ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                  isSelected ? 'bg-white/20 dark:bg-black/20 text-white dark:text-[#121212]' : 'bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-neutral-300'
                 }`}>
                   {count}
                 </span>
@@ -254,44 +255,44 @@ export default function VaultPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="bg-white rounded-2xl p-6 border border-slate-200 animate-pulse space-y-3">
-              <div className="w-10 h-10 bg-slate-200 rounded-xl"></div>
-              <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-              <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+            <div key={i} className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-6 border border-slate-200 dark:border-[#262626] animate-pulse space-y-3">
+              <div className="w-10 h-10 bg-slate-200 dark:bg-[#262626] rounded-xl"></div>
+              <div className="h-4 bg-slate-200 dark:bg-[#262626] rounded w-3/4"></div>
+              <div className="h-3 bg-slate-200 dark:bg-[#262626] rounded w-1/2"></div>
             </div>
           ))}
         </div>
       ) : documents.length === 0 ? (
         /* Empty State for brand new users (Zero Mock Data) */
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center max-w-xl mx-auto shadow-sm space-y-4">
-          <div className="w-20 h-20 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-inner">
+        <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl border border-slate-200/80 dark:border-[#262626] p-12 text-center max-w-xl mx-auto shadow-sm space-y-4 transition-colors">
+          <div className="w-20 h-20 rounded-3xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center mx-auto shadow-inner">
             <span className="material-symbols-outlined text-4xl">folder_zip</span>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Your vault is empty</h2>
-          <p className="text-xs text-slate-500 leading-relaxed">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Your vault is empty</h2>
+          <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
             Upload your family's Aadhaar cards, PAN cards, property deeds, health insurance policies, and marksheets. Everything is encrypted and private to your family.
           </p>
           <div className="pt-2">
             <Link
               to="/vault/upload"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 transition-all"
             >
-              <span className="material-symbols-outlined text-lg">upload</span>
-              <span>+ Upload First Document</span>
+              <Plus size={16} strokeWidth={2.5} />
+              <span>Upload First Document</span>
             </Link>
           </div>
         </div>
       ) : filteredDocs.length === 0 ? (
         /* Empty State for filtered search */
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-10 text-center max-w-md mx-auto space-y-3">
-          <span className="material-symbols-outlined text-4xl text-slate-300">search_off</span>
-          <h3 className="text-base font-bold text-slate-800">No matching documents found</h3>
-          <p className="text-xs text-slate-500">
+        <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl border border-slate-200/80 dark:border-[#262626] p-10 text-center max-w-md mx-auto space-y-3 transition-colors">
+          <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-neutral-600">search_off</span>
+          <h3 className="text-base font-bold text-slate-800 dark:text-white">No matching documents found</h3>
+          <p className="text-xs text-slate-500 dark:text-neutral-400">
             No records matched your search query or filters.
           </p>
           <button
             onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setSelectedMember('All'); }}
-            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+            className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-bold transition-colors cursor-pointer"
           >
             Clear Filters
           </button>
@@ -302,13 +303,13 @@ export default function VaultPage() {
           {filteredDocs.map((doc) => (
             <div
               key={doc._id}
-              className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
+              className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] p-5 shadow-xs hover:border-[#3ECF8E] dark:hover:border-[#3ECF8E] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
             >
               <div>
                 {/* Card Header */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                    <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-[#3ECF8E]/20">
                       <span className="material-symbols-outlined text-2xl">
                         {doc.category === 'ID Cards' ? 'badge' :
                          doc.category === 'Medical & Health' ? 'health_and_safety' :
@@ -319,11 +320,11 @@ export default function VaultPage() {
                     <div className="truncate">
                       <Link
                         to={`/vault/documents/${doc._id}`}
-                        className="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors truncate block"
+                        className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-[#3ECF8E] transition-colors truncate block"
                       >
                         {doc.title}
                       </Link>
-                      <div className="text-[11px] text-slate-500 font-medium">
+                      <div className="text-[11px] text-slate-500 dark:text-neutral-400 font-medium">
                         {doc.category} • For {doc.assignedMember?.name || 'Family'}
                       </div>
                     </div>
@@ -333,32 +334,30 @@ export default function VaultPage() {
 
                 {/* ONE-TAP "COPY NUMBER" BAR */}
                 {doc.documentNumber ? (
-                  <div className="my-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                  <div className="my-3 p-2.5 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Number:</span>
-                      <code className="text-xs font-mono font-bold text-slate-900 truncate">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-neutral-500 tracking-wider">Number:</span>
+                      <code className="text-xs font-mono font-bold text-slate-900 dark:text-neutral-200 truncate">
                         {doc.documentNumber}
                       </code>
                     </div>
                     <button
                       onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
-                      className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center gap-1 transition-colors shrink-0 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] text-xs font-bold flex items-center gap-1 transition-colors shrink-0 cursor-pointer"
                       title="Copy document number in one tap"
                     >
-                      <span className="material-symbols-outlined text-xs">
-                        {copiedNumber === doc.documentNumber ? 'check' : 'content_copy'}
-                      </span>
+                      {copiedNumber === doc.documentNumber ? <Check size={12} /> : <Copy size={12} />}
                       <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
                     </button>
                   </div>
                 ) : (
-                  <div className="my-3 py-1 text-[11px] text-slate-400 italic">
+                  <div className="my-3 py-1 text-[11px] text-slate-400 dark:text-neutral-500 italic">
                     No document number saved
                   </div>
                 )}
 
                 {/* Meta details */}
-                <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium pt-1">
+                <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-neutral-500 font-medium pt-1">
                   <span>Size: {(doc.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
                   {doc.expiryDate && (
                     <span>Valid to: {new Date(doc.expiryDate).toLocaleDateString()}</span>
@@ -367,14 +366,14 @@ export default function VaultPage() {
               </div>
 
               {/* Card Footer Actions */}
-              <div className="pt-3.5 mt-4 border-t border-slate-100 flex items-center justify-between">
+              <div className="pt-3.5 mt-4 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={(e) => handleShareSafely(doc._id, e)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors text-xs font-semibold flex items-center gap-1"
+                    className="p-1.5 rounded-lg text-slate-500 dark:text-neutral-400 hover:text-[#3ECF8E] hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 transition-colors text-xs font-semibold flex items-center gap-1 cursor-pointer"
                     title="Share Safely (24-hour expiring link)"
                   >
-                    <span className="material-symbols-outlined text-base">share</span>
+                    <Share2 size={14} />
                     <span>{shareFeedback?.id === doc._id ? 'Copied!' : 'Share Safely'}</span>
                   </button>
                 </div>
@@ -382,16 +381,16 @@ export default function VaultPage() {
                 <div className="flex items-center gap-1">
                   <Link
                     to={`/vault/documents/${doc._id}`}
-                    className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 text-xs font-bold transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 text-slate-700 dark:text-neutral-300 hover:text-[#3ECF8E] text-xs font-bold transition-colors"
                   >
                     View
                   </Link>
                   <button
                     onClick={(e) => handleDelete(doc._id, doc.title, e)}
-                    className="p-1.5 rounded-lg text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    className="p-1.5 rounded-lg text-slate-300 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
                     title="Delete document"
                   >
-                    <span className="material-symbols-outlined text-base">delete</span>
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
@@ -400,10 +399,10 @@ export default function VaultPage() {
         </div>
       ) : (
         /* TABLE VIEW WITH ONE-TAP COPY NUMBER COLUMN */
-        <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+        <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] overflow-hidden shadow-xs transition-colors">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase font-bold tracking-wider text-[10px]">
+              <thead className="bg-slate-50/80 dark:bg-[#141414] border-b border-slate-200 dark:border-[#262626] text-slate-500 dark:text-neutral-400 uppercase font-bold tracking-wider text-[10px]">
                 <tr>
                   <th className="px-5 py-3.5">Document</th>
                   <th className="px-4 py-3.5">Category</th>
@@ -413,22 +412,22 @@ export default function VaultPage() {
                   <th className="px-4 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#262626] font-medium text-slate-700 dark:text-neutral-300">
                 {filteredDocs.map((doc) => (
-                  <tr key={doc._id} className="hover:bg-blue-50/30 transition-colors">
+                  <tr key={doc._id} className="hover:bg-emerald-50/30 dark:hover:bg-[#262626]/40 transition-colors">
                     <td className="px-5 py-4">
                       <Link to={`/vault/documents/${doc._id}`} className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center font-bold shrink-0">
                           <span className="material-symbols-outlined text-base">
                             {doc.category === 'ID Cards' ? 'badge' :
                              doc.category === 'Medical & Health' ? 'health_and_safety' : 'description'}
                           </span>
                         </div>
                         <div>
-                          <div className="font-bold text-slate-900 hover:text-blue-600 transition-colors">
+                          <div className="font-bold text-slate-900 dark:text-white hover:text-[#3ECF8E] transition-colors">
                             {doc.title}
                           </div>
-                          <div className="text-[10px] text-slate-400">
+                          <div className="text-[10px] text-slate-400 dark:text-neutral-500">
                             {(doc.fileSize / (1024 * 1024)).toFixed(1)} MB
                           </div>
                         </div>
@@ -436,12 +435,12 @@ export default function VaultPage() {
                     </td>
 
                     <td className="px-4 py-4">
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold text-[11px]">
+                      <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#141414] text-slate-700 dark:text-neutral-300 font-semibold text-[11px] border border-transparent dark:border-[#262626]">
                         {doc.category}
                       </span>
                     </td>
 
-                    <td className="px-4 py-4 font-semibold text-slate-900">
+                    <td className="px-4 py-4 font-semibold text-slate-900 dark:text-white">
                       {doc.assignedMember?.name || 'Whole Family'}
                     </td>
 
@@ -449,35 +448,33 @@ export default function VaultPage() {
                     <td className="px-4 py-4">
                       {doc.documentNumber ? (
                         <div className="flex items-center gap-2">
-                          <code className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                          <code className="font-mono font-bold text-slate-900 dark:text-neutral-200 bg-slate-100 dark:bg-[#141414] px-2 py-0.5 rounded text-[11px] border border-transparent dark:border-[#262626]">
                             {doc.documentNumber}
                           </code>
                           <button
                             onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
-                            className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
+                            className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
                             title="Copy number"
                           >
-                            <span className="material-symbols-outlined text-xs">
-                              {copiedNumber === doc.documentNumber ? 'check' : 'content_copy'}
-                            </span>
+                            {copiedNumber === doc.documentNumber ? <Check size={10} /> : <Copy size={10} />}
                             <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
                           </button>
                         </div>
                       ) : (
-                        <span className="text-slate-400 text-[11px]">—</span>
+                        <span className="text-slate-400 dark:text-neutral-500 text-[11px]">—</span>
                       )}
                     </td>
 
                     <td className="px-4 py-4">
                       {doc.expiryDate ? (
                         <div className="space-y-0.5">
-                          <div className="text-[11px] font-semibold text-slate-800">
+                          <div className="text-[11px] font-semibold text-slate-800 dark:text-neutral-200">
                             {new Date(doc.expiryDate).toLocaleDateString()}
                           </div>
                           {getExpiryBadge(doc.expiryDate)}
                         </div>
                       ) : (
-                        <span className="text-slate-400 text-[11px]">No Expiry</span>
+                        <span className="text-slate-400 dark:text-neutral-500 text-[11px]">No Expiry</span>
                       )}
                     </td>
 
@@ -485,22 +482,22 @@ export default function VaultPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={(e) => handleShareSafely(doc._id, e)}
-                          className="px-2.5 py-1 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 text-[11px] font-bold"
+                          className="px-2.5 py-1 rounded-lg text-slate-500 dark:text-neutral-400 hover:text-[#3ECF8E] hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 text-[11px] font-bold cursor-pointer"
                           title="Share 24h link"
                         >
                           {shareFeedback?.id === doc._id ? 'Copied!' : 'Share'}
                         </button>
                         <Link
                           to={`/vault/documents/${doc._id}`}
-                          className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-[11px] font-bold"
+                          className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-[11px] font-bold"
                         >
                           View
                         </Link>
                         <button
                           onClick={(e) => handleDelete(doc._id, doc.title, e)}
-                          className="p-1 rounded text-slate-300 hover:text-red-600 hover:bg-red-50"
+                          className="p-1 rounded text-slate-300 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer"
                         >
-                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     </td>

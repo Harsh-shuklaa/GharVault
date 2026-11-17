@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { Plus, UserPlus, Phone, Mail, ShieldAlert, Folder, ArrowRight, Trash2, X, AlertCircle } from 'lucide-react';
 
 export default function FamilyDirectoryPage() {
   const { family, user } = useAuth();
@@ -75,20 +76,20 @@ export default function FamilyDirectoryPage() {
   };
 
   return (
-    <div className="max-w-[1380px] mx-auto p-6 lg:p-8 space-y-6">
+    <div className="max-w-[1380px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Family Members</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Family Members</h1>
+          <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
             Everyone in {family?.name || 'your family vault'} with their emergency blood group, contacts, and documents.
           </p>
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all self-start sm:self-center cursor-pointer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all self-start sm:self-center cursor-pointer"
         >
-          <span className="material-symbols-outlined text-lg">person_add</span>
+          <UserPlus size={16} strokeWidth={2.2} />
           <span>+ Add Family Member</span>
         </button>
       </div>
@@ -97,34 +98,34 @@ export default function FamilyDirectoryPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-2xl border border-slate-200/80 p-6 animate-pulse space-y-4">
+            <div key={i} className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] p-6 animate-pulse space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 bg-slate-200 rounded-2xl"></div>
+                <div className="w-14 h-14 bg-slate-200 dark:bg-[#262626] rounded-2xl"></div>
                 <div className="space-y-2 flex-1">
-                  <div className="h-4 bg-slate-200 rounded w-2/3"></div>
-                  <div className="h-3 bg-slate-200 rounded w-1/3"></div>
+                  <div className="h-4 bg-slate-200 dark:bg-[#262626] rounded w-2/3"></div>
+                  <div className="h-3 bg-slate-200 dark:bg-[#262626] rounded w-1/3"></div>
                 </div>
               </div>
-              <div className="h-8 bg-slate-100 rounded-xl"></div>
+              <div className="h-8 bg-slate-100 dark:bg-[#262626] rounded-xl"></div>
             </div>
           ))}
         </div>
       ) : members.length === 0 ? (
         /* Clean Zero-Mock Empty State */
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center max-w-2xl mx-auto shadow-sm">
-          <div className="w-20 h-20 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-5 shadow-inner">
+        <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl border border-slate-200/80 dark:border-[#262626] p-12 text-center max-w-2xl mx-auto shadow-sm transition-colors">
+          <div className="w-20 h-20 rounded-3xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center mx-auto mb-5 shadow-inner">
             <span className="material-symbols-outlined text-4xl">diversity_1</span>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">No family members added yet</h2>
-          <p className="text-xs text-slate-500 mt-2 leading-relaxed max-w-md mx-auto">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">No family members added yet</h2>
+          <p className="text-xs text-slate-500 dark:text-neutral-400 mt-2 leading-relaxed max-w-md mx-auto">
             Add your parents, spouse, or children so everyone's important IDs, health insurance, and emergency blood group info stay organized in one safe space.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 transition-all cursor-pointer"
             >
-              <span className="material-symbols-outlined text-lg">person_add</span>
+              <UserPlus size={16} strokeWidth={2.2} />
               <span>+ Add First Family Member</span>
             </button>
           </div>
@@ -135,7 +136,7 @@ export default function FamilyDirectoryPage() {
           {members.map((member) => (
             <div
               key={member._id}
-              className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
+              className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] p-6 shadow-xs hover:border-[#3ECF8E] dark:hover:border-[#3ECF8E] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
             >
               <div>
                 {/* Avatar & Badges Header */}
@@ -144,13 +145,13 @@ export default function FamilyDirectoryPage() {
                     <img
                       src={member.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}`}
                       alt={member.name}
-                      className="w-16 h-16 rounded-2xl object-cover ring-4 ring-slate-50 shadow-sm"
+                      className="w-16 h-16 rounded-2xl object-cover ring-4 ring-slate-50 dark:ring-[#262626] shadow-sm"
                     />
-                    <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                    <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#3ECF8E] ring-2 ring-white dark:ring-[#1C1C1C]"></span>
                   </div>
 
                   {/* Blood Group Badge */}
-                  <span className="px-2.5 py-1 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs font-bold flex items-center gap-1 shadow-xs">
+                  <span className="px-2.5 py-1 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20 text-xs font-bold flex items-center gap-1 shadow-xs">
                     <span>🩸</span>
                     <span>{member.bloodGroup || 'Blood: N/A'}</span>
                   </span>
@@ -159,34 +160,34 @@ export default function FamilyDirectoryPage() {
                 {/* Identity Details */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-bold text-base text-slate-900 group-hover:text-blue-600 transition-colors">
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white group-hover:text-[#3ECF8E] transition-colors">
                       {member.name}
                     </h3>
-                    <p className="text-xs text-slate-500 font-semibold mt-0.5">{member.relationship}</p>
+                    <p className="text-xs text-slate-500 dark:text-neutral-400 font-semibold mt-0.5">{member.relationship}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                    member.role === 'ADMIN' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'
+                    member.role === 'ADMIN' ? 'bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E]' : 'bg-slate-100 dark:bg-[#262626] text-slate-600 dark:text-neutral-400'
                   }`}>
                     {member.role === 'ADMIN' ? 'Admin' : 'Member'}
                   </span>
                 </div>
 
                 {/* Contact & Medical Info */}
-                <div className="mt-4 space-y-2 text-xs text-slate-600">
+                <div className="mt-4 space-y-2 text-xs text-slate-600 dark:text-neutral-300">
                   {member.phone && (
-                    <a href={`tel:${member.phone}`} className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                      <span className="material-symbols-outlined text-base text-slate-400">call</span>
+                    <a href={`tel:${member.phone}`} className="flex items-center gap-2 hover:text-[#3ECF8E] transition-colors">
+                      <Phone size={14} className="text-slate-400 dark:text-neutral-500" />
                       <span className="font-medium">{member.phone}</span>
                     </a>
                   )}
                   {member.email && (
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-base text-slate-400">mail</span>
+                      <Mail size={14} className="text-slate-400 dark:text-neutral-500" />
                       <span className="truncate">{member.email}</span>
                     </div>
                   )}
                   {member.healthInsurancePolicy && (
-                    <div className="flex items-center gap-2 text-emerald-700 font-semibold bg-emerald-50/70 px-2.5 py-1 rounded-lg border border-emerald-200/60">
+                    <div className="flex items-center gap-2 text-emerald-700 dark:text-[#3ECF8E] font-semibold bg-emerald-50/70 dark:bg-[#3ECF8E]/10 px-2.5 py-1 rounded-lg border border-emerald-200/60 dark:border-[#3ECF8E]/20">
                       <span className="material-symbols-outlined text-sm">health_and_safety</span>
                       <span className="truncate">Policy: {member.healthInsurancePolicy}</span>
                     </div>
@@ -196,8 +197,8 @@ export default function FamilyDirectoryPage() {
                 {/* Nominee / Emergency tags */}
                 {member.isEmergencyContact && (
                   <div className="mt-3">
-                    <span className="px-2.5 py-1 rounded-lg bg-red-100/70 text-red-800 text-[10px] font-bold flex items-center gap-1.5 w-fit">
-                      <span className="material-symbols-outlined text-xs">e911_emergency</span>
+                    <span className="px-2.5 py-1 rounded-lg bg-red-100/70 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-[10px] font-bold flex items-center gap-1.5 w-fit">
+                      <ShieldAlert size={12} />
                       Primary Emergency Contact
                     </span>
                   </div>
@@ -205,31 +206,31 @@ export default function FamilyDirectoryPage() {
               </div>
 
               {/* Card Footer */}
-              <div className="pt-4 mt-5 border-t border-slate-100 flex items-center justify-between">
+              <div className="pt-4 mt-5 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between">
                 <Link
                   to={`/vault?member=${member._id}`}
-                  className="text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1"
+                  className="text-xs font-semibold text-slate-500 dark:text-neutral-400 hover:text-[#3ECF8E] transition-colors flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-sm">folder</span>
-                  <span><strong className="text-slate-900">{member.assignedDocumentsCount || 0}</strong> Docs</span>
+                  <Folder size={14} />
+                  <span><strong className="text-slate-900 dark:text-white">{member.assignedDocumentsCount || 0}</strong> Docs</span>
                 </Link>
 
                 <div className="flex items-center gap-2">
                   <Link
                     to={`/family/${member._id}`}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-0.5 bg-blue-50 px-2.5 py-1 rounded-lg transition-colors"
+                    className="text-xs font-bold text-emerald-700 dark:text-[#3ECF8E] hover:underline flex items-center gap-0.5 bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2.5 py-1 rounded-lg transition-colors"
                   >
                     <span>Profile</span>
-                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    <ArrowRight size={13} />
                   </Link>
 
                   {member._id !== user?._id && (
                     <button
                       onClick={() => handleDeleteMember(member._id, member.name)}
-                      className="p-1 rounded-lg text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="p-1 rounded-lg text-slate-300 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
                       title="Remove Member"
                     >
-                      <span className="material-symbols-outlined text-base">delete</span>
+                      <Trash2 size={14} />
                     </button>
                   )}
                 </div>
@@ -241,29 +242,29 @@ export default function FamilyDirectoryPage() {
 
       {/* Add Family Member Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-[#262626] space-y-5 transition-colors">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#262626]">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-xl">person_add</span>
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center">
+                  <UserPlus size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-900">Add Family Member</h3>
-                  <p className="text-xs text-slate-500">Include their emergency medical details</p>
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">Add Family Member</h3>
+                  <p className="text-xs text-slate-500 dark:text-neutral-400">Include their emergency medical details</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-lg">close</span>
+                <X size={18} />
               </button>
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-base">error</span>
+              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
+                <AlertCircle size={16} />
                 <span>{error}</span>
               </div>
             )}
@@ -271,7 +272,7 @@ export default function FamilyDirectoryPage() {
             <form onSubmit={handleAddMember} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                     Full Name *
                   </label>
                   <input
@@ -280,18 +281,18 @@ export default function FamilyDirectoryPage() {
                     placeholder="e.g. Papa, Sunita, Aarav"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-semibold text-slate-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#141414] focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                     Relationship *
                   </label>
                   <select
                     value={formData.relationship}
                     onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-semibold text-slate-900 bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white bg-white dark:bg-[#141414]"
                   >
                     <option value="Self">Self</option>
                     <option value="Spouse">Spouse</option>
@@ -308,13 +309,13 @@ export default function FamilyDirectoryPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                     Blood Group
                   </label>
                   <select
                     value={formData.bloodGroup}
                     onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-semibold text-slate-900 bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white bg-white dark:bg-[#141414]"
                   >
                     <option value="O+">O+ (Positive)</option>
                     <option value="O-">O- (Negative)</option>
@@ -329,7 +330,7 @@ export default function FamilyDirectoryPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                     Phone (Emergency Contact)
                   </label>
                   <input
@@ -337,13 +338,13 @@ export default function FamilyDirectoryPage() {
                     placeholder="+91 98765 43210"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-semibold text-slate-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#141414] focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                   Health Insurance Policy / TPA Card #
                 </label>
                 <input
@@ -351,12 +352,12 @@ export default function FamilyDirectoryPage() {
                   placeholder="e.g. Star Health 019283921 / Care Health"
                   value={formData.healthInsurancePolicy}
                   onChange={(e) => setFormData({ ...formData, healthInsurancePolicy: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-semibold text-slate-900"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#141414] focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                   Email (Optional - for vault invitation)
                 </label>
                 <input
@@ -364,7 +365,7 @@ export default function FamilyDirectoryPage() {
                   placeholder="family.member@gmail.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-semibold text-slate-900"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#141414] focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white"
                 />
               </div>
 
@@ -374,25 +375,25 @@ export default function FamilyDirectoryPage() {
                   id="isEmergencyContact"
                   checked={formData.isEmergencyContact}
                   onChange={(e) => setFormData({ ...formData, isEmergencyContact: e.target.checked })}
-                  className="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer"
+                  className="w-4 h-4 rounded text-[#10B981] dark:text-[#3ECF8E] border-slate-300 dark:border-[#262626] focus:ring-[#3ECF8E] cursor-pointer"
                 />
-                <label htmlFor="isEmergencyContact" className="text-xs font-semibold text-slate-700 cursor-pointer">
+                <label htmlFor="isEmergencyContact" className="text-xs font-semibold text-slate-700 dark:text-neutral-300 cursor-pointer">
                   Designate as Primary Emergency Hospital Contact
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-[#262626]">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#262626] text-slate-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-[#262626] font-bold text-xs transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
                 >
                   {submitting ? 'Adding...' : 'Save Family Member'}
                 </button>

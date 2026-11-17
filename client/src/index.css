@@ -13,6 +13,12 @@
     overscroll-behavior: none;
     background-color: #F8FAFC;
     color: #0B1C30;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  html.dark body {
+    background-color: #121212;
+    color: #F3F4F6;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -53,16 +59,12 @@
   background: #CBD5E1;
   border-radius: 9999px;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: #2E2E2E;
+}
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
-
-/* Pulse animation utility */
-@keyframes softPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.02); }
-}
-
-.animate-soft-pulse {
-  animation: softPulse 3s ease-in-out infinite;
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3E3E3E;
 }
