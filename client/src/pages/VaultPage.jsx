@@ -4,17 +4,27 @@ import { api } from '../lib/api';
 
 export default function VaultPage() {
   const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  const filterParam = searchParams.get('filter');
   const initialMember = searchParams.get('member') || 'All';
 
   const [documents, setDocuments] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'All');
   const [selectedMember, setSelectedMember] = useState(initialMember);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
   const [copiedNumber, setCopiedNumber] = useState(null);
   const [shareFeedback, setShareFeedback] = useState(null);
+
+  useEffect(() => {
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    } else {
+      setSelectedCategory('All');
+    }
+  }, [categoryParam]);
 
   useEffect(() => {
     loadVault();
@@ -85,6 +95,19 @@ export default function VaultPage() {
   const filteredDocs = documents.filter((doc) => {
     const matchesCat = selectedCategory === 'All' || doc.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesMember = selectedMember === 'All' || doc.assignedMemberId?.toString() === selectedMember;
+    
+    let matchesFilter = true;
+    if (filterParam === 'expiring') {
+      if (!doc.expiryDate) {
+        matchesFilter = false;
+      } else {
+        const diffDays = Math.ceil((new Date(doc.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+        matchesFilter = diffDays <= 60;
+      }
+    } else if (filterParam === 'shared') {
+      matchesFilter = !!(doc.shareLink && doc.shareLink.token);
+    }
+
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q || (
       doc.title?.toLowerCase().includes(q) ||
@@ -93,7 +116,7 @@ export default function VaultPage() {
       (doc.assignedMember?.name && doc.assignedMember.name.toLowerCase().includes(q)) ||
       (doc.tags && doc.tags.some(t => t.toLowerCase().includes(q)))
     );
-    return matchesCat && matchesMember && matchesSearch;
+    return matchesCat && matchesMember && matchesFilter && matchesSearch;
   });
 
   const getExpiryBadge = (expiryDate) => {
