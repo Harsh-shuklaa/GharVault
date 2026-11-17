@@ -21,8 +21,7 @@ const documentSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Identity', 'Financial', 'Property', 'Health', 'Legal', 'Tax', 'Insurance', 'Other'],
-    default: 'Identity',
+    default: 'ID Cards',
   },
   familyId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -36,6 +35,7 @@ const documentSchema = new mongoose.Schema({
   documentNumber: {
     type: String,
     trim: true,
+    default: '',
   },
   issueDate: {
     type: Date,
@@ -52,13 +52,15 @@ const documentSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  quorumRequired: {
-    type: Boolean,
-    default: false,
+  whoCanView: {
+    type: [String],
+    default: ['ALL'], // 'ALL' or array of member IDs
   },
-  quorumApproved: {
-    type: Boolean,
-    default: false,
+  shareLink: {
+    token: String,
+    expiresAt: Date,
+    isPasswordProtected: { type: Boolean, default: false },
+    passwordHash: String,
   },
   tags: [{
     type: String,

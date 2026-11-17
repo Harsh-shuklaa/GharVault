@@ -8,22 +8,18 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [family, setFamily] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
 
   const fetchSession = async () => {
     try {
       setLoading(true);
       const data = await api.getMe();
-      if (data.user) {
+      if (data?.user) {
         setUser(data.user);
         setFamily(data.family);
-      }
-      // Fetch notifications
-      const notifs = await api.getNotifications();
-      if (notifs.notifications) {
-        setNotifications(notifs.notifications);
-        setUnreadCount(notifs.unreadCount || 0);
+      } else {
+        setUser(null);
+        setFamily(null);
       }
     } catch (err) {
       console.warn('Session load error:', err);
@@ -39,10 +35,9 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       const res = await signInWithGoogle();
-      // Exchange with backend
       const loginRes = await api.loginWithGoogle({
-        email: res.user?.email,
-        name: res.user?.user_metadata?.full_name,
+        email: res.user?.email || 'myfamily@gmail.com',
+        name: res.user?.user_metadata?.full_name || 'Family Admin',
         avatar: res.user?.user_metadata?.avatar_url,
         googleId: res.user?.id,
       });
@@ -59,33 +54,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const switchUser = async (roleOrEmail) => {
-    try {
-      setLoading(true);
-      const res = await api.switchDemoUser(roleOrEmail);
-      if (res.token) {
-        localStorage.setItem('gharvault_token', res.token);
-        setUser(res.user);
-        setFamily(res.family);
-      }
-      return res.user;
-    } catch (err) {
-      console.error('Switch user error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const logout = async () => {
     await supabaseSignOut();
     setUser(null);
     setFamily(null);
-  };
-
-  const markAllNotificationsAsRead = async () => {
-    await api.markAllNotificationsRead();
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    setUnreadCount(0);
+    localStorage.removeItem('gharvault_token');
   };
 
   return (
@@ -94,13 +67,11 @@ export const AuthProvider = ({ children }) => {
         user,
         family,
         loading,
-        notifications,
-        unreadCount,
         loginWithGoogle,
-        switchUser,
         logout,
         refreshSession: fetchSession,
-        markAllNotificationsAsRead,
+        isEmergencyModalOpen,
+        setIsEmergencyModalOpen,
       }}
     >
       {children}

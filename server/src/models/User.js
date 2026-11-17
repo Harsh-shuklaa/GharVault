@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   },
   relationship: {
     type: String,
-    default: 'Member', // e.g. 'Head of Family', 'Spouse', 'Son', 'Daughter', 'Mother'
+    default: 'Member', // e.g. 'Father', 'Mother', 'Son', 'Daughter', 'Grandfather', 'Grandmother', 'Spouse', 'Self'
   },
   familyId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -35,6 +35,27 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
+    default: '',
+  },
+  bloodGroup: {
+    type: String,
+    default: '', // 'O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'
+  },
+  emergencyContactPhone: {
+    type: String,
+    default: '',
+  },
+  healthInsurancePolicy: {
+    type: String,
+    default: '',
+  },
+  tpaNumber: {
+    type: String,
+    default: '',
+  },
+  allergies: {
+    type: String,
+    default: '',
   },
   isEmergencyContact: {
     type: Boolean,
@@ -47,7 +68,7 @@ const userSchema = new mongoose.Schema({
     canUpload: { type: Boolean, default: true },
     canDownload: { type: Boolean, default: true },
     canDelete: { type: Boolean, default: false },
-    canViewSensitive: { type: Boolean, default: false },
+    canViewSensitive: { type: Boolean, default: true },
     canSignQuorum: { type: Boolean, default: false },
     canArmBreakGlass: { type: Boolean, default: false },
   },

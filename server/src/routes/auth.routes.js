@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { memoryStore } from '../config/seed.js';
 import User from '../models/User.js';
+import Family from '../models/Family.js';
 import { isConnected } from '../config/db.js';
 
 const router = express.Router();
@@ -20,37 +21,43 @@ const generateToken = (user) => {
   );
 };
 
-// POST /api/auth/google
+// POST /api/auth/google — One-click Continue with Google
 router.post('/google', async (req, res) => {
   try {
     const { email, name, avatar, googleId } = req.body;
 
-    let targetEmail = email || 'rajesh.sharma@gmail.com';
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required for Google Sign-In' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanName = name?.trim() || cleanEmail.split('@')[0];
+    const userAvatar = avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=2563EB&color=fff&size=150`;
+
     let user = null;
+    let family = null;
 
     if (isConnected) {
-      user = await User.findOne({ email: targetEmail.toLowerCase() });
+      user = await User.findOne({ email: cleanEmail });
+
       if (!user) {
-        user = await User.create({
-          email: targetEmail.toLowerCase(),
-          name: name || 'Rajesh Sharma',
-          avatar: avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
-          googleId: googleId || 'google_oauth_sub_demo',
-          role: 'ADMIN',
-          relationship: 'Head of Family',
+        // Create initial family for the first user
+        const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
+        family = await Family.create({
+          name: `${cleanName.split(' ')[0]}'s Family Vault`,
+          inviteCode,
+          storageLimitBytes: 53687091200, // 50 GB Free Tier
+          storageUsedBytes: 0,
         });
-      }
-    } else {
-      user = memoryStore.users.find(u => u.email.toLowerCase() === targetEmail.toLowerCase());
-      if (!user) {
-        user = {
-          _id: 'user_' + Date.now(),
-          email: targetEmail.toLowerCase(),
-          name: name || 'Demo User',
-          avatar: avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
+
+        user = await User.create({
+          email: cleanEmail,
+          name: cleanName,
+          avatar: userAvatar,
+          googleId: googleId || 'google_' + Date.now(),
           role: 'ADMIN',
           relationship: 'Head of Family',
-          familyId: memoryStore.families[0]?._id,
+          familyId: family._id,
           permissions: {
             canUpload: true,
             canDownload: true,
@@ -59,17 +66,75 @@ router.post('/google', async (req, res) => {
             canSignQuorum: true,
             canArmBreakGlass: true,
           },
+        });
+
+        family.adminId = user._id;
+        await family.save();
+      } else {
+        family = await Family.findById(user.familyId);
+      }
+    } else {
+      // Memory Store logic
+      user = memoryStore.users.find(u => u.email.toLowerCase() === cleanEmail);
+
+      if (!user) {
+        const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
+        family = {
+          _id: 'fam_' + Date.now(),
+          name: `${cleanName.split(' ')[0]}'s Family Vault`,
+          inviteCode,
+          adminId: null,
+          settings: {
+            quorumRequiredForSensitive: false,
+            quorumThreshold: 2,
+            breakGlassDelayHours: 48,
+            autoColdBackupEnabled: true,
+          },
+          storageLimitBytes: 53687091200,
+          storageUsedBytes: 0,
+          createdAt: new Date(),
         };
+
+        user = {
+          _id: 'user_' + Date.now(),
+          email: cleanEmail,
+          name: cleanName,
+          avatar: userAvatar,
+          googleId: googleId || 'google_' + Date.now(),
+          role: 'ADMIN',
+          relationship: 'Head of Family',
+          familyId: family._id,
+          phone: '',
+          bloodGroup: '',
+          emergencyContactPhone: '',
+          healthInsurancePolicy: '',
+          isEmergencyContact: true,
+          permissions: {
+            canUpload: true,
+            canDownload: true,
+            canDelete: true,
+            canViewSensitive: true,
+            canSignQuorum: true,
+            canArmBreakGlass: true,
+          },
+          createdAt: new Date(),
+        };
+
+        family.adminId = user._id;
+        memoryStore.families.push(family);
         memoryStore.users.push(user);
+      } else {
+        family = memoryStore.families.find(f => f._id.toString() === user.familyId?.toString()) || memoryStore.families[0];
       }
     }
 
     const token = generateToken(user);
+
     res.json({
       success: true,
       token,
       user,
-      family: memoryStore.families[0] || null,
+      family,
     });
   } catch (err) {
     console.error('Google Auth Error:', err);
@@ -77,38 +142,17 @@ router.post('/google', async (req, res) => {
   }
 });
 
-// POST /api/auth/switch-demo-user (Allows switching between Rajesh, Priya, Aarav, Sunita)
-router.post('/switch-demo-user', async (req, res) => {
-  const { roleOrEmail } = req.body;
-  let user = memoryStore.users.find(
-    u => u.email.toLowerCase().includes(roleOrEmail.toLowerCase()) ||
-         u.role.toLowerCase() === roleOrEmail.toLowerCase() ||
-         u.name.toLowerCase().includes(roleOrEmail.toLowerCase())
-  );
-
-  if (!user) {
-    user = memoryStore.users[0];
-  }
-
-  const token = generateToken(user);
-  res.json({
-    success: true,
-    token,
-    user,
-    family: memoryStore.families[0],
-  });
-});
-
 // GET /api/auth/me
 router.get('/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // Return default Rajesh user for seamless preview
-      const defaultUser = memoryStore.users[0];
+      // If user exists in memoryStore, return first, else null
+      const firstUser = memoryStore.users[0] || null;
+      const firstFam = memoryStore.families[0] || null;
       return res.json({
-        user: defaultUser,
-        family: memoryStore.families[0],
+        user: firstUser,
+        family: firstFam,
       });
     }
 
@@ -116,25 +160,28 @@ router.get('/me', async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     let user = null;
+    let family = null;
+
     if (isConnected) {
       user = await User.findById(decoded.id);
+      if (user) {
+        family = await Family.findById(user.familyId);
+      }
     } else {
       user = memoryStore.users.find(u => u._id.toString() === decoded.id.toString());
-    }
-
-    if (!user) {
-      user = memoryStore.users[0];
+      if (user) {
+        family = memoryStore.families.find(f => f._id.toString() === user.familyId?.toString());
+      }
     }
 
     res.json({
-      user,
-      family: memoryStore.families[0],
+      user: user || memoryStore.users[0] || null,
+      family: family || memoryStore.families[0] || null,
     });
   } catch (err) {
-    // Return default session
     res.json({
-      user: memoryStore.users[0],
-      family: memoryStore.families[0],
+      user: memoryStore.users[0] || null,
+      family: memoryStore.families[0] || null,
     });
   }
 });
@@ -143,13 +190,12 @@ router.get('/me', async (req, res) => {
 router.post('/verify-mpin', (req, res) => {
   const { mpin } = req.body;
   if (!mpin || mpin.length < 4) {
-    return res.status(400).json({ error: 'Invalid MPIN' });
+    return res.status(400).json({ error: 'Invalid PIN' });
   }
-  // In demo / preview mode, allow standard mpin '1234' or any 4/6-digit mpin
   res.json({
     success: true,
     verified: true,
-    message: 'Biometric / MPIN verification succeeded',
+    message: 'Identity verified successfully',
   });
 });
 

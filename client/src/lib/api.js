@@ -23,15 +23,6 @@ export const api = {
     return res.json();
   },
 
-  async switchDemoUser(roleOrEmail) {
-    const res = await fetch(`${API_BASE}/auth/switch-demo-user`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ roleOrEmail }),
-    });
-    return res.json();
-  },
-
   async getMe() {
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: getHeaders(),
@@ -51,6 +42,13 @@ export const api = {
   // Family
   async getFamily() {
     const res = await fetch(`${API_BASE}/family/current`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async getEmergencyCard() {
+    const res = await fetch(`${API_BASE}/family/emergency-card`, {
       headers: getHeaders(),
     });
     return res.json();
@@ -88,8 +86,8 @@ export const api = {
     return res.json();
   },
 
-  async inviteMember(data) {
-    const res = await fetch(`${API_BASE}/family/members/invite`, {
+  async addMember(data) {
+    const res = await fetch(`${API_BASE}/family/members`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(data),
@@ -97,8 +95,8 @@ export const api = {
     return res.json();
   },
 
-  async updateMemberPermissions(id, data) {
-    const res = await fetch(`${API_BASE}/family/members/${id}/permissions`, {
+  async updateMember(id, data) {
+    const res = await fetch(`${API_BASE}/family/members/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify(data),
@@ -122,13 +120,6 @@ export const api = {
     return res.json();
   },
 
-  async getSignedUrl(id) {
-    const res = await fetch(`${API_BASE}/documents/${id}/signed-url`, {
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
   async uploadDocument(formData) {
     const res = await fetch(`${API_BASE}/documents/upload`, {
       method: 'POST',
@@ -138,11 +129,20 @@ export const api = {
     return res.json();
   },
 
-  async renewDocument(id, data) {
-    const res = await fetch(`${API_BASE}/documents/${id}/renew`, {
+  async createShareLink(id, options = {}) {
+    const res = await fetch(`${API_BASE}/documents/${id}/share-link`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify(data),
+      body: JSON.stringify(options),
+    });
+    return res.json();
+  },
+
+  async updateWhoCanView(id, whoCanView) {
+    const res = await fetch(`${API_BASE}/documents/${id}/who-can-view`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ whoCanView }),
     });
     return res.json();
   },
@@ -155,126 +155,9 @@ export const api = {
     return res.json();
   },
 
-  async verifyIntegrity(documentId) {
-    const res = await fetch(`${API_BASE}/documents/verify-integrity`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ documentId }),
-    });
-    return res.json();
-  },
-
-  // Audit
-  async getAuditLogs(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    const res = await fetch(`${API_BASE}/audit?${query}`, {
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  async getCryptographicManifest() {
-    const res = await fetch(`${API_BASE}/audit/manifest`, {
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  // Quorum
-  async getQuorumRequests() {
-    const res = await fetch(`${API_BASE}/quorum`, {
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  async requestQuorum(data) {
-    const res = await fetch(`${API_BASE}/quorum/request`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    });
-    return res.json();
-  },
-
-  async signQuorum(id, signerEmail) {
-    const res = await fetch(`${API_BASE}/quorum/${id}/sign`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ signerEmail }),
-    });
-    return res.json();
-  },
-
-  // Break Glass
-  async getBreakGlass() {
-    const res = await fetch(`${API_BASE}/break-glass`, {
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  async armBreakGlass(data) {
-    const res = await fetch(`${API_BASE}/break-glass/arm`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    });
-    return res.json();
-  },
-
-  async cancelBreakGlass() {
-    const res = await fetch(`${API_BASE}/break-glass/cancel`, {
-      method: 'POST',
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  async triggerBreakGlass() {
-    const res = await fetch(`${API_BASE}/break-glass/trigger`, {
-      method: 'POST',
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  // Categories
-  async getCategories() {
-    const res = await fetch(`${API_BASE}/categories`, {
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  async createCategory(data) {
-    const res = await fetch(`${API_BASE}/categories`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(data),
-    });
-    return res.json();
-  },
-
-  // Notifications
-  async getNotifications() {
-    const res = await fetch(`${API_BASE}/notifications`, {
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  async markNotificationRead(id) {
-    const res = await fetch(`${API_BASE}/notifications/${id}/read`, {
-      method: 'PUT',
-      headers: getHeaders(),
-    });
-    return res.json();
-  },
-
-  async markAllNotificationsRead() {
-    const res = await fetch(`${API_BASE}/notifications/read-all`, {
-      method: 'PUT',
+  // Activity
+  async getRecentActivity() {
+    const res = await fetch(`${API_BASE}/audit?limit=20`, {
       headers: getHeaders(),
     });
     return res.json();
