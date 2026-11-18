@@ -15,8 +15,10 @@ import {
   FileText,
   Users,
   HardDrive,
-  UserPlus
+  UserPlus,
+  KeyRound
 } from 'lucide-react';
+import JoinFamilyModal from '../components/common/JoinFamilyModal';
 
 export default function DashboardPage() {
   const { user, family, setIsEmergencyModalOpen } = useAuth();
@@ -28,6 +30,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   const handleCopyInviteCode = () => {
     const code = family?.inviteCode || 'GHAR-4892';
@@ -135,17 +138,25 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0">
           <code className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#262626] font-mono font-bold text-sm tracking-widest text-slate-900 dark:text-[#3ECF8E] shadow-2xs">
             {family?.inviteCode || 'GHAR-4892'}
           </code>
           <button
             type="button"
             onClick={handleCopyInviteCode}
-            className="min-h-[40px] inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="min-h-[40px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             {copiedInvite ? <Check size={14} /> : <Copy size={14} />}
             <span>{copiedInvite ? 'Copied!' : 'Copy Code'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsJoinModalOpen(true)}
+            className="min-h-[40px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] hover:bg-slate-50 dark:hover:bg-[#202020] text-slate-700 dark:text-neutral-300 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+          >
+            <KeyRound size={14} className="text-[#10B981] dark:text-[#3ECF8E]" />
+            <span>Join With Code</span>
           </button>
         </div>
       </div>
@@ -397,6 +408,12 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      <JoinFamilyModal
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
+        onJoined={() => window.location.reload()}
+      />
     </div>
   );
 }

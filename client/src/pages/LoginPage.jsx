@@ -155,11 +155,14 @@ export default function LoginPage() {
               </form>
             </div>
 
-            <div className="pt-2 text-center">
+            <div className="pt-2 text-center space-y-1">
               <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-[#8F8F8F] font-medium">
                 <Lock className="w-3.5 h-3.5 text-[#10B981] dark:text-[#3ECF8E]" />
                 <span>Supabase Zero-Knowledge Authentication</span>
               </span>
+              <p className="text-[11px] text-slate-400 dark:text-neutral-500">
+                Joining with an invite code? Sign in first, then enter your <code className="font-mono font-semibold text-emerald-600 dark:text-[#3ECF8E]">GHAR-XXXX</code> code to link.
+              </p>
             </div>
           </div>
         </div>

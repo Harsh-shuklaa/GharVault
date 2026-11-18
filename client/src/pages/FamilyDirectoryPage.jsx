@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { Plus, UserPlus, Phone, Mail, ShieldAlert, Folder, ArrowRight, Trash2, X, AlertCircle, Edit3 } from 'lucide-react';
+import { Plus, UserPlus, Phone, Mail, ShieldAlert, Folder, ArrowRight, Trash2, X, AlertCircle, Edit3, KeyRound } from 'lucide-react';
 import EditMemberModal from '../components/common/EditMemberModal';
+import JoinFamilyModal from '../components/common/JoinFamilyModal';
 
 export default function FamilyDirectoryPage() {
   const { family, user } = useAuth();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -88,13 +90,24 @@ export default function FamilyDirectoryPage() {
             Everyone in {family?.name || 'your family vault'} with their emergency blood group, contacts, and documents.
           </p>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all self-stretch sm:self-center cursor-pointer"
-        >
-          <UserPlus size={16} strokeWidth={2.2} />
-          <span>+ Add Family Member</span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 self-stretch sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setIsJoinModalOpen(true)}
+            className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#1C1C1C] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-800 dark:text-[#EDEDED] font-bold text-xs transition-all shadow-xs cursor-pointer"
+          >
+            <KeyRound size={15} className="text-[#10B981] dark:text-[#3ECF8E]" />
+            <span>Join via Invite Code</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+          >
+            <UserPlus size={16} strokeWidth={2.2} />
+            <span>+ Add Family Member</span>
+          </button>
+        </div>
       </div>
 
       {/* Loading Skeleton */}
@@ -125,8 +138,15 @@ export default function FamilyDirectoryPage() {
           </p>
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
+              onClick={() => setIsJoinModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] hover:bg-slate-50 dark:hover:bg-[#202020] text-slate-800 dark:text-[#EDEDED] font-bold text-xs transition-all shadow-xs cursor-pointer"
+            >
+              <KeyRound size={15} className="text-[#10B981] dark:text-[#3ECF8E]" />
+              <span>Join Existing Family (Code)</span>
+            </button>
+            <button
               onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 transition-all cursor-pointer"
             >
               <UserPlus size={16} strokeWidth={2.2} />
               <span>+ Add First Family Member</span>
@@ -432,6 +452,16 @@ export default function FamilyDirectoryPage() {
           </div>
         </div>
       )}
+      {/* Join Family via Invite Code Modal */}
+      <JoinFamilyModal
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
+        onJoined={() => {
+          setIsJoinModalOpen(false);
+          loadMembers();
+        }}
+      />
+
       {/* Edit Family Member Modal */}
       <EditMemberModal
         isOpen={Boolean(editingMember)}

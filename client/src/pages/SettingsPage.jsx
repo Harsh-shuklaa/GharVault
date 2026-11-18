@@ -24,12 +24,14 @@ import {
   ShieldAlert,
   KeyRound,
 } from 'lucide-react';
+import JoinFamilyModal from '../components/common/JoinFamilyModal';
 
 export default function SettingsPage() {
   const { user, family, updateUser } = useAuth();
   const { theme, isDark, setTheme } = useTheme();
   const [copiedCode, setCopiedCode] = useState(false);
   const [downloadingBackup, setDownloadingBackup] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [newMpin, setNewMpin] = useState('');
   const [isSavingMpin, setIsSavingMpin] = useState(false);
   const [mpinSuccess, setMpinSuccess] = useState('');
@@ -273,7 +275,7 @@ export default function SettingsPage() {
                 <label className="block text-slate-400 dark:text-neutral-500 font-bold uppercase tracking-wider mb-1">
                   Family Invite Code (Share with family members)
                 </label>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <code className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#141414] font-mono font-bold text-sm text-slate-900 dark:text-neutral-200 tracking-wider border border-slate-200 dark:border-[#262626]">
                     {family?.inviteCode || 'GHAR-VAULT'}
                   </code>
@@ -283,6 +285,14 @@ export default function SettingsPage() {
                   >
                     {copiedCode ? <Check size={14} /> : <Copy size={14} />}
                     <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsJoinModalOpen(true)}
+                    className="px-4 py-2 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] hover:bg-slate-50 dark:hover:bg-[#202020] text-slate-800 dark:text-[#EDEDED] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <KeyRound size={14} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                    <span>Join Another Vault</span>
                   </button>
                 </div>
                 <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">
@@ -626,6 +636,12 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <JoinFamilyModal
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
+        onJoined={() => window.location.reload()}
+      />
     </div>
   );
 }
