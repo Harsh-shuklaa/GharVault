@@ -6,9 +6,11 @@ const router = express.Router();
 
 // GET /api/quorum
 router.get('/', (req, res) => {
-  res.json({
-    requests: memoryStore.quorumRequests,
-  });
+  const targetFamilyId = req.familyId || req.user?.familyId;
+  const requests = targetFamilyId
+    ? memoryStore.quorumRequests.filter(r => r.familyId?.toString() === targetFamilyId.toString())
+    : [];
+  res.json({ requests });
 });
 
 // POST /api/quorum/request

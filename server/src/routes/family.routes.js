@@ -12,29 +12,34 @@ const router = express.Router();
 // GET /api/family/current
 router.get('/current', async (req, res) => {
   try {
-    const targetFamilyId = req.familyId;
+    const targetFamilyId = req.familyId || req.user?.familyId;
+
+    // STRICT MULTI-TENANT GUARD: If user has no familyId, NEVER fall back to another family!
+    if (!targetFamilyId) {
+      return res.json({
+        family: null,
+        membersCount: 0,
+        documentsCount: 0,
+        expiringCount: 0,
+        expiringDocuments: [],
+        totalSizeBytes: 0,
+        storageLimitBytes: 53687091200,
+        usagePercentage: '0.0',
+      });
+    }
+
     let family = null;
     let members = [];
     let docs = [];
 
     if (isConnected) {
-      if (targetFamilyId) {
-        family = await Family.findById(targetFamilyId);
-      } else {
-        family = await Family.findOne().sort({ createdAt: -1 });
-      }
-
+      family = await Family.findById(targetFamilyId);
       if (family) {
         members = await User.find({ familyId: family._id });
         docs = await Document.find({ familyId: family._id });
       }
     } else {
-      if (targetFamilyId) {
-        family = memoryStore.families.find(f => f._id.toString() === targetFamilyId.toString()) || null;
-      } else {
-        family = memoryStore.families[0] || null;
-      }
-
+      family = memoryStore.families.find(f => f._id.toString() === targetFamilyId.toString()) || null;
       if (family) {
         members = memoryStore.users.filter(u => u.familyId?.toString() === family._id.toString());
         docs = memoryStore.documents.filter(d => d.familyId?.toString() === family._id.toString());
@@ -47,6 +52,7 @@ router.get('/current', async (req, res) => {
         membersCount: 0,
         documentsCount: 0,
         expiringCount: 0,
+        expiringDocuments: [],
         totalSizeBytes: 0,
         storageLimitBytes: 53687091200,
         usagePercentage: '0.0',
@@ -82,18 +88,18 @@ router.get('/current', async (req, res) => {
 // GET /api/family/emergency-card (Quick Emergency Medical Hospital Card for the entire family)
 router.get('/emergency-card', async (req, res) => {
   try {
-    const targetFamilyId = req.familyId;
+    const targetFamilyId = req.familyId || req.user?.familyId;
+
+    if (!targetFamilyId) {
+      return res.json({ familyName: 'Family Vault', members: [], medicalDocs: [] });
+    }
+
     let family = null;
     let members = [];
     let medicalDocs = [];
 
     if (isConnected) {
-      if (targetFamilyId) {
-        family = await Family.findById(targetFamilyId);
-      } else {
-        family = await Family.findOne().sort({ createdAt: -1 });
-      }
-
+      family = await Family.findById(targetFamilyId);
       if (family) {
         members = await User.find({ familyId: family._id });
         medicalDocs = await Document.find({
@@ -102,12 +108,7 @@ router.get('/emergency-card', async (req, res) => {
         });
       }
     } else {
-      if (targetFamilyId) {
-        family = memoryStore.families.find(f => f._id.toString() === targetFamilyId.toString()) || null;
-      } else {
-        family = memoryStore.families[0] || null;
-      }
-
+      family = memoryStore.families.find(f => f._id.toString() === targetFamilyId.toString()) || null;
       if (family) {
         members = memoryStore.users.filter(u => u.familyId?.toString() === family._id.toString());
         medicalDocs = memoryStore.documents.filter(
@@ -342,29 +343,21 @@ router.post('/join', async (req, res) => {
 // GET /api/family/members
 router.get('/members', async (req, res) => {
   try {
-    const targetFamilyId = req.familyId;
+    const targetFamilyId = req.familyId || req.user?.familyId;
+
+    if (!targetFamilyId) {
+      return res.json({ members: [], total: 0 });
+    }
+
     let members = [];
     let docs = [];
 
     if (isConnected) {
-      if (targetFamilyId) {
-        members = await User.find({ familyId: targetFamilyId }).lean();
-        docs = await Document.find({ familyId: targetFamilyId }).lean();
-      } else {
-        const firstFam = await Family.findOne().sort({ createdAt: -1 });
-        if (firstFam) {
-          members = await User.find({ familyId: firstFam._id }).lean();
-          docs = await Document.find({ familyId: firstFam._id }).lean();
-        }
-      }
+      members = await User.find({ familyId: targetFamilyId }).lean();
+      docs = await Document.find({ familyId: targetFamilyId }).lean();
     } else {
-      if (targetFamilyId) {
-        members = memoryStore.users.filter(u => u.familyId?.toString() === targetFamilyId.toString());
-        docs = memoryStore.documents.filter(d => d.familyId?.toString() === targetFamilyId.toString());
-      } else if (memoryStore.families[0]) {
-        members = memoryStore.users.filter(u => u.familyId?.toString() === memoryStore.families[0]._id.toString());
-        docs = memoryStore.documents.filter(d => d.familyId?.toString() === memoryStore.families[0]._id.toString());
-      }
+      members = memoryStore.users.filter(u => u.familyId?.toString() === targetFamilyId.toString());
+      docs = memoryStore.documents.filter(d => d.familyId?.toString() === targetFamilyId.toString());
     }
 
     const membersWithDocs = members.map(m => {
@@ -375,7 +368,7 @@ router.get('/members', async (req, res) => {
       };
     });
 
-    res.json({ members: membersWithDocs });
+    res.json({ members: membersWithDocs, total: membersWithDocs.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -493,18 +486,25 @@ router.post('/members', async (req, res) => {
 // GET /api/family/members/:id
 router.get('/members/:id', async (req, res) => {
   try {
+    const targetFamilyId = req.familyId || req.user?.familyId;
     let member = null;
     let assignedDocs = [];
 
     if (isConnected) {
       member = await User.findById(req.params.id);
       if (member) {
-        assignedDocs = await Document.find({ assignedMemberId: member._id });
+        if (targetFamilyId && member.familyId && member.familyId.toString() !== targetFamilyId.toString()) {
+          return res.status(403).json({ error: 'Access forbidden. Member belongs to another family vault.' });
+        }
+        assignedDocs = await Document.find({ assignedMemberId: member._id, familyId: member.familyId });
       }
     } else {
       member = memoryStore.users.find(u => u._id.toString() === req.params.id);
       if (member) {
-        assignedDocs = memoryStore.documents.filter(d => d.assignedMemberId?.toString() === member._id.toString());
+        if (targetFamilyId && member.familyId && member.familyId.toString() !== targetFamilyId.toString()) {
+          return res.status(403).json({ error: 'Access forbidden. Member belongs to another family vault.' });
+        }
+        assignedDocs = memoryStore.documents.filter(d => d.assignedMemberId?.toString() === member._id.toString() && d.familyId?.toString() === member.familyId?.toString());
       }
     }
 
@@ -524,6 +524,7 @@ router.get('/members/:id', async (req, res) => {
 // PUT /api/family/members/:id — Full Family Member Profile Update
 router.put('/members/:id', async (req, res) => {
   try {
+    const targetFamilyId = req.familyId || req.user?.familyId;
     const {
       name,
       relationship,
@@ -539,6 +540,12 @@ router.put('/members/:id', async (req, res) => {
       avatar,
       role,
     } = req.body;
+
+    let existingMember = isConnected ? await User.findById(req.params.id) : memoryStore.users.find(u => u._id.toString() === req.params.id);
+    if (!existingMember) return res.status(404).json({ error: 'Family member not found' });
+    if (targetFamilyId && existingMember.familyId && existingMember.familyId.toString() !== targetFamilyId.toString()) {
+      return res.status(403).json({ error: 'Access forbidden. Member belongs to another family vault.' });
+    }
 
     const updates = {};
     if (name?.trim()) updates.name = name.trim();

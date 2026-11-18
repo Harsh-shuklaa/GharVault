@@ -57,16 +57,22 @@ const simulateOCR = (fileName, title, category) => {
 router.get('/', async (req, res) => {
   try {
     const { category, memberId, search, status } = req.query;
-    const targetFamilyId = req.familyId;
+    const targetFamilyId = req.familyId || req.user?.familyId;
+
+    // STRICT MULTI-TENANT GUARD: If user has no family, immediately return 0 documents! NEVER leak cross-family files!
+    if (!targetFamilyId) {
+      return res.json({
+        documents: [],
+        total: 0,
+      });
+    }
 
     let docs = [];
     let members = [];
 
     if (isConnected) {
-      const query = {};
-      if (targetFamilyId) {
-        query.familyId = targetFamilyId;
-      }
+      const query = { familyId: targetFamilyId };
+
       if (category && category !== 'All') {
         query.category = new RegExp(`^${category}$`, 'i');
       }
@@ -77,24 +83,25 @@ router.get('/', async (req, res) => {
         query.status = status;
       }
       if (search) {
-        query.$or = [
-          { title: new RegExp(search, 'i') },
-          { documentNumber: new RegExp(search, 'i') },
-          { category: new RegExp(search, 'i') },
-          { tags: new RegExp(search, 'i') },
+        query.$and = [
+          { familyId: targetFamilyId },
+          {
+            $or: [
+              { title: new RegExp(search, 'i') },
+              { documentNumber: new RegExp(search, 'i') },
+              { category: new RegExp(search, 'i') },
+              { tags: new RegExp(search, 'i') },
+            ],
+          },
         ];
       }
 
       docs = await Document.find(query).sort({ createdAt: -1 }).lean();
-      members = targetFamilyId ? await User.find({ familyId: targetFamilyId }).lean() : await User.find().lean();
+      members = await User.find({ familyId: targetFamilyId }).lean();
     } else {
-      docs = [...memoryStore.documents];
-      if (targetFamilyId) {
-        docs = docs.filter(d => d.familyId?.toString() === targetFamilyId.toString());
-        members = memoryStore.users.filter(u => u.familyId?.toString() === targetFamilyId.toString());
-      } else {
-        members = memoryStore.users;
-      }
+      // Memory Store: strictly isolated by familyId
+      docs = memoryStore.documents.filter(d => d.familyId?.toString() === targetFamilyId.toString());
+      members = memoryStore.users.filter(u => u.familyId?.toString() === targetFamilyId.toString());
 
       if (category && category !== 'All') {
         docs = docs.filter(d => d.category?.toLowerCase() === category.toLowerCase());
@@ -137,17 +144,24 @@ router.get('/', async (req, res) => {
 // GET /api/documents/:id
 router.get('/:id', async (req, res) => {
   try {
+    const targetFamilyId = req.familyId || req.user?.familyId;
     let doc = null;
     let member = null;
 
     if (isConnected) {
       doc = await Document.findById(req.params.id).lean();
       if (doc) {
+        if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+          return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
+        }
         member = await User.findById(doc.assignedMemberId).lean();
       }
     } else {
       doc = memoryStore.documents.find(d => d._id.toString() === req.params.id);
       if (doc) {
+        if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+          return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
+        }
         member = memoryStore.users.find(u => u._id.toString() === doc.assignedMemberId?.toString());
       }
     }
@@ -246,19 +260,14 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       parsedTags = [category];
     }
 
-    let familyId = req.familyId;
-    let uploaderId = req.userId;
+    const familyId = req.familyId || req.user?.familyId;
+    const uploaderId = req.userId || req.user?._id;
+
+    if (!familyId) {
+      return res.status(400).json({ error: 'You must belong to a family vault to upload documents.' });
+    }
 
     if (isConnected) {
-      if (!familyId) {
-        const fam = await Family.findOne().sort({ createdAt: -1 });
-        familyId = fam?._id;
-      }
-      if (!uploaderId) {
-        const user = await User.findOne();
-        uploaderId = user?._id;
-      }
-
       const newDoc = await Document.create({
         title: title || originalName.replace(fileExt, ''),
         originalFileName: originalName,
@@ -286,14 +295,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       });
     }
 
-    // Memory Store
-    if (!familyId) {
-      familyId = memoryStore.families[0]?._id || 'fam_default';
-    }
-    if (!uploaderId) {
-      uploaderId = memoryStore.users[0]?._id || null;
-    }
-
+    // Memory Store: Tag with user's actual familyId and uploaderId!
     const newDoc = {
       _id: 'doc_' + Date.now(),
       title: title || originalName.replace(fileExt, ''),
@@ -408,6 +410,7 @@ router.post('/:id/share-link', async (req, res) => {
   try {
     const { durationMinutes = 1440, expiresInHours, password } = req.body;
     const finalMinutes = expiresInHours ? expiresInHours * 60 : (Number(durationMinutes) || 1440);
+    const targetFamilyId = req.familyId || req.user?.familyId;
 
     let doc = null;
     if (isConnected) {
@@ -417,6 +420,11 @@ router.post('/:id/share-link', async (req, res) => {
     }
 
     if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    // Strict multi-tenant verification:
+    if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+      return res.status(403).json({ error: 'Access forbidden. You cannot share documents from another family vault.' });
+    }
 
     const token = crypto.randomBytes(16).toString('hex');
     const expiresAt = new Date(Date.now() + finalMinutes * 60000);
@@ -449,17 +457,26 @@ router.post('/:id/share-link', async (req, res) => {
 // PUT /api/documents/:id/who-can-view (Human-friendly access selector)
 router.put('/:id/who-can-view', async (req, res) => {
   try {
-    const { whoCanView } = req.body; // e.g. ['ALL'] or ['user_1', 'user_2']
+    const { whoCanView } = req.body;
+    const targetFamilyId = req.familyId || req.user?.familyId;
 
     let doc = null;
     if (isConnected) {
-      doc = await Document.findByIdAndUpdate(req.params.id, { whoCanView }, { new: true });
+      doc = await Document.findById(req.params.id);
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+      if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+        return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
+      }
+      doc.whoCanView = whoCanView;
+      await doc.save();
     } else {
       doc = memoryStore.documents.find(d => d._id.toString() === req.params.id);
-      if (doc) doc.whoCanView = whoCanView;
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+      if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+        return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
+      }
+      doc.whoCanView = whoCanView;
     }
-
-    if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     res.json({ success: true, whoCanView: doc.whoCanView });
   } catch (err) {
@@ -470,14 +487,24 @@ router.put('/:id/who-can-view', async (req, res) => {
 // DELETE /api/documents/:id
 router.delete('/:id', async (req, res) => {
   try {
+    const targetFamilyId = req.familyId || req.user?.familyId;
     let doc = null;
+
     if (isConnected) {
-      doc = await Document.findByIdAndDelete(req.params.id);
+      doc = await Document.findById(req.params.id);
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+      if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+        return res.status(403).json({ error: 'Access forbidden. You cannot delete documents from another family vault.' });
+      }
+      await Document.findByIdAndDelete(req.params.id);
     } else {
       const idx = memoryStore.documents.findIndex(d => d._id.toString() === req.params.id);
-      if (idx !== -1) {
-        doc = memoryStore.documents.splice(idx, 1)[0];
+      if (idx === -1) return res.status(404).json({ error: 'Document not found' });
+      doc = memoryStore.documents[idx];
+      if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+        return res.status(403).json({ error: 'Access forbidden. You cannot delete documents from another family vault.' });
       }
+      memoryStore.documents.splice(idx, 1);
     }
 
     if (!doc) return res.status(404).json({ error: 'Document not found' });

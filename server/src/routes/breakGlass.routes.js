@@ -6,11 +6,16 @@ const router = express.Router();
 
 // GET /api/break-glass
 router.get('/', (req, res) => {
-  const activeSession = memoryStore.breakGlassSessions[0] || null;
+  const targetFamilyId = req.familyId || req.user?.familyId;
+  const activeSession = targetFamilyId
+    ? memoryStore.breakGlassSessions.find(s => s.familyId?.toString() === targetFamilyId.toString()) || null
+    : null;
+  const family = targetFamilyId ? memoryStore.families.find(f => f._id.toString() === targetFamilyId.toString()) : null;
+  const members = targetFamilyId ? memoryStore.users.filter(u => u.familyId?.toString() === targetFamilyId.toString()) : [];
   res.json({
     session: activeSession,
-    delayHours: memoryStore.families[0]?.settings.breakGlassDelayHours || 48,
-    emergencyContacts: memoryStore.users.filter(u => u.isEmergencyContact),
+    delayHours: family?.settings?.breakGlassDelayHours || 48,
+    emergencyContacts: members.filter(u => u.isEmergencyContact),
   });
 });
 

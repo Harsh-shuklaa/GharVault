@@ -6,7 +6,13 @@ const router = express.Router();
 // GET /api/audit
 router.get('/', (req, res) => {
   const { action, limit = 50 } = req.query;
-  let logs = [...memoryStore.auditLogs];
+  const targetFamilyId = req.familyId || req.user?.familyId;
+
+  if (!targetFamilyId) {
+    return res.json({ logs: [], total: 0, headHash: null });
+  }
+
+  let logs = memoryStore.auditLogs.filter(l => !l.familyId || l.familyId.toString() === targetFamilyId.toString());
 
   if (action && action !== 'ALL') {
     logs = logs.filter(l => l.action === action);
@@ -15,15 +21,21 @@ router.get('/', (req, res) => {
   res.json({
     logs: logs.slice(0, parseInt(limit)),
     total: logs.length,
-    headHash: memoryStore.auditLogs[0]?.sha256ChainHash,
+    headHash: logs[0]?.sha256ChainHash || null,
   });
 });
 
 // GET /api/audit/manifest (Matches Stitch Cryptographic Manifest JSON Payload screen!)
 router.get('/manifest', (req, res) => {
-  const family = memoryStore.families[0];
-  const docs = memoryStore.documents;
-  const auditLogs = memoryStore.auditLogs;
+  const targetFamilyId = req.familyId || req.user?.familyId;
+  const family = memoryStore.families.find(f => f._id.toString() === targetFamilyId?.toString()) || {
+    _id: targetFamilyId || 'fam_default',
+    name: 'Your Family Vault',
+    inviteCode: 'GHAR-VAULT',
+    settings: {},
+  };
+  const docs = memoryStore.documents.filter(d => d.familyId?.toString() === targetFamilyId?.toString());
+  const auditLogs = memoryStore.auditLogs.filter(l => l.familyId?.toString() === targetFamilyId?.toString());
 
   const manifest = {
     vaultStandard: 'GHARVAULT_CRYPTOGRAPHIC_MANIFEST_V2.4',

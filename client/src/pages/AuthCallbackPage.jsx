@@ -104,6 +104,7 @@ export default function AuthCallbackPage() {
           throw new Error(res?.error || 'Failed to synchronize user session with GharVault backend.');
         }
 
+        sessionStorage.clear();
         localStorage.setItem('gharvault_token', res.token);
         await refreshSession();
 

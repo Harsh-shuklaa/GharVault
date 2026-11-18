@@ -22,6 +22,11 @@ export const authenticate = async (req, res, next) => {
       return next();
     }
 
+    req.userId = decoded.id;
+    if (decoded.familyId) {
+      req.familyId = decoded.familyId;
+    }
+
     let user = null;
     if (isConnected) {
       user = await User.findById(decoded.id);
@@ -32,7 +37,7 @@ export const authenticate = async (req, res, next) => {
     if (user) {
       req.user = user;
       req.userId = user._id;
-      req.familyId = user.familyId;
+      req.familyId = user.familyId || decoded.familyId;
     }
 
     next();

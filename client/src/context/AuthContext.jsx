@@ -93,6 +93,7 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
           setFamily(null);
           localStorage.removeItem('gharvault_token');
+          sessionStorage.clear();
         }
       });
       return () => subscription?.unsubscribe();
@@ -101,6 +102,12 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async (customEmail = null) => {
     try {
+      // Clear previous cached session state
+      localStorage.removeItem('gharvault_token');
+      sessionStorage.clear();
+      setUser(null);
+      setFamily(null);
+
       // Direct email sign-in for users
       if (customEmail) {
         const loginRes = await api.loginWithGoogle({
@@ -125,10 +132,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await supabaseSignOut();
+    try {
+      await supabaseSignOut();
+    } catch (e) {
+      console.warn('SignOut warning:', e);
+    }
     setUser(null);
     setFamily(null);
     localStorage.removeItem('gharvault_token');
+    sessionStorage.clear();
+    window.location.href = '/auth/login';
   };
 
   const updateUser = (updatedUser) => {

@@ -5,7 +5,10 @@ const router = express.Router();
 
 // GET /api/notifications
 router.get('/', (req, res) => {
-  const notifs = memoryStore.notifications;
+  const targetFamilyId = req.familyId || req.user?.familyId;
+  const notifs = targetFamilyId
+    ? memoryStore.notifications.filter(n => !n.familyId || n.familyId.toString() === targetFamilyId.toString())
+    : [];
   const unreadCount = notifs.filter(n => !n.isRead).length;
 
   res.json({
