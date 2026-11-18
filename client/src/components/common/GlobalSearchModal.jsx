@@ -78,21 +78,21 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-[#1C1C1C] rounded-xl shadow-2xl border border-[#2E2E2E] overflow-hidden flex flex-col max-h-[80vh]"
+        className="w-full max-w-2xl bg-white dark:bg-[#1C1C1C] rounded-xl shadow-2xl border border-slate-200 dark:border-[#2E2E2E] overflow-hidden flex flex-col max-h-[80vh] transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center px-4 py-3.5 border-b border-[#262626] bg-[#141414]">
-          <Search className="w-5 h-5 text-[#8F8F8F] mr-3 shrink-0" />
+        <div className="flex items-center px-4 py-3.5 border-b border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414]">
+          <Search className="w-5 h-5 text-slate-400 dark:text-[#8F8F8F] mr-3 shrink-0" />
           <input
             type="text"
-            className="w-full bg-transparent text-[#EDEDED] placeholder:text-[#666] text-sm font-medium focus:outline-none"
+            className="w-full bg-transparent text-slate-900 dark:text-[#EDEDED] placeholder:text-slate-400 dark:placeholder:text-[#666] text-sm font-medium focus:outline-none"
             placeholder="Search documents, Aadhaar, PAN, insurance, family members..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
           />
-          <kbd className="px-2 py-0.5 rounded bg-[#262626] text-[#8F8F8F] text-[11px] font-mono border border-[#333]">
+          <kbd className="px-2 py-0.5 rounded bg-slate-200 dark:bg-[#262626] text-slate-600 dark:text-[#8F8F8F] text-[11px] font-mono border border-slate-300 dark:border-[#333]">
             ESC
           </kbd>
         </div>
@@ -102,7 +102,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           {/* Documents Section */}
           {filteredDocs.length > 0 && (
             <div>
-              <span className="text-[11px] font-medium text-[#8F8F8F] uppercase tracking-wider px-2 mb-1.5 block">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-[#8F8F8F] uppercase tracking-wider px-2 mb-1.5 block">
                 Documents ({filteredDocs.length})
               </span>
               <div className="space-y-1">
@@ -113,10 +113,10 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                       navigate(`/vault/documents/${doc._id}`);
                       onClose();
                     }}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-[#252525] text-[#EDEDED] cursor-pointer transition-colors group"
+                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#252525] text-slate-800 dark:text-[#EDEDED] cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-[#141414] border border-[#2E2E2E] text-[#3ECF8E] flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-[#141414] border border-emerald-100 dark:border-[#2E2E2E] text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
                         {doc.category === 'ID Cards' ? (
                           <CreditCard className="w-4 h-4" />
                         ) : doc.category === 'Medical & Health' ? (
@@ -128,21 +128,21 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                         )}
                       </div>
                       <div className="truncate">
-                        <div className="text-xs font-medium text-[#EDEDED] group-hover:text-[#3ECF8E] truncate flex items-center gap-2">
+                        <div className="text-xs font-medium text-slate-900 dark:text-[#EDEDED] group-hover:text-[#10B981] dark:group-hover:text-[#3ECF8E] truncate flex items-center gap-2">
                           <span>{doc.title}</span>
                           {doc.status === 'EXPIRING_SOON' && (
-                            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">
+                            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 uppercase">
                               Expiring
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-[#8F8F8F] flex items-center gap-2 mt-0.5">
+                        <div className="text-[11px] text-slate-500 dark:text-[#8F8F8F] flex items-center gap-2 mt-0.5">
                           <span>{doc.category}</span>
                           {doc.documentNumber && <span>• {doc.documentNumber}</span>}
                         </div>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-[#666] group-hover:text-[#3ECF8E] transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#10B981] dark:text-[#666] dark:group-hover:text-[#3ECF8E] transition-colors" />
                   </div>
                 ))}
               </div>
@@ -152,7 +152,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           {/* Members Section */}
           {filteredMembers.length > 0 && (
             <div>
-              <span className="text-[11px] font-medium text-[#8F8F8F] uppercase tracking-wider px-2 mb-1.5 block">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-[#8F8F8F] uppercase tracking-wider px-2 mb-1.5 block">
                 Family Members ({filteredMembers.length})
               </span>
               <div className="space-y-1">
@@ -163,24 +163,24 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                       navigate(`/family/${m._id}`);
                       onClose();
                     }}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-[#252525] text-[#EDEDED] cursor-pointer transition-colors group"
+                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#252525] text-slate-800 dark:text-[#EDEDED] cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-3">
                       <img
                         src={m.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}`}
                         alt={m.name}
-                        className="w-7 h-7 rounded-full object-cover ring-1 ring-[#333]"
+                        className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200 dark:ring-[#333]"
                       />
                       <div>
-                        <div className="text-xs font-medium text-[#EDEDED] group-hover:text-[#3ECF8E]">
+                        <div className="text-xs font-medium text-slate-900 dark:text-[#EDEDED] group-hover:text-[#10B981] dark:group-hover:text-[#3ECF8E]">
                           {m.name}
                         </div>
-                        <div className="text-[11px] text-[#8F8F8F]">
+                        <div className="text-[11px] text-slate-500 dark:text-[#8F8F8F]">
                           {m.relationship} • {m.role}
                         </div>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-[#666] group-hover:text-[#3ECF8E] transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#10B981] dark:text-[#666] dark:group-hover:text-[#3ECF8E] transition-colors" />
                   </div>
                 ))}
               </div>
@@ -188,22 +188,22 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           )}
 
           {filteredDocs.length === 0 && filteredMembers.length === 0 && (
-            <div className="text-center py-8 text-[#8F8F8F] space-y-2">
-              <SearchX className="w-8 h-8 mx-auto text-[#555]" />
+            <div className="text-center py-8 text-slate-500 dark:text-[#8F8F8F] space-y-2">
+              <SearchX className="w-8 h-8 mx-auto text-slate-400 dark:text-[#555]" />
               <p className="text-xs">No records match "{query}"</p>
             </div>
           )}
         </div>
 
         {/* Footer shortcuts */}
-        <div className="px-4 py-2.5 bg-[#141414] border-t border-[#262626] flex items-center justify-between text-xs text-[#8F8F8F]">
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-200 dark:border-[#262626] flex items-center justify-between text-xs text-slate-500 dark:text-[#8F8F8F]">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1 text-[11px]">
-              <kbd className="px-1.5 py-0.5 rounded bg-[#262626] text-[#EDEDED] font-mono border border-[#333]">↑</kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-[#262626] text-[#EDEDED] font-mono border border-[#333]">↓</kbd> navigate
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-[#EDEDED] font-mono border border-slate-300 dark:border-[#333]">↑</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-[#EDEDED] font-mono border border-slate-300 dark:border-[#333]">↓</kbd> navigate
             </span>
             <span className="flex items-center gap-1 text-[11px]">
-              <kbd className="px-1.5 py-0.5 rounded bg-[#262626] text-[#EDEDED] font-mono border border-[#333]">↵</kbd> select
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-[#EDEDED] font-mono border border-slate-300 dark:border-[#333]">↵</kbd> select
             </span>
           </div>
           <span className="text-[11px]">GharVault Search</span>

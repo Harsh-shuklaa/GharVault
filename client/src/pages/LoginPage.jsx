@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Shield, Lock, AlertCircle, ArrowRight, Mail } from 'lucide-react';
+import { Shield, Lock, AlertCircle, ArrowRight, Mail, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function LoginPage() {
   const { loginWithGoogle } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [emailInput, setEmailInput] = useState('');
@@ -50,38 +52,50 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-[#EDEDED] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-[#3ECF8E] selection:text-black">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] text-slate-900 dark:text-[#EDEDED] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-[#3ECF8E] selection:text-black transition-colors">
+      {/* Top Bar with Home & Theme Toggle */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
+          className="w-9 h-9 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+        >
+          {isDark ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+        </button>
+      </div>
+
       {/* Decorative Subtle Emerald Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-[#3ECF8E]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-emerald-500/5 dark:bg-[#3ECF8E]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
         <Link to="/" className="inline-flex items-center justify-center gap-2.5 mb-6 group">
-          <div className="w-10 h-10 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] group-hover:border-[#3ECF8E]/50 flex items-center justify-center shadow-md transition-colors">
-            <Shield className="w-5 h-5 text-[#3ECF8E] stroke-[2.2]" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-[#1C1C1C] border border-emerald-200 dark:border-[#2E2E2E] group-hover:border-[#10B981] dark:group-hover:border-[#3ECF8E]/50 flex items-center justify-center shadow-xs transition-colors">
+            <Shield className="w-5 h-5 text-[#10B981] dark:text-[#3ECF8E] stroke-[2.2]" />
           </div>
-          <span className="font-semibold text-xl tracking-tight text-[#EDEDED]">
+          <span className="font-semibold text-xl tracking-tight text-slate-900 dark:text-[#EDEDED]">
             GharVault
           </span>
         </Link>
-        <h2 className="text-2xl font-semibold tracking-tight text-[#EDEDED]">
+        <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-[#EDEDED]">
           Welcome to Your Family Space
         </h2>
-        <p className="mt-1 text-xs text-[#8F8F8F]">
+        <p className="mt-1 text-xs text-slate-600 dark:text-[#8F8F8F]">
           One family. One secure, encrypted vault.
         </p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-[#1C1C1C] py-7 px-6 shadow-2xl rounded-xl border border-[#2E2E2E] space-y-5">
+        <div className="bg-white dark:bg-[#1C1C1C] py-7 px-6 shadow-xl dark:shadow-2xl rounded-xl border border-slate-200 dark:border-[#2E2E2E] space-y-5 transition-colors">
           {error && (
-            <div className="p-3.5 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400 text-xs font-medium flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+            <div className="p-3.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
               <span>{error}</span>
             </div>
           )}
 
           <div className="space-y-4">
-            <p className="text-xs text-[#8F8F8F] text-center leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-[#8F8F8F] text-center leading-relaxed">
               Sign in with your Google account. Zero passwords to remember, 100% free and encrypted.
             </p>
 
@@ -90,7 +104,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 py-3 px-5 border border-[#2E2E2E] hover:border-[#3ECF8E]/60 rounded-lg bg-[#171717] hover:bg-[#202020] text-[#EDEDED] font-medium text-sm shadow-sm transition-all cursor-pointer group disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-3 py-3 px-5 border border-slate-300 dark:border-[#2E2E2E] hover:border-[#10B981] dark:hover:border-[#3ECF8E]/60 rounded-lg bg-white dark:bg-[#171717] hover:bg-slate-50 dark:hover:bg-[#202020] text-slate-800 dark:text-[#EDEDED] font-medium text-sm shadow-xs transition-all cursor-pointer group disabled:opacity-50"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path
@@ -114,26 +128,26 @@ export default function LoginPage() {
             </button>
 
             {/* Direct Email Sign-In Option */}
-            <div className="pt-4 border-t border-[#262626]">
+            <div className="pt-4 border-t border-slate-200 dark:border-[#262626]">
               <form onSubmit={handleEmailLogin} className="space-y-2.5">
-                <label className="block text-[11px] font-medium uppercase tracking-wider text-[#8F8F8F]">
+                <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F]">
                   Or sign in with email
                 </label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Mail className="w-4 h-4 text-[#8F8F8F] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Mail className="w-4 h-4 text-slate-400 dark:text-[#8F8F8F] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="email"
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
                       placeholder="name@example.com"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-[#2E2E2E] bg-[#141414] text-xs text-[#EDEDED] placeholder-[#555] focus:border-[#3ECF8E] focus:outline-none transition-colors"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-xs text-slate-900 dark:text-[#EDEDED] placeholder-slate-400 dark:placeholder-[#555] focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading || !emailInput}
-                    className="px-4 py-2.5 rounded-lg bg-[#2E2E2E] hover:bg-[#383838] text-[#EDEDED] hover:text-white text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer"
+                    className="px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-[#2E2E2E] dark:hover:bg-[#383838] text-white dark:text-[#EDEDED] text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     Sign In
                   </button>
@@ -142,22 +156,11 @@ export default function LoginPage() {
             </div>
 
             <div className="pt-2 text-center">
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-[#8F8F8F] font-medium">
-                <Lock className="w-3.5 h-3.5 text-[#3ECF8E]" />
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-[#8F8F8F] font-medium">
+                <Lock className="w-3.5 h-3.5 text-[#10B981] dark:text-[#3ECF8E]" />
                 <span>Supabase Zero-Knowledge Authentication</span>
               </span>
             </div>
-          </div>
-
-          {/* Create or Join Link */}
-          <div className="pt-4 border-t border-[#262626] text-center text-xs text-[#8F8F8F]">
-            First time here or received an invite code?{' '}
-            <Link
-              to="/family/setup"
-              className="font-medium text-[#3ECF8E] hover:underline"
-            >
-              Create or Join Family Vault
-            </Link>
           </div>
         </div>
       </div>

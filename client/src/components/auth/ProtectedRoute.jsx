@@ -9,12 +9,12 @@ export default function ProtectedRoute() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#121212] flex flex-col items-center justify-center text-center p-4">
-        <div className="w-12 h-12 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] flex items-center justify-center mb-4 shadow-xl">
-          <Shield className="w-6 h-6 text-[#3ECF8E] animate-pulse" />
+      <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] flex flex-col items-center justify-center text-center p-4 transition-colors">
+        <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#2E2E2E] flex items-center justify-center mb-4 shadow-sm dark:shadow-xl">
+          <Shield className="w-6 h-6 text-[#10B981] dark:text-[#3ECF8E] animate-pulse" />
         </div>
-        <div className="w-6 h-6 border-2 border-[#3ECF8E] border-t-transparent rounded-full animate-spin mb-3" />
-        <p className="text-xs font-medium text-[#8F8F8F] tracking-wide">
+        <div className="w-6 h-6 border-2 border-[#10B981] dark:border-[#3ECF8E] border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-xs font-medium text-slate-600 dark:text-[#8F8F8F] tracking-wide">
           Verifying Encrypted Vault Session...
         </p>
       </div>

@@ -82,15 +82,19 @@ export default function AppLayout() {
         title={!isHovered ? item.name : undefined}
         className={`group/item flex items-center h-9 px-2.5 rounded-md transition-all select-none ${
           active
-            ? 'bg-[#262626] text-white font-medium shadow-xs'
-            : 'text-[#9CA3AF] hover:text-[#F3F4F6] hover:bg-white/[0.04] font-normal'
+            ? 'bg-emerald-50 text-emerald-700 font-medium shadow-xs dark:bg-[#262626] dark:text-white'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-normal dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6] dark:hover:bg-white/[0.04]'
         }`}
       >
         <div className="w-5 h-5 flex items-center justify-center shrink-0">
           <Icon
             size={18}
             strokeWidth={1.75}
-            className={`transition-colors ${active ? 'text-[#3ECF8E]' : 'text-[#9CA3AF] group-hover/item:text-[#F3F4F6]'}`}
+            className={`transition-colors ${
+              active
+                ? 'text-emerald-600 dark:text-[#3ECF8E]'
+                : 'text-slate-500 group-hover/item:text-slate-900 dark:text-[#9CA3AF] dark:group-hover/item:text-[#F3F4F6]'
+            }`}
           />
         </div>
 
@@ -99,7 +103,11 @@ export default function AppLayout() {
             isHovered
               ? 'opacity-100 max-w-[140px] ml-2.5'
               : 'opacity-0 max-w-0 ml-0 pointer-events-none'
-          } ${active ? 'text-white font-medium' : 'text-[#9CA3AF] group-hover/item:text-[#F3F4F6] font-normal'}`}
+          } ${
+            active
+              ? 'text-emerald-700 dark:text-white font-medium'
+              : 'text-slate-600 group-hover/item:text-slate-900 dark:text-[#9CA3AF] dark:group-hover/item:text-[#F3F4F6] font-normal'
+          }`}
         >
           {item.name}
         </span>
@@ -111,11 +119,11 @@ export default function AppLayout() {
             }`}
           >
             {item.badge === 'Alert' ? (
-              <span className="px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-mono font-medium">
+              <span className="px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 text-[10px] font-mono font-medium">
                 Alert
               </span>
             ) : (
-              <span className="px-1.5 py-0.5 rounded-full bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 text-[10px] font-mono font-medium">
+              <span className="px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-[#3ECF8E]/10 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/20 text-[10px] font-mono font-medium">
                 {item.badge}
               </span>
             )}
@@ -127,19 +135,19 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] text-slate-900 dark:text-[#EDEDED] font-sans transition-colors duration-200">
-      {/* ================= DESKTOP COLLAPSIBLE HOVER SIDEBAR (SUPABASE OBSIDIAN) ================= */}
+      {/* ================= DESKTOP COLLAPSIBLE HOVER SIDEBAR ================= */}
       <aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`hidden md:flex fixed left-0 top-0 bottom-0 z-50 bg-[#141414] border-r border-[#262626] flex-col justify-between transition-all duration-200 ease-in-out select-none px-3 py-3 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
-          isHovered ? 'w-60 shadow-2xl shadow-black/80' : 'w-16'
+        className={`hidden md:flex fixed left-0 top-0 bottom-0 z-50 bg-white dark:bg-[#141414] border-r border-slate-200 dark:border-[#262626] flex-col justify-between transition-all duration-200 ease-in-out select-none px-3 py-3 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
+          isHovered ? 'w-60 shadow-2xl shadow-slate-300/60 dark:shadow-black/80' : 'w-16'
         }`}
       >
         <div className="flex flex-col">
           {/* Header Brand */}
           <div className="flex items-center gap-2.5 px-1.5 py-1 mb-2">
             <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0" title="GharVault Home">
-              <div className="w-8 h-8 rounded-lg bg-[#3ECF8E] flex items-center justify-center text-[#121212] shrink-0 shadow-sm shadow-[#3ECF8E]/20 font-bold">
+              <div className="w-8 h-8 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] flex items-center justify-center text-white dark:text-[#121212] shrink-0 shadow-sm shadow-[#10B981]/20 font-bold">
                 <Shield size={18} strokeWidth={2.2} />
               </div>
               <div
@@ -147,10 +155,10 @@ export default function AppLayout() {
                   isHovered ? 'opacity-100 max-w-[160px]' : 'opacity-0 max-w-0 pointer-events-none'
                 }`}
               >
-                <span className="font-headline font-bold text-sm tracking-tight text-white leading-none">
+                <span className="font-headline font-bold text-sm tracking-tight text-slate-900 dark:text-white leading-none">
                   GharVault
                 </span>
-                <span className="text-[11px] text-[#9CA3AF] font-normal truncate mt-1">
+                <span className="text-[11px] text-slate-500 dark:text-[#9CA3AF] font-normal truncate mt-1">
                   {family?.name || 'Family Vault'}
                 </span>
               </div>
@@ -158,7 +166,7 @@ export default function AppLayout() {
           </div>
 
           {/* Section Divider */}
-          <div className="border-t border-[#262626] my-2" />
+          <div className="border-t border-slate-200 dark:border-[#262626] my-2" />
 
           {/* Group 1: Main Overview */}
           <nav className="space-y-1">
@@ -166,7 +174,7 @@ export default function AppLayout() {
           </nav>
 
           {/* Section Divider */}
-          <div className="border-t border-[#262626] my-2" />
+          <div className="border-t border-slate-200 dark:border-[#262626] my-2" />
 
           {/* Group 2: Vault Categories */}
           <nav className="space-y-1">
@@ -174,7 +182,7 @@ export default function AppLayout() {
           </nav>
 
           {/* Section Divider */}
-          <div className="border-t border-[#262626] my-2" />
+          <div className="border-t border-slate-200 dark:border-[#262626] my-2" />
 
           {/* Group 3: Activity & Filters */}
           <nav className="space-y-1">
@@ -184,7 +192,7 @@ export default function AppLayout() {
 
         {/* Bottom Pinned Menu */}
         <div className="pt-2">
-          <div className="border-t border-[#262626] my-2" />
+          <div className="border-t border-slate-200 dark:border-[#262626] my-2" />
 
           <div className="space-y-1">
             {/* Emergency Hospital Card Trigger */}
@@ -192,7 +200,7 @@ export default function AppLayout() {
               type="button"
               onClick={() => setIsEmergencyModalOpen(true)}
               title={!isHovered ? 'Emergency Card' : undefined}
-              className="group/item w-full flex items-center h-9 px-2.5 rounded-md text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer select-none"
+              className="group/item w-full flex items-center h-9 px-2.5 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-500/10 transition-colors cursor-pointer select-none"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 relative">
                 <HeartPulse size={18} strokeWidth={1.75} className="text-red-500" />
@@ -210,7 +218,7 @@ export default function AppLayout() {
                   isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
                 }`}
               >
-                <span className="px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold">
+                <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 dark:bg-red-500/15 dark:text-red-400 dark:border-red-500/30 text-[10px] font-mono font-bold">
                   SOS
                 </span>
               </span>
@@ -222,8 +230,8 @@ export default function AppLayout() {
               title={!isHovered ? 'Family Settings' : undefined}
               className={`group/item flex items-center h-9 px-2.5 rounded-md transition-colors select-none ${
                 location.pathname.includes('/setup')
-                  ? 'bg-[#262626] text-white font-medium'
-                  : 'text-[#9CA3AF] hover:text-[#F3F4F6] hover:bg-white/[0.04] font-normal'
+                  ? 'bg-emerald-50 text-emerald-700 font-medium dark:bg-[#262626] dark:text-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6] dark:hover:bg-white/[0.04] font-normal'
               }`}
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -244,8 +252,8 @@ export default function AppLayout() {
               title={!isHovered ? 'Settings' : undefined}
               className={`group/item flex items-center h-9 px-2.5 rounded-md transition-colors select-none ${
                 location.pathname === '/settings'
-                  ? 'bg-[#262626] text-white font-medium'
-                  : 'text-[#9CA3AF] hover:text-[#F3F4F6] hover:bg-white/[0.04] font-normal'
+                  ? 'bg-emerald-50 text-emerald-700 font-medium dark:bg-[#262626] dark:text-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6] dark:hover:bg-white/[0.04] font-normal'
               }`}
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -263,7 +271,7 @@ export default function AppLayout() {
             {/* User Profile & Logout */}
             <div className="pt-1">
               <div
-                className={`flex items-center h-9 px-1 rounded-md text-[#9CA3AF] hover:bg-white/[0.04] transition-colors ${
+                className={`flex items-center h-9 px-1 rounded-md text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors ${
                   isHovered ? 'justify-between' : 'justify-center'
                 }`}
               >
@@ -271,10 +279,10 @@ export default function AppLayout() {
                   <img
                     src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3ECF8E&color=121212`}
                     alt={user?.name || 'User'}
-                    className="w-6 h-6 rounded-full object-cover ring-1 ring-neutral-700 shrink-0"
+                    className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-300 dark:ring-neutral-700 shrink-0"
                   />
                   <span
-                    className={`whitespace-nowrap overflow-hidden transition-all duration-200 text-[12px] font-medium text-white truncate ${
+                    className={`whitespace-nowrap overflow-hidden transition-all duration-200 text-[12px] font-medium text-slate-900 dark:text-white truncate ${
                       isHovered ? 'opacity-100 max-w-[120px]' : 'opacity-0 max-w-0 pointer-events-none'
                     }`}
                   >
@@ -286,7 +294,7 @@ export default function AppLayout() {
                   type="button"
                   onClick={logout}
                   title="Sign Out"
-                  className={`p-1 text-[#9CA3AF] hover:text-red-400 transition-colors cursor-pointer ${
+                  className={`p-1 text-slate-500 hover:text-red-600 dark:text-[#9CA3AF] dark:hover:text-red-400 transition-colors cursor-pointer ${
                     isHovered ? 'opacity-100' : 'opacity-0 max-w-0 pointer-events-none'
                   }`}
                 >
@@ -305,7 +313,7 @@ export default function AppLayout() {
           {/* Left: Mobile Brand / Desktop Breadcrumb */}
           <div className="flex items-center gap-2.5">
             {/* Mobile Brand Shield */}
-            <div className="md:hidden w-8 h-8 rounded-lg bg-[#3ECF8E] flex items-center justify-center text-[#121212] font-bold">
+            <div className="md:hidden w-8 h-8 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] flex items-center justify-center text-white dark:text-[#121212] font-bold">
               <Shield size={17} strokeWidth={2.2} />
             </div>
 
@@ -314,7 +322,7 @@ export default function AppLayout() {
                 {family?.name || 'My Family Vault'}
               </span>
               <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-[#3ECF8E] font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] animate-pulse"></span>
                 <span>Private & Encrypted</span>
               </span>
             </div>
@@ -324,7 +332,7 @@ export default function AppLayout() {
           <div className="flex-1 max-w-md mx-2 sm:mx-6">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-full h-9 sm:h-10 px-3 bg-slate-100 dark:bg-[#1C1C1C] hover:bg-slate-200/70 dark:hover:bg-[#262626] rounded-xl text-xs text-slate-500 dark:text-neutral-400 flex items-center justify-between border border-transparent dark:border-[#262626] transition-all cursor-pointer"
+              className="w-full h-9 sm:h-10 px-3 bg-slate-100 dark:bg-[#1C1C1C] hover:bg-slate-200/70 dark:hover:bg-[#262626] rounded-xl text-xs text-slate-500 dark:text-neutral-400 flex items-center justify-between border border-slate-200 dark:border-[#262626] transition-all cursor-pointer"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Search size={15} className="text-slate-400 dark:text-neutral-500 shrink-0" />
@@ -343,7 +351,7 @@ export default function AppLayout() {
               type="button"
               onClick={toggleTheme}
               title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
-              className="w-9 h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer"
+              className="w-9 h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-xs"
             >
               {isDark ? <Sun size={17} strokeWidth={2} /> : <Moon size={17} strokeWidth={2} />}
             </button>
@@ -352,7 +360,7 @@ export default function AppLayout() {
             <button
               type="button"
               onClick={() => setIsEmergencyModalOpen(true)}
-              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-bold flex items-center gap-1.5 border border-red-200 dark:border-red-500/20 transition-colors cursor-pointer"
+              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-400 dark:border-red-500/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <HeartPulse size={15} className="text-red-600 dark:text-red-400 shrink-0" />
               <span className="hidden sm:inline">Emergency Card</span>
@@ -383,7 +391,7 @@ export default function AppLayout() {
           className={`flex flex-col items-center justify-center w-14 py-1 transition-colors ${
             location.pathname === '/dashboard'
               ? 'text-[#10B981] dark:text-[#3ECF8E]'
-              : 'text-slate-400 dark:text-neutral-400'
+              : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
           <LayoutDashboard size={20} strokeWidth={location.pathname === '/dashboard' ? 2.2 : 1.75} />
@@ -396,7 +404,7 @@ export default function AppLayout() {
           className={`flex flex-col items-center justify-center w-14 py-1 transition-colors ${
             location.pathname === '/vault'
               ? 'text-[#10B981] dark:text-[#3ECF8E]'
-              : 'text-slate-400 dark:text-neutral-400'
+              : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
           <Files size={20} strokeWidth={location.pathname === '/vault' ? 2.2 : 1.75} />
@@ -407,7 +415,7 @@ export default function AppLayout() {
         <div className="relative -top-4">
           <Link
             to="/vault/upload"
-            className="w-13 h-13 w-[52px] h-[52px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-[#3ECF8E]/30 active:scale-95 transition-all"
+            className="w-[52px] h-[52px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 active:scale-95 transition-all"
             title="Upload Document"
           >
             <Plus size={26} strokeWidth={2.8} />
@@ -420,7 +428,7 @@ export default function AppLayout() {
           className={`flex flex-col items-center justify-center w-14 py-1 transition-colors ${
             location.pathname.startsWith('/family')
               ? 'text-[#10B981] dark:text-[#3ECF8E]'
-              : 'text-slate-400 dark:text-neutral-400'
+              : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
           <Users size={20} strokeWidth={location.pathname.startsWith('/family') ? 2.2 : 1.75} />
@@ -433,7 +441,7 @@ export default function AppLayout() {
           className={`flex flex-col items-center justify-center w-14 py-1 transition-colors ${
             location.pathname === '/settings'
               ? 'text-[#10B981] dark:text-[#3ECF8E]'
-              : 'text-slate-400 dark:text-neutral-400'
+              : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
           <Settings size={20} strokeWidth={location.pathname === '/settings' ? 2.2 : 1.75} />
