@@ -57,12 +57,16 @@ const simulateOCR = (fileName, title, category) => {
 router.get('/', async (req, res) => {
   try {
     const { category, memberId, search, status } = req.query;
+    const targetFamilyId = req.familyId;
 
     let docs = [];
     let members = [];
 
     if (isConnected) {
       const query = {};
+      if (targetFamilyId) {
+        query.familyId = targetFamilyId;
+      }
       if (category && category !== 'All') {
         query.category = new RegExp(`^${category}$`, 'i');
       }
@@ -82,10 +86,15 @@ router.get('/', async (req, res) => {
       }
 
       docs = await Document.find(query).sort({ createdAt: -1 }).lean();
-      members = await User.find().lean();
+      members = targetFamilyId ? await User.find({ familyId: targetFamilyId }).lean() : await User.find().lean();
     } else {
       docs = [...memoryStore.documents];
-      members = memoryStore.users;
+      if (targetFamilyId) {
+        docs = docs.filter(d => d.familyId?.toString() === targetFamilyId.toString());
+        members = memoryStore.users.filter(u => u.familyId?.toString() === targetFamilyId.toString());
+      } else {
+        members = memoryStore.users;
+      }
 
       if (category && category !== 'All') {
         docs = docs.filter(d => d.category?.toLowerCase() === category.toLowerCase());
@@ -237,14 +246,18 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       parsedTags = [category];
     }
 
-    let familyId = null;
-    let uploaderId = null;
+    let familyId = req.familyId;
+    let uploaderId = req.userId;
 
     if (isConnected) {
-      const fam = await Family.findOne().sort({ createdAt: -1 });
-      familyId = fam?._id;
-      const user = await User.findOne();
-      uploaderId = user?._id;
+      if (!familyId) {
+        const fam = await Family.findOne().sort({ createdAt: -1 });
+        familyId = fam?._id;
+      }
+      if (!uploaderId) {
+        const user = await User.findOne();
+        uploaderId = user?._id;
+      }
 
       const newDoc = await Document.create({
         title: title || originalName.replace(fileExt, ''),
@@ -274,8 +287,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     // Memory Store
-    familyId = memoryStore.families[0]?._id || 'fam_default';
-    uploaderId = memoryStore.users[0]?._id || null;
+    if (!familyId) {
+      familyId = memoryStore.families[0]?._id || 'fam_default';
+    }
+    if (!uploaderId) {
+      uploaderId = memoryStore.users[0]?._id || null;
+    }
 
     const newDoc = {
       _id: 'doc_' + Date.now(),

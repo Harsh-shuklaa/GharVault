@@ -12,18 +12,29 @@ const router = express.Router();
 // GET /api/family/current
 router.get('/current', async (req, res) => {
   try {
+    const targetFamilyId = req.familyId;
     let family = null;
     let members = [];
     let docs = [];
 
     if (isConnected) {
-      family = await Family.findOne().sort({ createdAt: -1 });
+      if (targetFamilyId) {
+        family = await Family.findById(targetFamilyId);
+      } else {
+        family = await Family.findOne().sort({ createdAt: -1 });
+      }
+
       if (family) {
         members = await User.find({ familyId: family._id });
         docs = await Document.find({ familyId: family._id });
       }
     } else {
-      family = memoryStore.families[0] || null;
+      if (targetFamilyId) {
+        family = memoryStore.families.find(f => f._id.toString() === targetFamilyId.toString()) || null;
+      } else {
+        family = memoryStore.families[0] || null;
+      }
+
       if (family) {
         members = memoryStore.users.filter(u => u.familyId?.toString() === family._id.toString());
         docs = memoryStore.documents.filter(d => d.familyId?.toString() === family._id.toString());
@@ -71,12 +82,18 @@ router.get('/current', async (req, res) => {
 // GET /api/family/emergency-card (Quick Emergency Medical Hospital Card for the entire family)
 router.get('/emergency-card', async (req, res) => {
   try {
+    const targetFamilyId = req.familyId;
     let family = null;
     let members = [];
     let medicalDocs = [];
 
     if (isConnected) {
-      family = await Family.findOne().sort({ createdAt: -1 });
+      if (targetFamilyId) {
+        family = await Family.findById(targetFamilyId);
+      } else {
+        family = await Family.findOne().sort({ createdAt: -1 });
+      }
+
       if (family) {
         members = await User.find({ familyId: family._id });
         medicalDocs = await Document.find({
@@ -85,7 +102,12 @@ router.get('/emergency-card', async (req, res) => {
         });
       }
     } else {
-      family = memoryStore.families[0] || null;
+      if (targetFamilyId) {
+        family = memoryStore.families.find(f => f._id.toString() === targetFamilyId.toString()) || null;
+      } else {
+        family = memoryStore.families[0] || null;
+      }
+
       if (family) {
         members = memoryStore.users.filter(u => u.familyId?.toString() === family._id.toString());
         medicalDocs = memoryStore.documents.filter(
@@ -217,12 +239,18 @@ router.post('/join', async (req, res) => {
   try {
     const { inviteCode, name, email, relationship, phone, bloodGroup } = req.body;
 
+    if (!inviteCode || !inviteCode.trim()) {
+      return res.status(400).json({ error: 'Please enter a valid family invite code' });
+    }
+
+    const cleanCode = inviteCode.trim().toUpperCase();
+
     let family = null;
     if (isConnected) {
-      family = await Family.findOne({ inviteCode: inviteCode?.trim()?.toUpperCase() });
+      family = await Family.findOne({ inviteCode: cleanCode });
     } else {
       family = memoryStore.families.find(
-        f => f.inviteCode.toUpperCase() === inviteCode?.trim()?.toUpperCase()
+        f => f.inviteCode?.toUpperCase() === cleanCode
       );
     }
 
@@ -230,47 +258,78 @@ router.post('/join', async (req, res) => {
       return res.status(404).json({ error: 'Invalid Family Invite Code. Please check with your family admin.' });
     }
 
-    const cleanEmail = email?.trim()?.toLowerCase() || `member_${Date.now()}@gmail.com`;
-    const cleanName = name?.trim() || 'Family Member';
-    const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=2563EB&color=fff&size=150`;
+    // Check if the user is already authenticated or exists in database
+    let user = req.user;
+    const userEmail = (user?.email || email || '').toLowerCase().trim();
 
-    let newMember;
-    if (isConnected) {
-      newMember = await User.create({
-        name: cleanName,
-        email: cleanEmail,
-        avatar,
-        relationship: relationship || 'Family Member',
-        role: 'MEMBER',
-        familyId: family._id,
-        phone: phone || '',
-        bloodGroup: bloodGroup || '',
-        permissions: { canUpload: true, canDownload: true, canDelete: false, canViewSensitive: true },
-      });
-    } else {
-      newMember = {
-        _id: 'user_' + Date.now(),
-        name: cleanName,
-        email: cleanEmail,
-        avatar,
-        relationship: relationship || 'Family Member',
-        role: 'MEMBER',
-        familyId: family._id,
-        phone: phone || '',
-        bloodGroup: bloodGroup || '',
-        healthInsurancePolicy: '',
-        isEmergencyContact: false,
-        permissions: { canUpload: true, canDownload: true, canDelete: false, canViewSensitive: true },
-        createdAt: new Date(),
-      };
-      memoryStore.users.push(newMember);
+    if (!user && userEmail) {
+      if (isConnected) {
+        user = await User.findOne({ email: userEmail });
+      } else {
+        user = memoryStore.users.find(u => u.email.toLowerCase() === userEmail);
+      }
     }
 
-    const token = generateToken(newMember);
+    if (user) {
+      // Existing user: Link them to this family!
+      if (isConnected) {
+        user.familyId = family._id;
+        if (relationship) user.relationship = relationship;
+        if (phone) user.phone = phone;
+        if (bloodGroup) user.bloodGroup = bloodGroup;
+        if (family.adminId && family.adminId.toString() !== user._id.toString()) {
+          user.role = 'MEMBER';
+        }
+        await user.save();
+      } else {
+        user.familyId = family._id;
+        if (relationship) user.relationship = relationship;
+        if (phone) user.phone = phone;
+        if (bloodGroup) user.bloodGroup = bloodGroup;
+      }
+    } else {
+      // Create new user for this family
+      const cleanName = name?.trim() || userEmail.split('@')[0] || 'Family Member';
+      const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=3ECF8E&color=000&size=150`;
+
+      if (isConnected) {
+        user = await User.create({
+          name: cleanName,
+          email: userEmail || `member_${Date.now()}@gharvault.local`,
+          avatar,
+          relationship: relationship || 'Family Member',
+          role: 'MEMBER',
+          familyId: family._id,
+          phone: phone || '',
+          bloodGroup: bloodGroup || '',
+          permissions: { canUpload: true, canDownload: true, canDelete: false, canViewSensitive: true },
+        });
+      } else {
+        user = {
+          _id: 'user_' + Date.now(),
+          name: cleanName,
+          email: userEmail || `member_${Date.now()}@gharvault.local`,
+          avatar,
+          relationship: relationship || 'Family Member',
+          role: 'MEMBER',
+          familyId: family._id,
+          phone: phone || '',
+          bloodGroup: bloodGroup || '',
+          healthInsurancePolicy: '',
+          isEmergencyContact: false,
+          permissions: { canUpload: true, canDownload: true, canDelete: false, canViewSensitive: true },
+          createdAt: new Date(),
+        };
+        memoryStore.users.push(user);
+      }
+    }
+
+    const token = generateToken(user);
 
     res.json({
       success: true,
-      member: newMember,
+      member: user,
+      user,
       family,
       token,
       message: `Successfully joined ${family.name}!`,
@@ -283,15 +342,29 @@ router.post('/join', async (req, res) => {
 // GET /api/family/members
 router.get('/members', async (req, res) => {
   try {
+    const targetFamilyId = req.familyId;
     let members = [];
     let docs = [];
 
     if (isConnected) {
-      members = await User.find().lean();
-      docs = await Document.find().lean();
+      if (targetFamilyId) {
+        members = await User.find({ familyId: targetFamilyId }).lean();
+        docs = await Document.find({ familyId: targetFamilyId }).lean();
+      } else {
+        const firstFam = await Family.findOne().sort({ createdAt: -1 });
+        if (firstFam) {
+          members = await User.find({ familyId: firstFam._id }).lean();
+          docs = await Document.find({ familyId: firstFam._id }).lean();
+        }
+      }
     } else {
-      members = memoryStore.users;
-      docs = memoryStore.documents;
+      if (targetFamilyId) {
+        members = memoryStore.users.filter(u => u.familyId?.toString() === targetFamilyId.toString());
+        docs = memoryStore.documents.filter(d => d.familyId?.toString() === targetFamilyId.toString());
+      } else if (memoryStore.families[0]) {
+        members = memoryStore.users.filter(u => u.familyId?.toString() === memoryStore.families[0]._id.toString());
+        docs = memoryStore.documents.filter(d => d.familyId?.toString() === memoryStore.families[0]._id.toString());
+      }
     }
 
     const membersWithDocs = members.map(m => {
@@ -336,12 +409,14 @@ router.post('/members', async (req, res) => {
     const cleanEmail = email?.trim() ? email.toLowerCase().trim() : `${cleanName.toLowerCase().replace(/\s+/g, '.')}${Date.now().toString().slice(-4)}@family.ghar`;
     const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=2563EB&color=fff&size=150`;
 
-    let familyId = null;
-    if (isConnected) {
-      const fam = await Family.findOne().sort({ createdAt: -1 });
-      familyId = fam?._id;
-    } else {
-      familyId = memoryStore.families[0]?._id;
+    let familyId = req.familyId;
+    if (!familyId) {
+      if (isConnected) {
+        const fam = await Family.findOne().sort({ createdAt: -1 });
+        familyId = fam?._id;
+      } else {
+        familyId = memoryStore.families[0]?._id;
+      }
     }
 
     let newMember;
