@@ -1,8 +1,17 @@
-import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Explicitly load .env from server directory and current working directory
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+import express from 'express';
+import cors from 'cors';
 
 import { connectDB } from './config/db.js';
 import { ensureBucketExists } from './services/supabaseStorage.js';
@@ -16,11 +25,6 @@ import breakGlassRoutes from './routes/breakGlass.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import exportRoutes from './routes/export.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
-
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -48,33 +52,34 @@ app.use('/api/notifications', notificationRoutes);
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ONLINE',
-    app: 'GharVault Secure API',
-    version: '2.4.9',
+    service: 'GharVault REST API',
+    version: '2.5.0',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
     features: {
-      supabaseStorage: true,
-      mongoAtlas: true,
-      breakGlassProtocol: true,
-      dualKeyQuorum: true,
-      sha256AuditChain: true,
+      storage: 'Supabase Private Buckets',
+      database: 'MongoDB Atlas',
+      encryption: 'AES-256-GCM',
     },
   });
 });
 
-// Serve frontend in production / unified mode
-const clientDistPath = path.resolve(__dirname, '../../client/dist');
-app.use(express.static(clientDistPath));
-
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    return next();
+// Serve local uploads in offline/fallback mode securely
+app.use('/api/documents/raw', (req, res, next) => {
+  const filePath = req.path.replace(/^\//, '');
+  const localTarget = path.resolve('server/uploads/vault', decodeURIComponent(filePath).replace(/\//g, '_'));
+  if (path.resolve(localTarget).startsWith(path.resolve('server/uploads/vault'))) {
+    res.sendFile(localTarget, (err) => {
+      if (err) next();
+    });
+  } else {
+    res.status(403).json({ error: 'Access denied' });
   }
-  const indexPath = path.join(clientDistPath, 'index.html');
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      res.status(200).send('GharVault Backend API is active. Run Vite dev server for frontend.');
-    }
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: `Route not found: ${req.method} ${req.url}`,
   });
 });
 
@@ -91,7 +96,7 @@ const startServer = async () => {
     await connectDB();
     await ensureBucketExists();
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`====================================================`);
       console.log(`🛡️  GharVault Backend Server running on port ${PORT}`);
       console.log(`📍  API Health: http://localhost:${PORT}/api/health`);

@@ -33,10 +33,10 @@ export const signInWithGoogle = async () => {
   return {
     user: {
       id: 'google_user_demo_1',
-      email: 'rajesh.sharma@gmail.com',
+      email: 'family.member@gmail.com',
       user_metadata: {
-        full_name: 'Rajesh Sharma',
-        avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
+        full_name: 'Family Member',
+        avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=FamilyMember',
       },
     },
   };

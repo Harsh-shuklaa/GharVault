@@ -1,30 +1,59 @@
-import { createClient } from '@supabase/supabase-js';
-import fs from 'fs';
+import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ensure .env is read regardless of import order or working directory
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+
 const BUCKET_NAME = process.env.SUPABASE_BUCKET_NAME || 'family-documents';
 
-const isSupabaseConfigured = Boolean(
-  SUPABASE_URL &&
-  SUPABASE_KEY &&
-  !SUPABASE_URL.includes('your-project') &&
-  !SUPABASE_KEY.includes('your-key')
-);
+let supabaseInstance = null;
+let hasLoggedStatus = false;
 
-let supabase = null;
-if (isSupabaseConfigured) {
-  try {
-    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('[Supabase Storage] Configured with URL:', SUPABASE_URL);
-  } catch (err) {
-    console.error('[Supabase Storage] Initialization error:', err.message);
+export const getSupabaseClient = () => {
+  if (supabaseInstance) return supabaseInstance;
+
+  const rawUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+  const rawKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+
+  const cleanUrl = rawUrl.trim().replace(/^['"]|['"]$/g, '').replace(/\/$/, '');
+  const cleanKey = rawKey.trim().replace(/^['"]|['"]$/g, '');
+
+  const isConfigured = Boolean(
+    cleanUrl &&
+    cleanKey &&
+    cleanUrl.startsWith('http') &&
+    !cleanUrl.includes('your-project') &&
+    !cleanKey.includes('your-') &&
+    !cleanKey.includes('yahan_')
+  );
+
+  if (isConfigured) {
+    try {
+      supabaseInstance = createClient(cleanUrl, cleanKey);
+      if (!hasLoggedStatus) {
+        console.log('[Supabase Storage] Configured with URL:', cleanUrl);
+        hasLoggedStatus = true;
+      }
+      return supabaseInstance;
+    } catch (err) {
+      console.error('[Supabase Storage] Initialization error:', err.message);
+    }
+  } else if (!hasLoggedStatus) {
+    console.log('[Supabase Storage] Notice: Live Supabase credentials not set. Running in Local Secure Vault Storage Mode with Signed URL Simulation.');
+    hasLoggedStatus = true;
   }
-} else {
-  console.log('[Supabase Storage] Notice: Live Supabase credentials not set. Running in Local Secure Vault Storage Mode with Signed URL Simulation.');
-}
+
+  return null;
+};
 
 // Local storage fallback directory
 const LOCAL_STORAGE_DIR = path.resolve('server/uploads/vault');
@@ -33,6 +62,7 @@ if (!fs.existsSync(LOCAL_STORAGE_DIR)) {
 }
 
 export const ensureBucketExists = async () => {
+  const supabase = getSupabaseClient();
   if (!supabase) return;
   try {
     const { data: buckets, error } = await supabase.storage.listBuckets();
@@ -40,11 +70,11 @@ export const ensureBucketExists = async () => {
       console.warn('[Supabase Storage] Error listing buckets:', error.message);
       return;
     }
-    const bucketExists = buckets?.some(b => b.name === BUCKET_NAME);
+    const bucketExists = buckets?.some((b) => b.name === BUCKET_NAME);
     if (!bucketExists) {
       const { error: createError } = await supabase.storage.createBucket(BUCKET_NAME, {
         public: false,
-        fileSizeLimit: 26214400, // 25MB limit (matching prompt requirements)
+        fileSizeLimit: 26214400, // 25MB limit
         allowedMimeTypes: ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'],
       });
       if (createError) {
@@ -59,6 +89,7 @@ export const ensureBucketExists = async () => {
 };
 
 export const uploadDocument = async (fileBuffer, storagePath, mimeType) => {
+  const supabase = getSupabaseClient();
   if (supabase) {
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
@@ -81,6 +112,7 @@ export const uploadDocument = async (fileBuffer, storagePath, mimeType) => {
 };
 
 export const createSignedUrl = async (storagePath, expiresInSeconds = 3600) => {
+  const supabase = getSupabaseClient();
   if (supabase) {
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
@@ -106,6 +138,7 @@ export const createSignedUrl = async (storagePath, expiresInSeconds = 3600) => {
 };
 
 export const downloadDocumentBuffer = async (storagePath) => {
+  const supabase = getSupabaseClient();
   if (supabase) {
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
@@ -123,11 +156,11 @@ export const downloadDocumentBuffer = async (storagePath) => {
   if (fs.existsSync(localFilePath)) {
     return fs.readFileSync(localFilePath);
   }
-  // Return dummy pdf bytes if file was mock-seeded
   return Buffer.from('%PDF-1.4 [GharVault 256-bit AES Sealed Document]');
 };
 
 export const deleteDocument = async (storagePath) => {
+  const supabase = getSupabaseClient();
   if (supabase) {
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
@@ -147,4 +180,4 @@ export const deleteDocument = async (storagePath) => {
   return true;
 };
 
-export { isSupabaseConfigured };
+export const isSupabaseConfigured = () => Boolean(getSupabaseClient());
