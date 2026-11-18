@@ -25,6 +25,7 @@ import breakGlassRoutes from './routes/breakGlass.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import exportRoutes from './routes/export.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -39,6 +40,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/family', familyRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/audit', auditRoutes);

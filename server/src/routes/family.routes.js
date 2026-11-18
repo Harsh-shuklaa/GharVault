@@ -317,8 +317,10 @@ router.post('/members', async (req, res) => {
       phone = '',
       email = '',
       bloodGroup = '',
+      dateOfBirth = '',
       emergencyContactPhone = '',
       healthInsurancePolicy = '',
+      allergies = '',
       isEmergencyContact = false,
       role = 'MEMBER',
     } = req.body;
@@ -348,8 +350,10 @@ router.post('/members', async (req, res) => {
         relationship,
         phone,
         bloodGroup,
+        dateOfBirth,
         emergencyContactPhone: emergencyContactPhone || phone,
         healthInsurancePolicy,
+        allergies,
         isEmergencyContact: Boolean(isEmergencyContact),
         role,
         familyId,
@@ -369,8 +373,10 @@ router.post('/members', async (req, res) => {
         relationship,
         phone,
         bloodGroup,
+        dateOfBirth,
         emergencyContactPhone: emergencyContactPhone || phone,
         healthInsurancePolicy,
+        allergies,
         isEmergencyContact: Boolean(isEmergencyContact),
         role,
         familyId,
@@ -437,42 +443,61 @@ router.get('/members/:id', async (req, res) => {
   }
 });
 
-// PUT /api/family/members/:id
+// PUT /api/family/members/:id — Full Family Member Profile Update
 router.put('/members/:id', async (req, res) => {
   try {
-    const { name, relationship, phone, bloodGroup, healthInsurancePolicy, isEmergencyContact, role } = req.body;
+    const {
+      name,
+      relationship,
+      phone,
+      email,
+      bloodGroup,
+      dateOfBirth,
+      healthInsurancePolicy,
+      tpaNumber,
+      allergies,
+      emergencyContactPhone,
+      isEmergencyContact,
+      avatar,
+      role,
+    } = req.body;
+
+    const updates = {};
+    if (name?.trim()) updates.name = name.trim();
+    if (relationship?.trim()) updates.relationship = relationship.trim();
+    if (phone !== undefined) updates.phone = phone.trim();
+    if (email !== undefined) updates.email = email.toLowerCase().trim();
+    if (bloodGroup !== undefined) updates.bloodGroup = bloodGroup.trim();
+    if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth.trim();
+    if (healthInsurancePolicy !== undefined) updates.healthInsurancePolicy = healthInsurancePolicy.trim();
+    if (tpaNumber !== undefined) updates.tpaNumber = tpaNumber.trim();
+    if (allergies !== undefined) updates.allergies = allergies.trim();
+    if (emergencyContactPhone !== undefined) updates.emergencyContactPhone = emergencyContactPhone.trim();
+    if (isEmergencyContact !== undefined) updates.isEmergencyContact = Boolean(isEmergencyContact);
+    if (avatar !== undefined) updates.avatar = avatar.trim();
+    if (role?.trim()) updates.role = role.trim();
 
     let member = null;
     if (isConnected) {
       member = await User.findByIdAndUpdate(
         req.params.id,
-        {
-          ...(name && { name }),
-          ...(relationship && { relationship }),
-          ...(phone !== undefined && { phone }),
-          ...(bloodGroup !== undefined && { bloodGroup }),
-          ...(healthInsurancePolicy !== undefined && { healthInsurancePolicy }),
-          ...(isEmergencyContact !== undefined && { isEmergencyContact: Boolean(isEmergencyContact) }),
-          ...(role && { role }),
-        },
+        updates,
         { new: true }
       );
     } else {
       member = memoryStore.users.find(u => u._id.toString() === req.params.id);
       if (member) {
-        if (name) member.name = name;
-        if (relationship) member.relationship = relationship;
-        if (phone !== undefined) member.phone = phone;
-        if (bloodGroup !== undefined) member.bloodGroup = bloodGroup;
-        if (healthInsurancePolicy !== undefined) member.healthInsurancePolicy = healthInsurancePolicy;
-        if (isEmergencyContact !== undefined) member.isEmergencyContact = Boolean(isEmergencyContact);
-        if (role) member.role = role;
+        Object.assign(member, updates);
       }
     }
 
-    if (!member) return res.status(404).json({ error: 'Member not found' });
+    if (!member) return res.status(404).json({ error: 'Family member not found' });
 
-    res.json({ success: true, member });
+    res.json({
+      success: true,
+      member,
+      message: `${member.name}'s profile updated successfully!`,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

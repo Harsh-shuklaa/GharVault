@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { Plus, UserPlus, Phone, Mail, ShieldAlert, Folder, ArrowRight, Trash2, X, AlertCircle } from 'lucide-react';
+import { Plus, UserPlus, Phone, Mail, ShieldAlert, Folder, ArrowRight, Trash2, X, AlertCircle, Edit3 } from 'lucide-react';
+import EditMemberModal from '../components/common/EditMemberModal';
 
 export default function FamilyDirectoryPage() {
   const { family, user } = useAuth();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -215,7 +217,16 @@ export default function FamilyDirectoryPage() {
                   <span><strong className="text-slate-900 dark:text-white">{member.assignedDocumentsCount || 0}</strong> Docs</span>
                 </Link>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setEditingMember(member)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-[#10B981] dark:hover:text-[#3ECF8E] hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+                    title="Edit Member Profile"
+                  >
+                    <Edit3 size={14} />
+                  </button>
+
                   <Link
                     to={`/family/${member._id}`}
                     className="text-xs font-bold text-emerald-700 dark:text-[#3ECF8E] hover:underline flex items-center gap-0.5 bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2.5 py-1 rounded-lg transition-colors"
@@ -402,6 +413,16 @@ export default function FamilyDirectoryPage() {
           </div>
         </div>
       )}
+      {/* Edit Family Member Modal */}
+      <EditMemberModal
+        isOpen={Boolean(editingMember)}
+        member={editingMember}
+        onClose={() => setEditingMember(null)}
+        onMemberUpdated={(updated) => {
+          setMembers(prev => prev.map(m => m._id === updated._id ? { ...m, ...updated } : m));
+          setEditingMember(null);
+        }}
+      />
     </div>
   );
 }

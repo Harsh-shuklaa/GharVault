@@ -7,6 +7,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import AuthCallbackPage from './pages/AuthCallbackPage';
 import FamilySetupPage from './pages/FamilySetupPage';
 import DashboardPage from './pages/DashboardPage';
 import VaultPage from './pages/VaultPage';
@@ -30,6 +31,7 @@ export default function App() {
             {/* Public Landing & Auth */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
             {/* Protected Routes (Strictly blocked if unauthenticated) */}
             <Route element={<ProtectedRoute />}>

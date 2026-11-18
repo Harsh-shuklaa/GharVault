@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
   const syncBackendUser = async (profileData) => {
     try {
-      const loginRes = await api.loginWithGoogle(profileData);
+      const loginRes = await api.syncAuth(profileData);
       if (loginRes?.token) {
         localStorage.setItem('gharvault_token', loginRes.token);
         setUser(loginRes.user);
@@ -131,6 +131,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('gharvault_token');
   };
 
+  const updateUser = (updatedUser) => {
+    setUser(prev => (prev ? { ...prev, ...updatedUser } : updatedUser));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -139,6 +143,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         loginWithGoogle,
         logout,
+        updateUser,
         refreshSession: fetchSession,
         isEmergencyModalOpen,
         setIsEmergencyModalOpen,

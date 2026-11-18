@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  dateOfBirth: {
+    type: String,
+    default: '',
+  },
   bloodGroup: {
     type: String,
     default: '', // 'O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'

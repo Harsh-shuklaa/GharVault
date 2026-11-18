@@ -14,6 +14,15 @@ const getHeaders = (isFormData = false) => {
 
 export const api = {
   // Auth
+  async syncAuth(userData = {}) {
+    const res = await fetch(`${API_BASE}/auth/sync`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(userData),
+    });
+    return res.json();
+  },
+
   async loginWithGoogle(userData = {}) {
     const res = await fetch(`${API_BASE}/auth/google`, {
       method: 'POST',
@@ -35,6 +44,32 @@ export const api = {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ mpin }),
+    });
+    return res.json();
+  },
+
+  // User Profile
+  async getProfile() {
+    const res = await fetch(`${API_BASE}/users/profile`, {
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async updateProfile(profileData) {
+    const res = await fetch(`${API_BASE}/users/profile`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(profileData),
+    });
+    return res.json();
+  },
+
+  async uploadAvatar(formData) {
+    const res = await fetch(`${API_BASE}/users/avatar`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: formData,
     });
     return res.json();
   },

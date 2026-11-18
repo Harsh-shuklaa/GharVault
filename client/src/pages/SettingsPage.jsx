@@ -1,14 +1,113 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { api } from '../lib/api';
-import { Sun, Moon, Copy, Check, Download, Home, Cloud, User, ShieldCheck } from 'lucide-react';
+import {
+  Sun,
+  Moon,
+  Copy,
+  Check,
+  Download,
+  Home,
+  Cloud,
+  User,
+  ShieldCheck,
+  Camera,
+  Save,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Phone,
+  Calendar,
+  HeartPulse,
+  Mail,
+  ShieldAlert,
+} from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, family } = useAuth();
+  const { user, family, updateUser } = useAuth();
   const { theme, isDark, setTheme } = useTheme();
   const [copiedCode, setCopiedCode] = useState(false);
   const [downloadingBackup, setDownloadingBackup] = useState(false);
+
+  // Profile Edit State
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    phone: user?.phone || '',
+    bloodGroup: user?.bloodGroup || '',
+    dateOfBirth: user?.dateOfBirth || '',
+    emergencyContactPhone: user?.emergencyContactPhone || '',
+    healthInsurancePolicy: user?.healthInsurancePolicy || '',
+    allergies: user?.allergies || '',
+    avatar: user?.avatar || '',
+  });
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        phone: user.phone || '',
+        bloodGroup: user.bloodGroup || '',
+        dateOfBirth: user.dateOfBirth || '',
+        emergencyContactPhone: user.emergencyContactPhone || '',
+        healthInsurancePolicy: user.healthInsurancePolicy || '',
+        allergies: user.allergies || '',
+        avatar: user.avatar || '',
+      });
+    }
+  }, [user]);
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingAvatar(true);
+      setSaveError('');
+      const uploadData = new FormData();
+      uploadData.append('avatar', file);
+      const res = await api.uploadAvatar(uploadData);
+      if (res?.avatarUrl) {
+        setFormData((prev) => ({ ...prev, avatar: res.avatarUrl }));
+        if (updateUser) {
+          updateUser({ avatar: res.avatarUrl });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to upload avatar:', err);
+      setSaveError(err.message || 'Failed to upload avatar image');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setIsSavingProfile(true);
+      setSaveError('');
+      setSaveSuccess(false);
+      const res = await api.updateProfile(formData);
+      if (res.user && updateUser) {
+        updateUser(res.user);
+      }
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3500);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      setSaveError(err.message || 'Failed to save profile changes');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
 
   const handleCopyCode = () => {
     if (!family?.inviteCode) return;
@@ -228,41 +327,216 @@ export default function SettingsPage() {
 
         {/* Right Column: User Profile & Backup Export (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
-          {/* User Profile */}
-          <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-4 transition-colors">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <User size={18} className="text-[#10B981] dark:text-[#3ECF8E]" />
-              <span>Your Profile</span>
-            </h2>
-            <div className="flex items-center gap-3.5">
-              <img
-                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3ECF8E&color=121212`}
-                alt={user?.name}
-                className="w-14 h-14 rounded-2xl object-cover ring-2 ring-slate-200 dark:ring-[#262626]"
-              />
-              <div>
-                <div className="font-bold text-slate-900 dark:text-white text-base">{user?.name}</div>
-                <div className="text-xs text-slate-500 dark:text-neutral-400">{user?.relationship} • {user?.role === 'ADMIN' ? 'Family Admin' : 'Family Member'}</div>
-                <div className="text-xs text-slate-400 dark:text-neutral-500 font-mono mt-0.5">{user?.email}</div>
+          {/* User Profile Edit Card */}
+          <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-5 transition-colors">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#262626]">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <User size={18} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                <span>Personal Account Profile</span>
+              </h2>
+              <span className="text-[11px] font-bold text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2.5 py-0.5 rounded-full border border-emerald-200/60 dark:border-[#3ECF8E]/20">
+                {user?.role === 'ADMIN' ? 'Family Admin' : 'Family Member'}
+              </span>
+            </div>
+
+            {/* Avatar Upload Section */}
+            <div className="flex items-center gap-4">
+              <div className="relative group shrink-0">
+                <img
+                  src={
+                    formData.avatar ||
+                    user?.avatar ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name || user?.name || 'User')}&background=3ECF8E&color=121212`
+                  }
+                  alt={formData.name || user?.name}
+                  className="w-16 h-16 rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-xs"
+                />
+                {isUploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center">
+                    <Loader2 className="w-5 h-5 text-white animate-spin" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 space-y-1">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingAvatar}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] hover:bg-slate-100 dark:hover:bg-[#222222] text-xs font-semibold text-slate-800 dark:text-neutral-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Camera size={14} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                  <span>{isUploadingAvatar ? 'Uploading...' : 'Change Photo'}</span>
+                </button>
+                <p className="text-[11px] text-slate-400 dark:text-neutral-500">
+                  JPG, PNG or WEBP (Max 5MB). Stored securely in Supabase.
+                </p>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-[#262626] space-y-2 text-xs">
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500 dark:text-neutral-400">Blood Group:</span>
-                <span className="font-bold text-red-600 dark:text-red-400">{user?.bloodGroup || 'Not specified'}</span>
+            {/* Feedback Alerts */}
+            {saveSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
+                <CheckCircle2 size={16} className="shrink-0 text-emerald-600 dark:text-[#3ECF8E]" />
+                <span>Profile updated successfully! Emergency card data synced.</span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500 dark:text-neutral-400">Emergency Phone:</span>
-                <span className="font-semibold text-slate-800 dark:text-neutral-200">{user?.emergencyContactPhone || user?.phone || 'Not set'}</span>
+            )}
+            {saveError && (
+              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0 text-red-500" />
+                <span>{saveError}</span>
               </div>
-              {user?.healthInsurancePolicy && (
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-500 dark:text-neutral-400">Health Insurance:</span>
-                  <span className="font-semibold text-slate-800 dark:text-neutral-200">{user.healthInsurancePolicy}</span>
+            )}
+
+            {/* Profile Form */}
+            <form onSubmit={handleProfileSubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1">
+                  Full Display Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  placeholder="e.g. Rahul Sharma"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1 flex items-center justify-between">
+                  <span>Google Account Email</span>
+                  <span className="text-[10px] text-emerald-700 dark:text-[#3ECF8E] flex items-center gap-1">
+                    <ShieldCheck size={12} /> Verified OAuth
+                  </span>
+                </label>
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#141414]/60 border border-slate-200/80 dark:border-[#262626] text-slate-500 dark:text-neutral-400 font-mono text-xs">
+                  <Mail size={13} className="shrink-0 text-slate-400" />
+                  <span className="truncate">{user?.email || 'user@example.com'}</span>
                 </div>
-              )}
-            </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="+91 98765 43210"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1">
+                    Date of Birth
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1">
+                    Blood Group
+                  </label>
+                  <select
+                    value={formData.bloodGroup}
+                    onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs transition-colors"
+                  >
+                    <option value="">Select</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1">
+                    Emergency Contact No.
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.emergencyContactPhone}
+                    onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
+                    placeholder="+91 99999 88888"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1">
+                  Health Insurance Policy / TPA No.
+                </label>
+                <input
+                  type="text"
+                  value={formData.healthInsurancePolicy}
+                  onChange={(e) => setFormData({ ...formData, healthInsurancePolicy: e.target.value })}
+                  placeholder="e.g. Star Health #SH-8849201"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1">
+                  Allergies / Critical Medical Notes
+                </label>
+                <input
+                  type="text"
+                  value={formData.allergies}
+                  onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                  placeholder="e.g. Penicillin allergy, Diabetic Type 2"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs transition-colors"
+                />
+                <span className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1 block">
+                  Included automatically in the Emergency Hospital Card for instant access.
+                </span>
+              </div>
+
+              {/* Save Changes Button */}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSavingProfile}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingProfile ? (
+                    <>
+                      <Loader2 size={15} className="animate-spin" />
+                      <span>Saving Profile...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={15} />
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
 
           {/* Backup Export */}

@@ -180,4 +180,53 @@ export const deleteDocument = async (storagePath) => {
   return true;
 };
 
+export const uploadAvatar = async (fileBuffer, originalFileName, mimeType, userId) => {
+  const ext = originalFileName ? path.extname(originalFileName) : '.jpg';
+  const cleanExt = ext || '.jpg';
+  const storagePath = `avatars/${userId || 'user'}_${Date.now()}${cleanExt}`;
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(storagePath, fileBuffer, {
+          contentType: mimeType || 'image/jpeg',
+          upsert: true,
+        });
+
+      if (!error && data) {
+        // Create 10-year signed URL or public URL
+        const signedRes = await supabase.storage
+          .from(BUCKET_NAME)
+          .createSignedUrl(storagePath, 315360000); // 10 years
+        if (signedRes.data?.signedUrl) {
+          return { success: true, avatarUrl: signedRes.data.signedUrl, storagePath };
+        }
+        const { data: pubData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(storagePath);
+        if (pubData?.publicUrl) {
+          return { success: true, avatarUrl: pubData.publicUrl, storagePath };
+        }
+      }
+    } catch (err) {
+      console.warn('[Supabase Avatar Upload]', err.message);
+    }
+  }
+
+  // Local fallback: save to server/uploads/avatars
+  const localDir = path.resolve('server/uploads/avatars');
+  if (!fs.existsSync(localDir)) {
+    fs.mkdirSync(localDir, { recursive: true });
+  }
+  const localFileName = `${userId || 'user'}_${Date.now()}${cleanExt}`;
+  const localFilePath = path.join(localDir, localFileName);
+  fs.writeFileSync(localFilePath, fileBuffer);
+
+  return {
+    success: true,
+    avatarUrl: `/api/users/avatar-file/${localFileName}`,
+    storagePath: localFileName,
+  };
+};
+
 export const isSupabaseConfigured = () => Boolean(getSupabaseClient());

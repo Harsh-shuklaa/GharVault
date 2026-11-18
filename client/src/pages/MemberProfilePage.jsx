@@ -16,9 +16,12 @@ import {
   Shield,
   FolderOpen,
   Plus,
-  AlertCircle
+  AlertCircle,
+  Edit3,
+  Calendar,
 } from 'lucide-react';
 import { api } from '../lib/api';
+import EditMemberModal from '../components/common/EditMemberModal';
 
 export default function MemberProfilePage() {
   const { memberId } = useParams();
@@ -28,6 +31,7 @@ export default function MemberProfilePage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [loading, setLoading] = useState(true);
   const [copiedNumber, setCopiedNumber] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     loadMemberProfile();
@@ -130,9 +134,20 @@ export default function MemberProfilePage() {
               )}
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1 font-semibold">
-              Relationship: <strong className="text-slate-800 dark:text-neutral-200">{member.relationship}</strong>
-            </p>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-neutral-400 mt-1 font-semibold">
+              <span>
+                Relationship: <strong className="text-slate-800 dark:text-neutral-200">{member.relationship}</strong>
+              </span>
+              {member.dateOfBirth && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <Calendar size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                    <span>DOB: {new Date(member.dateOfBirth).toLocaleDateString()}</span>
+                  </span>
+                </>
+              )}
+            </div>
 
             <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 dark:text-neutral-300 mt-2.5">
               {member.phone && (
@@ -154,10 +169,19 @@ export default function MemberProfilePage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#1C1C1C] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-800 dark:text-neutral-200 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Edit3 className="w-4 h-4 text-[#10B981] dark:text-[#3ECF8E]" />
+            <span>Edit Profile</span>
+          </button>
+
           <Link
             to={`/vault/upload?member=${member._id}`}
-            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-black font-bold text-xs shadow-md shadow-emerald-500/20 transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all flex items-center gap-1.5"
           >
             <Upload className="w-4 h-4" />
             <span>+ Upload Document</span>
@@ -357,6 +381,17 @@ export default function MemberProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Member Modal */}
+      <EditMemberModal
+        isOpen={isEditModalOpen}
+        member={member}
+        onClose={() => setIsEditModalOpen(false)}
+        onMemberUpdated={(updated) => {
+          setMember(updated);
+          loadMemberProfile();
+        }}
+      />
     </div>
   );
 }

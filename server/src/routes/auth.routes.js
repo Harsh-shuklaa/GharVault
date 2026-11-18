@@ -21,6 +21,148 @@ export const generateToken = (user) => {
   );
 };
 
+// POST /api/auth/sync — Sync user authenticated via Supabase OAuth with MongoDB
+router.post('/sync', async (req, res) => {
+  try {
+    const { email, name, avatar, googleId } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required for authentication sync' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanName = name?.trim() || cleanEmail.split('@')[0] || 'Family Member';
+    const userAvatar =
+      avatar ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=3ECF8E&color=000&size=150`;
+
+    let user = null;
+    let family = null;
+    let isNewUser = false;
+
+    if (isConnected) {
+      user = await User.findOne({ email: cleanEmail });
+
+      if (!user) {
+        isNewUser = true;
+        const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
+        family = await Family.create({
+          name: `${cleanName.split(' ')[0]}'s Family Vault`,
+          inviteCode,
+          storageLimitBytes: 53687091200,
+          storageUsedBytes: 0,
+        });
+
+        user = await User.create({
+          email: cleanEmail,
+          name: cleanName,
+          avatar: userAvatar,
+          googleId: googleId || 'google_' + Date.now(),
+          role: 'ADMIN',
+          relationship: 'Head of Family',
+          familyId: family._id,
+          permissions: {
+            canUpload: true,
+            canDownload: true,
+            canDelete: true,
+            canViewSensitive: true,
+            canSignQuorum: true,
+            canArmBreakGlass: true,
+          },
+        });
+
+        family.adminId = user._id;
+        await family.save();
+      } else {
+        if (googleId && !user.googleId) {
+          user.googleId = googleId;
+          await user.save();
+        }
+        if (user.familyId) {
+          family = await Family.findById(user.familyId);
+        }
+        if (!family) {
+          isNewUser = true;
+          const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
+          family = await Family.create({
+            name: `${cleanName.split(' ')[0]}'s Family Vault`,
+            inviteCode,
+            adminId: user._id,
+            storageLimitBytes: 53687091200,
+            storageUsedBytes: 0,
+          });
+          user.familyId = family._id;
+          await user.save();
+        }
+      }
+    } else {
+      user = memoryStore.users.find((u) => u.email.toLowerCase() === cleanEmail);
+      if (!user) {
+        isNewUser = true;
+        const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
+        family = {
+          _id: 'fam_' + Date.now(),
+          name: `${cleanName.split(' ')[0]}'s Family Vault`,
+          inviteCode,
+          adminId: null,
+          storageLimitBytes: 53687091200,
+          storageUsedBytes: 0,
+          createdAt: new Date(),
+        };
+        user = {
+          _id: 'user_' + Date.now(),
+          email: cleanEmail,
+          name: cleanName,
+          avatar: userAvatar,
+          googleId: googleId || 'google_' + Date.now(),
+          role: 'ADMIN',
+          relationship: 'Head of Family',
+          familyId: family._id,
+          permissions: {
+            canUpload: true,
+            canDownload: true,
+            canDelete: true,
+            canViewSensitive: true,
+            canSignQuorum: true,
+            canArmBreakGlass: true,
+          },
+          createdAt: new Date(),
+        };
+        family.adminId = user._id;
+        memoryStore.families.push(family);
+        memoryStore.users.push(user);
+      } else {
+        family = memoryStore.families.find((f) => f._id.toString() === user.familyId?.toString());
+        if (!family) {
+          isNewUser = true;
+          family = {
+            _id: 'fam_' + Date.now(),
+            name: `${cleanName.split(' ')[0]}'s Family Vault`,
+            inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
+            adminId: user._id,
+            storageLimitBytes: 53687091200,
+            storageUsedBytes: 0,
+            createdAt: new Date(),
+          };
+          user.familyId = family._id;
+          memoryStore.families.push(family);
+        }
+      }
+    }
+
+    const token = generateToken(user);
+    res.json({
+      success: true,
+      token,
+      user,
+      family,
+      isNewUser,
+    });
+  } catch (err) {
+    console.error('[Auth Sync Error]', err);
+    res.status(500).json({ error: 'Auth sync failed: ' + err.message });
+  }
+});
+
 // POST /api/auth/google — One-click Continue with Google / Email Auth
 router.post('/google', async (req, res) => {
   try {
