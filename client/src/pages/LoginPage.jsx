@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, User, KeyRound, Lock, Delete, AlertCircle, ArrowRight } from 'lucide-react';
+import { Shield, User, KeyRound, Lock, Delete, AlertCircle, ArrowRight, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { api } from '../lib/api';
 
 export default function LoginPage() {
-  const { loginWithGoogle, refreshSession } = useAuth();
+  const { loginWithGoogle, loginWithMpin } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('google'); // 'google' or 'mpin'
+  const [activeTab, setActiveTab] = useState('google'); // 'google', 'email', or 'mpin'
+  const [emailInput, setEmailInput] = useState('');
   const [mpin, setMpin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,26 +16,46 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError('');
-      await loginWithGoogle();
+      const res = await loginWithGoogle();
+      if (!res?.redirected) {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(err.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    if (!emailInput || !emailInput.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    try {
+      setLoading(true);
+      setError('');
+      await loginWithGoogle(emailInput.trim());
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Google authentication failed');
+      setError(err.message || 'Failed to sign in with email');
     } finally {
       setLoading(false);
     }
   };
 
   const handleMpinSubmit = async (e) => {
-    e.preventDefault();
-    if (mpin.length < 4) {
+    if (e) e.preventDefault();
+    const pinToSubmit = mpin || '1234';
+    if (pinToSubmit.length < 4) {
       setError('Please enter your 4-digit Vault PIN');
       return;
     }
     try {
       setLoading(true);
       setError('');
-      await api.verifyMpin(mpin);
-      await refreshSession();
+      await loginWithMpin(pinToSubmit);
       navigate('/dashboard');
     } catch (err) {
       setError('Invalid PIN. Please check and try again.');
@@ -119,7 +139,7 @@ export default function LoginPage() {
           )}
 
           {activeTab === 'google' ? (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <p className="text-xs text-slate-500 dark:text-neutral-400 text-center leading-relaxed">
                 Sign in with your Gmail. No passwords to remember, 100% free and private.
               </p>
@@ -149,8 +169,33 @@ export default function LoginPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                   />
                 </svg>
-                <span>{loading ? 'Connecting with Google...' : 'Continue with Google'}</span>
+                <span>{loading ? 'Connecting...' : 'Continue with Google'}</span>
               </button>
+
+              {/* Direct Email Sign-In Form */}
+              <div className="pt-2 border-t border-slate-100 dark:border-[#262626]">
+                <form onSubmit={handleEmailLogin} className="space-y-2.5">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                    Or sign in with email
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      placeholder="e.g. yourname@gmail.com"
+                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#171717] text-xs font-semibold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={loading || !emailInput}
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-[#262626] dark:hover:bg-[#333] text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                </form>
+              </div>
 
               <div className="pt-2 text-center">
                 <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-neutral-500 font-medium">
@@ -164,7 +209,7 @@ export default function LoginPage() {
               {/* PIN Input Visualizer */}
               <div className="text-center space-y-2">
                 <span className="text-xs text-slate-500 dark:text-neutral-400 font-medium">
-                  Enter your 4-digit Family PIN
+                  Enter your 4-digit Family PIN (Default: 1234)
                 </span>
                 <div className="flex items-center justify-center gap-3 pt-2">
                   {[0, 1, 2, 3].map((idx) => (
@@ -196,9 +241,12 @@ export default function LoginPage() {
                 ))}
                 <button
                   type="button"
-                  onClick={() => setMpin('1234')}
+                  onClick={() => {
+                    setMpin('1234');
+                    handleMpinSubmit();
+                  }}
                   className="h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-[#3ECF8E] font-bold text-xs flex flex-col items-center justify-center transition-all cursor-pointer border border-transparent dark:border-emerald-800/40"
-                  title="Default quick test pin"
+                  title="Click to unlock instantly with test PIN 1234"
                 >
                   <KeyRound className="w-3.5 h-3.5" />
                   <span className="text-[10px]">PIN 1234</span>

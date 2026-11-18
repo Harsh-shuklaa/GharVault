@@ -33,6 +33,9 @@ export default function FamilySetupPage() {
       });
 
       if (res.success) {
+        if (res.token) {
+          localStorage.setItem('gharvault_token', res.token);
+        }
         setSuccessMsg(`Family Vault "${res.family.name}" created! Your invite code: ${res.family.inviteCode}`);
         await refreshSession();
         setTimeout(() => navigate('/dashboard'), 1500);
@@ -61,6 +64,9 @@ export default function FamilySetupPage() {
       });
 
       if (res.success) {
+        if (res.token) {
+          localStorage.setItem('gharvault_token', res.token);
+        }
         setSuccessMsg(`Joined "${res.family.name}" as ${res.member.relationship}!`);
         await refreshSession();
         setTimeout(() => navigate('/dashboard'), 1500);

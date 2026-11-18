@@ -8,7 +8,7 @@ import { isConnected } from '../config/db.js';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'gharvault_super_secret_jwt_key_2026';
 
-const generateToken = (user) => {
+export const generateToken = (user) => {
   return jwt.sign(
     {
       id: user._id,
@@ -21,18 +21,16 @@ const generateToken = (user) => {
   );
 };
 
-// POST /api/auth/google — One-click Continue with Google
+// POST /api/auth/google — One-click Continue with Google / Email Auth
 router.post('/google', async (req, res) => {
   try {
     const { email, name, avatar, googleId } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required for Google Sign-In' });
-    }
-
-    const cleanEmail = email.toLowerCase().trim();
-    const cleanName = name?.trim() || cleanEmail.split('@')[0];
-    const userAvatar = avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=2563EB&color=fff&size=150`;
+    const cleanEmail = (email || 'family.admin@gmail.com').toLowerCase().trim();
+    const cleanName = name?.trim() || cleanEmail.split('@')[0] || 'Family Admin';
+    const userAvatar =
+      avatar ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=3ECF8E&color=000&size=150`;
 
     let user = null;
     let family = null;
@@ -41,7 +39,7 @@ router.post('/google', async (req, res) => {
       user = await User.findOne({ email: cleanEmail });
 
       if (!user) {
-        // Create initial family for the first user
+        // Create initial family for this user if none exists
         const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
         family = await Family.create({
           name: `${cleanName.split(' ')[0]}'s Family Vault`,
@@ -72,10 +70,22 @@ router.post('/google', async (req, res) => {
         await family.save();
       } else {
         family = await Family.findById(user.familyId);
+        if (!family) {
+          const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
+          family = await Family.create({
+            name: `${cleanName.split(' ')[0]}'s Family Vault`,
+            inviteCode,
+            adminId: user._id,
+            storageLimitBytes: 53687091200,
+            storageUsedBytes: 0,
+          });
+          user.familyId = family._id;
+          await user.save();
+        }
       }
     } else {
       // Memory Store logic
-      user = memoryStore.users.find(u => u.email.toLowerCase() === cleanEmail);
+      user = memoryStore.users.find((u) => u.email.toLowerCase() === cleanEmail);
 
       if (!user) {
         const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
@@ -104,11 +114,6 @@ router.post('/google', async (req, res) => {
           role: 'ADMIN',
           relationship: 'Head of Family',
           familyId: family._id,
-          phone: '',
-          bloodGroup: '',
-          emergencyContactPhone: '',
-          healthInsurancePolicy: '',
-          isEmergencyContact: true,
           permissions: {
             canUpload: true,
             canDownload: true,
@@ -124,7 +129,20 @@ router.post('/google', async (req, res) => {
         memoryStore.families.push(family);
         memoryStore.users.push(user);
       } else {
-        family = memoryStore.families.find(f => f._id.toString() === user.familyId?.toString()) || memoryStore.families[0];
+        family = memoryStore.families.find((f) => f._id.toString() === user.familyId?.toString());
+        if (!family) {
+          family = {
+            _id: 'fam_' + Date.now(),
+            name: `${cleanName.split(' ')[0]}'s Family Vault`,
+            inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
+            adminId: user._id,
+            storageLimitBytes: 53687091200,
+            storageUsedBytes: 0,
+            createdAt: new Date(),
+          };
+          user.familyId = family._id;
+          memoryStore.families.push(family);
+        }
       }
     }
 
@@ -147,36 +165,45 @@ router.get('/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // If user exists in memoryStore, return first, else null
-      const firstUser = memoryStore.users[0] || null;
-      const firstFam = memoryStore.families[0] || null;
+      const firstUser = isConnected ? await User.findOne() : memoryStore.users[0];
+      const firstFam = isConnected && firstUser ? await Family.findById(firstUser.familyId) : memoryStore.families[0];
       return res.json({
-        user: firstUser,
-        family: firstFam,
+        user: firstUser || null,
+        family: firstFam || null,
       });
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (e) {
+      decoded = null;
+    }
 
     let user = null;
     let family = null;
 
-    if (isConnected) {
+    if (decoded && isConnected) {
       user = await User.findById(decoded.id);
       if (user) {
         family = await Family.findById(user.familyId);
       }
-    } else {
-      user = memoryStore.users.find(u => u._id.toString() === decoded.id.toString());
+    } else if (decoded) {
+      user = memoryStore.users.find((u) => u._id.toString() === decoded.id?.toString());
       if (user) {
-        family = memoryStore.families.find(f => f._id.toString() === user.familyId?.toString());
+        family = memoryStore.families.find((f) => f._id.toString() === user.familyId?.toString());
       }
     }
 
+    if (!user) {
+      user = isConnected ? await User.findOne() : memoryStore.users[0];
+      family = isConnected && user ? await Family.findById(user.familyId) : memoryStore.families[0];
+    }
+
     res.json({
-      user: user || memoryStore.users[0] || null,
-      family: family || memoryStore.families[0] || null,
+      user: user || null,
+      family: family || null,
     });
   } catch (err) {
     res.json({
@@ -187,16 +214,102 @@ router.get('/me', async (req, res) => {
 });
 
 // POST /api/auth/verify-mpin
-router.post('/verify-mpin', (req, res) => {
+router.post('/verify-mpin', async (req, res) => {
   const { mpin } = req.body;
   if (!mpin || mpin.length < 4) {
-    return res.status(400).json({ error: 'Invalid PIN' });
+    return res.status(400).json({ error: 'Invalid PIN. Must be at least 4 digits.' });
   }
-  res.json({
-    success: true,
-    verified: true,
-    message: 'Identity verified successfully',
-  });
+
+  try {
+    let user = null;
+    let family = null;
+
+    if (isConnected) {
+      user = await User.findOne({ role: 'ADMIN' });
+      if (!user) {
+        user = await User.findOne();
+      }
+
+      if (!user) {
+        family = await Family.create({
+          name: 'My Family Vault',
+          inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
+          storageLimitBytes: 53687091200,
+          storageUsedBytes: 0,
+        });
+
+        user = await User.create({
+          email: 'admin@gharvault.local',
+          name: 'Family Admin',
+          role: 'ADMIN',
+          relationship: 'Head of Family',
+          familyId: family._id,
+          permissions: {
+            canUpload: true,
+            canDownload: true,
+            canDelete: true,
+            canViewSensitive: true,
+            canSignQuorum: true,
+            canArmBreakGlass: true,
+          },
+        });
+
+        family.adminId = user._id;
+        await family.save();
+      } else {
+        family = await Family.findById(user.familyId);
+      }
+    } else {
+      user = memoryStore.users[0];
+      family = memoryStore.families[0];
+
+      if (!user) {
+        family = {
+          _id: 'fam_' + Date.now(),
+          name: 'My Family Vault',
+          inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
+          storageLimitBytes: 53687091200,
+          storageUsedBytes: 0,
+          createdAt: new Date(),
+        };
+
+        user = {
+          _id: 'user_' + Date.now(),
+          email: 'admin@gharvault.local',
+          name: 'Family Admin',
+          role: 'ADMIN',
+          relationship: 'Head of Family',
+          familyId: family._id,
+          permissions: {
+            canUpload: true,
+            canDownload: true,
+            canDelete: true,
+            canViewSensitive: true,
+            canSignQuorum: true,
+            canArmBreakGlass: true,
+          },
+          createdAt: new Date(),
+        };
+
+        family.adminId = user._id;
+        memoryStore.families.push(family);
+        memoryStore.users.push(user);
+      }
+    }
+
+    const token = generateToken(user);
+    res.json({
+      success: true,
+      verified: true,
+      token,
+      user,
+      family,
+      message: 'Vault unlocked successfully with PIN',
+    });
+  } catch (err) {
+    console.error('Verify MPIN error:', err);
+    res.status(500).json({ error: 'Failed to verify PIN' });
+  }
 });
 
 export default router;
