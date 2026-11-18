@@ -21,6 +21,7 @@ import PermissionsMatrixPage from './pages/PermissionsMatrixPage';
 import BreakGlassPage from './pages/BreakGlassPage';
 import SettingsPage from './pages/SettingsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import PublicShareViewPage from './pages/PublicShareViewPage';
 
 export default function App() {
   return (
@@ -28,10 +29,11 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public Landing & Auth */}
+            {/* Public Landing, Auth & Safe Share */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            <Route path="/share/:token" element={<PublicShareViewPage />} />
 
             {/* Protected Routes (Strictly blocked if unauthenticated) */}
             <Route element={<ProtectedRoute />}>

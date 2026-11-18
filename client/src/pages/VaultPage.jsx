@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { Plus, Search, X, Table, Grid, Copy, Check, Share2, Trash2 } from 'lucide-react';
+import { Plus, Search, X, Table, Grid, Copy, Check, Share2, Trash2, Lock } from 'lucide-react';
+import MpinModal from '../components/common/MpinModal';
 
 export default function VaultPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
   const filterParam = searchParams.get('filter');
@@ -18,6 +20,20 @@ export default function VaultPage() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
   const [copiedNumber, setCopiedNumber] = useState(null);
   const [shareFeedback, setShareFeedback] = useState(null);
+  const [mpinTargetDocId, setMpinTargetDocId] = useState(null);
+
+  const handleDocumentClick = (e, doc) => {
+    const isSensitive =
+      doc.isSensitive ||
+      ['Property & Legal', 'Financial', 'Legal'].includes(doc.category);
+
+    const isUnlocked = sessionStorage.getItem('gharvault_mpin_unlocked') === 'true';
+
+    if (isSensitive && !isUnlocked) {
+      e.preventDefault();
+      setMpinTargetDocId(doc._id);
+    }
+  };
 
   useEffect(() => {
     if (categoryParam) {
@@ -317,13 +333,21 @@ export default function VaultPage() {
                          doc.category === 'Education' ? 'school' : 'description'}
                       </span>
                     </div>
-                    <div className="truncate">
-                      <Link
-                        to={`/vault/documents/${doc._id}`}
-                        className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-[#3ECF8E] transition-colors truncate block"
-                      >
-                        {doc.title}
-                      </Link>
+                    <div className="truncate flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <Link
+                          to={`/vault/documents/${doc._id}`}
+                          onClick={(e) => handleDocumentClick(e, doc)}
+                          className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-[#3ECF8E] transition-colors truncate block"
+                        >
+                          {doc.title}
+                        </Link>
+                        {(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)) && (
+                          <span className="p-1 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0" title="Protected by 4-digit MPIN">
+                            <Lock size={12} />
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[11px] text-slate-500 dark:text-neutral-400 font-medium">
                         {doc.category} • For {doc.assignedMember?.name || 'Family'}
                       </div>
@@ -381,6 +405,7 @@ export default function VaultPage() {
                 <div className="flex items-center gap-1">
                   <Link
                     to={`/vault/documents/${doc._id}`}
+                    onClick={(e) => handleDocumentClick(e, doc)}
                     className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 text-slate-700 dark:text-neutral-300 hover:text-[#3ECF8E] text-xs font-bold transition-colors"
                   >
                     View
@@ -405,7 +430,11 @@ export default function VaultPage() {
             {filteredDocs.map((doc) => (
               <div key={doc._id} className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <Link to={`/vault/documents/${doc._id}`} className="flex items-center gap-3 min-w-0 flex-1">
+                  <Link
+                    to={`/vault/documents/${doc._id}`}
+                    onClick={(e) => handleDocumentClick(e, doc)}
+                    className="flex items-center gap-3 min-w-0 flex-1"
+                  >
                     <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center font-bold shrink-0">
                       <span className="material-symbols-outlined text-xl">
                         {doc.category === 'ID Cards' ? 'badge' :
@@ -413,8 +442,15 @@ export default function VaultPage() {
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
-                        {doc.title}
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                          {doc.title}
+                        </span>
+                        {(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)) && (
+                          <span className="p-0.5 rounded bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
+                            <Lock size={11} />
+                          </span>
+                        )}
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-neutral-400 truncate">
                         {doc.category} • For {doc.assignedMember?.name || 'Whole Family'}
@@ -454,6 +490,7 @@ export default function VaultPage() {
                   <div className="flex items-center gap-2">
                     <Link
                       to={`/vault/documents/${doc._id}`}
+                      onClick={(e) => handleDocumentClick(e, doc)}
                       className="px-3.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] font-bold text-xs"
                     >
                       View
@@ -487,7 +524,11 @@ export default function VaultPage() {
                 {filteredDocs.map((doc) => (
                   <tr key={doc._id} className="hover:bg-emerald-50/30 dark:hover:bg-[#262626]/40 transition-colors">
                     <td className="px-5 py-4">
-                      <Link to={`/vault/documents/${doc._id}`} className="flex items-center gap-3">
+                      <Link
+                        to={`/vault/documents/${doc._id}`}
+                        onClick={(e) => handleDocumentClick(e, doc)}
+                        className="flex items-center gap-3"
+                      >
                         <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center font-bold shrink-0">
                           <span className="material-symbols-outlined text-base">
                             {doc.category === 'ID Cards' ? 'badge' :
@@ -495,8 +536,13 @@ export default function VaultPage() {
                           </span>
                         </div>
                         <div>
-                          <div className="font-bold text-slate-900 dark:text-white hover:text-[#3ECF8E] transition-colors">
-                            {doc.title}
+                          <div className="font-bold text-slate-900 dark:text-white hover:text-[#3ECF8E] transition-colors flex items-center gap-1.5">
+                            <span>{doc.title}</span>
+                            {(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)) && (
+                              <span className="p-0.5 rounded bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400" title="Protected by 4-digit MPIN">
+                                <Lock size={11} />
+                              </span>
+                            )}
                           </div>
                           <div className="text-[10px] text-slate-400 dark:text-neutral-500">
                             {(doc.fileSize / (1024 * 1024)).toFixed(1)} MB
@@ -560,6 +606,7 @@ export default function VaultPage() {
                         </button>
                         <Link
                           to={`/vault/documents/${doc._id}`}
+                          onClick={(e) => handleDocumentClick(e, doc)}
                           className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-[11px] font-bold"
                         >
                           View
@@ -579,6 +626,18 @@ export default function VaultPage() {
           </div>
         </div>
       )}
+      {/* Sensitive Document MPIN Unlock Modal */}
+      <MpinModal
+        isOpen={Boolean(mpinTargetDocId)}
+        onClose={() => setMpinTargetDocId(null)}
+        onSuccess={() => {
+          const target = mpinTargetDocId;
+          setMpinTargetDocId(null);
+          if (target) {
+            navigate(`/vault/documents/${target}`);
+          }
+        }}
+      />
     </div>
   );
 }

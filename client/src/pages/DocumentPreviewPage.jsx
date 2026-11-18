@@ -40,7 +40,9 @@ export default function DocumentPreviewPage() {
   const [copiedNumber, setCopiedNumber] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareLink, setShareLink] = useState('');
+  const [shareDuration, setShareDuration] = useState(1440); // 10, 60, 1440
   const [copiedShareLink, setCopiedShareLink] = useState(false);
+  const [sharingLoading, setSharingLoading] = useState(false);
   const [whoCanViewList, setWhoCanViewList] = useState(['ALL']);
   const [savingPermissions, setSavingPermissions] = useState(false);
   const [viewerMode, setViewerMode] = useState('PREVIEW'); // 'PREVIEW' or 'DIGITAL_CARD'
@@ -85,15 +87,19 @@ export default function DocumentPreviewPage() {
     setTimeout(() => setCopiedNumber(false), 2000);
   };
 
-  const handleShareSafely = async () => {
+  const handleShareSafely = async (duration = shareDuration) => {
     try {
-      const res = await api.createShareLink(id, { expiresInHours: 24 });
-      if (res.shareLink) {
-        setShareLink(res.shareLink);
+      setSharingLoading(true);
+      const res = await api.createShareLink(id, { durationMinutes: duration });
+      if (res.shareUrl) {
+        setShareLink(res.shareUrl);
+        setShareDuration(duration);
         setShareModalOpen(true);
       }
     } catch (err) {
       alert('Could not generate safe share link: ' + err.message);
+    } finally {
+      setSharingLoading(false);
     }
   };
 
@@ -797,13 +803,47 @@ export default function DocumentPreviewPage() {
             </div>
 
             <p className="text-xs text-slate-600 dark:text-neutral-300 leading-relaxed">
-              This link is secure, temporary, and will <strong>automatically expire in 24 hours</strong>. Anyone with this link can view this document without needing an account.
+              Generate a temporary, view-only secure link to safely share this document with a CA, bank, or hotel. Recipients cannot download the raw file, and access auto-expires.
             </p>
 
+            {/* Selectable Duration Pills */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400 block">
+                Select Link Expiration:
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: '10 Minutes', value: 10, desc: 'Fast Check-in' },
+                  { label: '1 Hour', value: 60, desc: 'Consultation' },
+                  { label: '24 Hours', value: 1440, desc: 'Standard' },
+                ].map((tier) => (
+                  <button
+                    key={tier.value}
+                    type="button"
+                    onClick={() => handleShareSafely(tier.value)}
+                    disabled={sharingLoading}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                      shareDuration === tier.value
+                        ? 'border-[#10B981] dark:border-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] font-bold shadow-xs'
+                        : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] text-slate-700 dark:text-neutral-300 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="text-xs font-bold">{tier.label}</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">{tier.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="p-3 bg-slate-50 dark:bg-[#141414] rounded-2xl border border-slate-200 dark:border-[#262626] space-y-2">
-              <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-neutral-500 tracking-wider block">
-                Secure 24-Hour Link:
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-neutral-500 tracking-wider">
+                  Secure View-Only Link:
+                </span>
+                {sharingLoading && (
+                  <span className="text-[10px] text-[#3ECF8E] font-bold animate-pulse">Generating...</span>
+                )}
+              </div>
               <div className="font-mono text-xs text-slate-800 dark:text-neutral-200 break-all select-all bg-white dark:bg-[#1C1C1C] p-2.5 rounded-xl border border-slate-200 dark:border-[#262626]">
                 {shareLink}
               </div>

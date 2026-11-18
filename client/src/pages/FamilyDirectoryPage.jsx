@@ -19,6 +19,7 @@ export default function FamilyDirectoryPage() {
     relationship: 'Spouse',
     email: '',
     phone: '',
+    dob: '',
     bloodGroup: 'O+',
     healthInsurancePolicy: '',
     allergies: '',
@@ -348,16 +349,28 @@ export default function FamilyDirectoryPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
-                    Phone (Emergency Contact)
+                    Date of Birth
                   </label>
                   <input
-                    type="tel"
-                    placeholder="+91 98765 43210"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    type="date"
+                    value={formData.dob}
+                    onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#141414] focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
+                  Phone (Emergency Contact)
+                </label>
+                <input
+                  type="tel"
+                  placeholder="+91 98765 43210"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#141414] focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white"
+                />
               </div>
 
               <div>

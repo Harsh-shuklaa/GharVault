@@ -331,10 +331,66 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// POST /api/documents/:id/share-link (Creates a simple 24-hour expiring link)
+// GET /api/documents/shared/:token — Public View-Only Expiring Link
+router.get('/shared/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    let doc = null;
+
+    if (isConnected) {
+      doc = await Document.findOne({ 'shareLink.token': token });
+    } else {
+      doc = memoryStore.documents.find(d => d.shareLink?.token === token);
+    }
+
+    if (!doc) {
+      return res.status(404).json({ error: 'Shared document link not found or invalid.' });
+    }
+
+    // Check expiration
+    if (doc.shareLink?.expiresAt && new Date(doc.shareLink.expiresAt) < new Date()) {
+      return res.status(410).json({
+        expired: true,
+        error: 'This secure link has expired. Please request a new share link from the family vault owner.',
+      });
+    }
+
+    // Generate time-limited signed URL for viewing
+    let signedUrl = '';
+    try {
+      signedUrl = await createSignedUrl(doc.storagePath, 3600);
+    } catch (err) {
+      signedUrl = `/api/documents/raw/${encodeURIComponent(doc.storagePath)}`;
+    }
+
+    res.json({
+      success: true,
+      document: {
+        _id: doc._id,
+        title: doc.title,
+        category: doc.category,
+        documentNumber: doc.documentNumber,
+        originalFileName: doc.originalFileName,
+        mimeType: doc.mimeType,
+        fileSize: doc.fileSize,
+        sha256Hash: doc.sha256Hash,
+        expiryDate: doc.expiryDate,
+        createdAt: doc.createdAt,
+        signedUrl,
+        fileUrl: signedUrl,
+      },
+      expiresAt: doc.shareLink.expiresAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to access shared document: ' + err.message });
+  }
+});
+
+// POST /api/documents/:id/share-link (Creates 10m, 1h, or 24h expiring link)
 router.post('/:id/share-link', async (req, res) => {
   try {
-    const { expiresInHours = 24, password } = req.body;
+    const { durationMinutes = 1440, expiresInHours, password } = req.body;
+    const finalMinutes = expiresInHours ? expiresInHours * 60 : (Number(durationMinutes) || 1440);
 
     let doc = null;
     if (isConnected) {
@@ -346,7 +402,7 @@ router.post('/:id/share-link', async (req, res) => {
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     const token = crypto.randomBytes(16).toString('hex');
-    const expiresAt = new Date(Date.now() + expiresInHours * 3600000);
+    const expiresAt = new Date(Date.now() + finalMinutes * 60000);
 
     const shareLink = {
       token,
@@ -359,13 +415,14 @@ router.post('/:id/share-link', async (req, res) => {
     if (isConnected) await doc.save();
 
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-    const directShareUrl = `${origin}/vault/documents/${doc._id}?token=${token}`;
+    const directShareUrl = `${origin}/share/${token}`;
 
     res.json({
       success: true,
       shareUrl: directShareUrl,
+      token,
       expiresAt,
-      message: 'Secure share link created (valid for 24 hours)',
+      message: `Secure share link created (valid for ${finalMinutes >= 60 ? (finalMinutes / 60) + ' hour(s)' : finalMinutes + ' minutes'})`,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

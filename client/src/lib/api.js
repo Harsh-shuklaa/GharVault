@@ -48,6 +48,15 @@ export const api = {
     return res.json();
   },
 
+  async setMpin(mpin) {
+    const res = await fetch(`${API_BASE}/auth/set-mpin`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ mpin }),
+    });
+    return res.json();
+  },
+
   // User Profile
   async getProfile() {
     const res = await fetch(`${API_BASE}/users/profile`, {
@@ -170,6 +179,11 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(options),
     });
+    return res.json();
+  },
+
+  async getSharedDocument(token) {
+    const res = await fetch(`${API_BASE}/documents/shared/${token}`);
     return res.json();
   },
 

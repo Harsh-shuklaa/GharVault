@@ -14,7 +14,8 @@ import {
   Building2,
   FileText,
   Users,
-  HardDrive
+  HardDrive,
+  UserPlus
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -26,6 +27,14 @@ export default function DashboardPage() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
+  const [copiedInvite, setCopiedInvite] = useState(false);
+
+  const handleCopyInviteCode = () => {
+    const code = family?.inviteCode || 'GHAR-4892';
+    navigator.clipboard.writeText(code);
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 2000);
+  };
 
   useEffect(() => {
     loadDashboard();
@@ -104,6 +113,40 @@ export default function DashboardPage() {
             <Plus size={16} strokeWidth={2.5} />
             <span>Upload Document</span>
           </Link>
+        </div>
+      </div>
+
+      {/* ================= FAMILY INVITE CODE BANNER (OPTION 2) ================= */}
+      <div className="bg-emerald-50/70 dark:bg-[#1C1C1C] border border-emerald-200 dark:border-[#2E2E2E] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs transition-colors">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#141414] border border-emerald-200 dark:border-[#3ECF8E]/30 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0 shadow-xs">
+            <UserPlus size={19} />
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <span>Family Vault Invite Code</span>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold">
+                Active Code
+              </span>
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-600 dark:text-neutral-400 mt-0.5 truncate">
+              Family members can log in on their phones and enter this code under "Join Existing Family" to sync.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+          <code className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#262626] font-mono font-bold text-sm tracking-widest text-slate-900 dark:text-[#3ECF8E] shadow-2xs">
+            {family?.inviteCode || 'GHAR-4892'}
+          </code>
+          <button
+            type="button"
+            onClick={handleCopyInviteCode}
+            className="min-h-[40px] inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
+            {copiedInvite ? <Check size={14} /> : <Copy size={14} />}
+            <span>{copiedInvite ? 'Copied!' : 'Copy Code'}</span>
+          </button>
         </div>
       </div>
 

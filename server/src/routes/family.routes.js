@@ -318,12 +318,15 @@ router.post('/members', async (req, res) => {
       email = '',
       bloodGroup = '',
       dateOfBirth = '',
+      dob = '',
       emergencyContactPhone = '',
       healthInsurancePolicy = '',
       allergies = '',
       isEmergencyContact = false,
       role = 'MEMBER',
     } = req.body;
+
+    const finalDob = dateOfBirth || dob || '';
 
     if (!name?.trim()) {
       return res.status(400).json({ error: 'Member name is required' });
@@ -350,7 +353,7 @@ router.post('/members', async (req, res) => {
         relationship,
         phone,
         bloodGroup,
-        dateOfBirth,
+        dateOfBirth: finalDob,
         emergencyContactPhone: emergencyContactPhone || phone,
         healthInsurancePolicy,
         allergies,
@@ -373,7 +376,7 @@ router.post('/members', async (req, res) => {
         relationship,
         phone,
         bloodGroup,
-        dateOfBirth,
+        dateOfBirth: finalDob,
         emergencyContactPhone: emergencyContactPhone || phone,
         healthInsurancePolicy,
         allergies,

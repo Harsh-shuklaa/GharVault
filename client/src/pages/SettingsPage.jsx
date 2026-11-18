@@ -22,6 +22,7 @@ import {
   HeartPulse,
   Mail,
   ShieldAlert,
+  KeyRound,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -29,6 +30,34 @@ export default function SettingsPage() {
   const { theme, isDark, setTheme } = useTheme();
   const [copiedCode, setCopiedCode] = useState(false);
   const [downloadingBackup, setDownloadingBackup] = useState(false);
+  const [newMpin, setNewMpin] = useState('');
+  const [isSavingMpin, setIsSavingMpin] = useState(false);
+  const [mpinSuccess, setMpinSuccess] = useState('');
+  const [mpinError, setMpinError] = useState('');
+
+  const handleUpdateMpin = async (e) => {
+    e.preventDefault();
+    if (!newMpin || newMpin.length !== 4 || !/^\d{4}$/.test(newMpin)) {
+      setMpinError('MPIN must be exactly 4 numeric digits.');
+      return;
+    }
+    try {
+      setIsSavingMpin(true);
+      setMpinError('');
+      const res = await api.setMpin(newMpin);
+      if (res.success) {
+        setMpinSuccess('4-digit Security MPIN updated successfully!');
+        setNewMpin('');
+        setTimeout(() => setMpinSuccess(''), 3000);
+      } else {
+        setMpinError(res.error || 'Failed to update MPIN');
+      }
+    } catch (err) {
+      setMpinError(err.message || 'Failed to update MPIN');
+    } finally {
+      setIsSavingMpin(false);
+    }
+  };
 
   // Profile Edit State
   const [formData, setFormData] = useState({
@@ -259,6 +288,44 @@ export default function SettingsPage() {
                 <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">
                   Family members can use this code to join your vault from the setup screen.
                 </p>
+              </div>
+
+              {/* 4-Digit Security MPIN Setup */}
+              <div className="pt-4 border-t border-slate-100 dark:border-[#262626]">
+                <label className="block text-slate-700 dark:text-neutral-300 font-bold uppercase tracking-wider mb-1">
+                  Security MPIN (For Sensitive Documents)
+                </label>
+                <p className="text-[11px] text-slate-500 dark:text-neutral-400 mb-2.5">
+                  Protects sensitive Property Deeds, Wills, and Financial Records. Default initial PIN is <strong className="text-slate-700 dark:text-neutral-200">1234</strong>.
+                </p>
+                <form onSubmit={handleUpdateMpin} className="flex flex-wrap items-center gap-2.5">
+                  <input
+                    type="password"
+                    maxLength={4}
+                    placeholder="New 4-digit PIN"
+                    value={newMpin}
+                    onChange={(e) => setNewMpin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    className="w-36 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] font-mono font-bold text-center tracking-widest text-slate-900 dark:text-white text-sm focus:border-[#3ECF8E]"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSavingMpin || newMpin.length !== 4}
+                    className="px-4 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {isSavingMpin ? 'Updating...' : 'Set MPIN'}
+                  </button>
+                  {mpinSuccess && (
+                    <span className="text-xs text-emerald-600 dark:text-[#3ECF8E] font-bold flex items-center gap-1">
+                      <Check size={14} />
+                      {mpinSuccess}
+                    </span>
+                  )}
+                  {mpinError && (
+                    <span className="text-xs text-red-600 dark:text-red-400 font-bold">
+                      {mpinError}
+                    </span>
+                  )}
+                </form>
               </div>
             </div>
           </div>

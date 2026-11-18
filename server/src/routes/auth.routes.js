@@ -442,6 +442,20 @@ router.post('/verify-mpin', async (req, res) => {
       }
     }
 
+    // Check MPIN match
+    const cleanPin = String(mpin).trim();
+    if (user.mpinHash) {
+      const match = await bcrypt.compare(cleanPin, user.mpinHash);
+      if (!match) {
+        return res.status(401).json({ error: 'Incorrect 4-digit MPIN. Please try again.' });
+      }
+    } else {
+      // Default initial PIN is 1234 if not customized yet
+      if (cleanPin !== '1234') {
+        return res.status(401).json({ error: 'Incorrect MPIN. (Default initial PIN is 1234. You can change it in Settings).' });
+      }
+    }
+
     const token = generateToken(user);
     res.json({
       success: true,
@@ -454,6 +468,48 @@ router.post('/verify-mpin', async (req, res) => {
   } catch (err) {
     console.error('Verify MPIN error:', err);
     res.status(500).json({ error: 'Failed to verify PIN' });
+  }
+});
+
+// POST /api/auth/set-mpin — Update 4-digit security MPIN
+router.post('/set-mpin', async (req, res) => {
+  const { mpin, email } = req.body;
+  const cleanPin = String(mpin || '').trim();
+
+  if (!cleanPin || cleanPin.length !== 4 || !/^\d{4}$/.test(cleanPin)) {
+    return res.status(400).json({ error: 'MPIN must be exactly 4 numeric digits.' });
+  }
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const mpinHash = await bcrypt.hash(cleanPin, salt);
+
+    let user = null;
+    if (isConnected) {
+      if (email) {
+        user = await User.findOne({ email: email.toLowerCase().trim() });
+      }
+      if (!user) {
+        user = await User.findOne();
+      }
+      if (user) {
+        user.mpinHash = mpinHash;
+        await user.save();
+      }
+    } else {
+      user = memoryStore.users[0];
+      if (user) {
+        user.mpinHash = mpinHash;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: '4-digit Security MPIN updated successfully.',
+    });
+  } catch (err) {
+    console.error('Set MPIN error:', err);
+    res.status(500).json({ error: 'Failed to update MPIN: ' + err.message });
   }
 });
 
