@@ -82,14 +82,14 @@ export default function FamilyDirectoryPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Family Members</h1>
-          <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">Family Members</h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1">
             Everyone in {family?.name || 'your family vault'} with their emergency blood group, contacts, and documents.
           </p>
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all self-start sm:self-center cursor-pointer"
+          className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all self-stretch sm:self-center cursor-pointer"
         >
           <UserPlus size={16} strokeWidth={2.2} />
           <span>+ Add Family Member</span>
@@ -134,11 +134,11 @@ export default function FamilyDirectoryPage() {
         </div>
       ) : (
         /* Members Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {members.map((member) => (
             <div
               key={member._id}
-              className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] p-6 shadow-xs hover:border-[#3ECF8E] dark:hover:border-[#3ECF8E] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
+              className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] p-4 sm:p-5 lg:p-6 shadow-xs hover:border-[#3ECF8E] dark:hover:border-[#3ECF8E] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
             >
               <div>
                 {/* Avatar & Badges Header */}
@@ -254,11 +254,11 @@ export default function FamilyDirectoryPage() {
       {/* Add Family Member Modal */}
       {isAddModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
           onClick={() => setIsAddModalOpen(false)}
         >
           <div
-            className="bg-white dark:bg-[#1C1C1C] rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-[#262626] space-y-4 transition-colors"
+            className="fixed inset-x-0 bottom-0 rounded-t-2xl max-h-[90vh] overflow-y-auto md:static md:inset-auto md:rounded-xl md:max-w-lg w-full bg-white dark:bg-[#1C1C1C] p-4 sm:p-5 lg:p-6 shadow-2xl border border-slate-200 dark:border-[#262626] space-y-4 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#262626]">

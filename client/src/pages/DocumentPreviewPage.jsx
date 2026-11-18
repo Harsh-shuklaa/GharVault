@@ -498,10 +498,16 @@ export default function DocumentPreviewPage() {
         </div>
       </div>
 
-      {/* Share Safely Modal (24h Expiring Link) */}
+      {/* Share Safely Modal (24h Expiring Link) - Bottom-Sheet on Mobile */}
       {shareModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-[#262626] space-y-4 transition-colors">
+        <div
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+          onClick={() => setShareModalOpen(false)}
+        >
+          <div
+            className="fixed inset-x-0 bottom-0 rounded-t-2xl max-h-[90vh] overflow-y-auto md:static md:inset-auto md:rounded-xl md:max-w-md w-full bg-white dark:bg-[#1C1C1C] p-4 sm:p-5 lg:p-6 shadow-2xl border border-slate-200 dark:border-[#262626] space-y-4 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#262626]">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center">
@@ -530,16 +536,16 @@ export default function DocumentPreviewPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setShareModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#262626] text-slate-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-[#262626] font-bold text-xs cursor-pointer"
+                className="min-h-[44px] w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#262626] text-slate-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-[#262626] font-bold text-xs cursor-pointer text-center"
               >
                 Close
               </button>
               <button
                 onClick={handleCopyShareLink}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+                className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer text-center"
               >
                 {copiedShareLink ? <Check size={14} /> : <Copy size={14} />}
                 <span>{copiedShareLink ? 'Link Copied!' : 'Copy Link'}</span>

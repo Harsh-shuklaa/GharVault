@@ -144,19 +144,19 @@ export default function VaultPage() {
   };
 
   return (
-    <div className="max-w-[1380px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="max-w-[1380px] mx-auto p-4 sm:p-5 lg:p-6 space-y-5 sm:space-y-6">
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">All Documents</h1>
-          <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">All Documents</h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1">
             Family ID cards, medical policies, bank passbooks, and certificates stored securely.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             to="/vault/upload"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+            className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>Upload Document</span>
@@ -299,11 +299,11 @@ export default function VaultPage() {
         </div>
       ) : viewMode === 'grid' ? (
         /* GRID VIEW WITH ONE-TAP COPY NUMBER BAR */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredDocs.map((doc) => (
             <div
               key={doc._id}
-              className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] p-5 shadow-xs hover:border-[#3ECF8E] dark:hover:border-[#3ECF8E] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
+              className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] p-4 sm:p-5 lg:p-6 shadow-xs hover:border-[#3ECF8E] dark:hover:border-[#3ECF8E] hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
             >
               <div>
                 {/* Card Header */}

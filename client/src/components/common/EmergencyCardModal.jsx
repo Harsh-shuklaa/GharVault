@@ -47,11 +47,11 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-xs p-0 sm:p-4 animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/80 backdrop-blur-xs p-0 md:p-4 animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-white dark:bg-[#1C1C1C] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-red-200 dark:border-red-900/40 overflow-hidden flex flex-col max-h-[90vh] transition-colors"
+        className="w-full fixed inset-x-0 bottom-0 rounded-t-2xl max-h-[90vh] overflow-y-auto md:static md:inset-auto md:rounded-xl md:max-w-2xl bg-white dark:bg-[#1C1C1C] shadow-2xl border border-red-200 dark:border-red-900/40 overflow-hidden flex flex-col transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

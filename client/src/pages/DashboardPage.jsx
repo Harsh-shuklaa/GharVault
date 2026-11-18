@@ -69,39 +69,39 @@ export default function DashboardPage() {
   const idCards = documents.filter((d) => d.documentNumber && d.documentNumber.trim() !== '');
 
   return (
-    <div className="max-w-[1380px] mx-auto p-4 sm:p-6 space-y-5 font-sans">
+    <div className="max-w-[1380px] mx-auto p-4 sm:p-5 lg:p-6 space-y-5 sm:space-y-6 font-sans">
       {/* ================= GREETING & WELCOME BANNER ================= */}
-      <div className="bg-white dark:bg-[#1C1C1C] rounded-lg p-5 sm:p-6 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none flex flex-col md:flex-row md:items-center justify-between gap-5 transition-colors">
+      <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-4 sm:p-5 lg:p-6 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none flex flex-col md:flex-row md:items-center justify-between gap-5 transition-colors">
         <div>
           {/* Signature Supabase Emerald Pill */}
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-[#3ECF8E]/10 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/25 text-xs font-medium mb-2.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] animate-pulse" />
             <span>Private Family Repository</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-[#EDEDED]">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 dark:text-[#EDEDED]">
             Welcome, {user?.name ? user.name.split(' ')[0] : 'Family'} 👋
           </h1>
-          <p className="text-sm text-slate-600 dark:text-[#8F8F8F] mt-1 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-[#8F8F8F] mt-1 leading-relaxed">
             Your family's encrypted vault for vital ID cards, medical records, and property papers.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setIsEmergencyModalOpen(true)}
-            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+            className="min-h-[44px] w-full sm:w-auto px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
           >
-            <HeartPulse size={15} />
+            <HeartPulse size={16} />
             <span>Emergency Card</span>
           </button>
 
           <Link
             to="/vault/upload"
-            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            className="min-h-[44px] w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
           >
-            <Plus size={15} strokeWidth={2.5} />
+            <Plus size={16} strokeWidth={2.5} />
             <span>Upload Document</span>
           </Link>
         </div>
@@ -139,63 +139,63 @@ export default function DashboardPage() {
       )}
 
       {/* ================= METRICS & STATS ================= */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Link
           to="/family"
-          className="bg-white dark:bg-[#1C1C1C] rounded-lg p-4 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none hover:border-[#10B981]/50 dark:hover:border-[#3ECF8E]/40 transition-colors block group"
+          className="bg-white dark:bg-[#1C1C1C] rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none hover:border-[#10B981]/50 dark:hover:border-[#3ECF8E]/40 transition-colors block group min-w-0"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F]">
+            <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F] truncate">
               Family Members
             </span>
-            <Users size={15} className="text-slate-400 group-hover:text-[#10B981] dark:text-[#8F8F8F] dark:group-hover:text-[#3ECF8E] transition-colors" />
+            <Users size={16} className="text-slate-400 group-hover:text-[#10B981] dark:text-[#8F8F8F] dark:group-hover:text-[#3ECF8E] transition-colors shrink-0" />
           </div>
-          <div className="text-2xl font-semibold text-slate-900 dark:text-[#EDEDED] mt-1.5">{members.length}</div>
-          <div className="text-xs text-[#10B981] dark:text-[#3ECF8E] font-medium mt-1">Manage family →</div>
+          <div className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-[#EDEDED] mt-1.5 truncate">{members.length}</div>
+          <div className="text-xs text-[#10B981] dark:text-[#3ECF8E] font-medium mt-1 truncate">Manage family →</div>
         </Link>
 
         <Link
           to="/vault"
-          className="bg-white dark:bg-[#1C1C1C] rounded-lg p-4 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none hover:border-[#10B981]/50 dark:hover:border-[#3ECF8E]/40 transition-colors block group"
+          className="bg-white dark:bg-[#1C1C1C] rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none hover:border-[#10B981]/50 dark:hover:border-[#3ECF8E]/40 transition-colors block group min-w-0"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F]">
+            <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F] truncate">
               Total Documents
             </span>
-            <FileText size={15} className="text-slate-400 group-hover:text-[#10B981] dark:text-[#8F8F8F] dark:group-hover:text-[#3ECF8E] transition-colors" />
+            <FileText size={16} className="text-slate-400 group-hover:text-[#10B981] dark:text-[#8F8F8F] dark:group-hover:text-[#3ECF8E] transition-colors shrink-0" />
           </div>
-          <div className="text-2xl font-semibold text-slate-900 dark:text-[#EDEDED] mt-1.5">{documents.length}</div>
-          <div className="text-xs text-[#10B981] dark:text-[#3ECF8E] font-medium mt-1">Browse vault →</div>
+          <div className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-[#EDEDED] mt-1.5 truncate">{documents.length}</div>
+          <div className="text-xs text-[#10B981] dark:text-[#3ECF8E] font-medium mt-1 truncate">Browse vault →</div>
         </Link>
 
-        <div className="bg-white dark:bg-[#1C1C1C] rounded-lg p-4 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none">
+        <div className="bg-white dark:bg-[#1C1C1C] rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none min-w-0">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F]">
+            <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F] truncate">
               Storage Used
             </span>
-            <HardDrive size={15} className="text-slate-400 dark:text-[#8F8F8F]" />
+            <HardDrive size={16} className="text-slate-400 dark:text-[#8F8F8F] shrink-0" />
           </div>
-          <div className="text-2xl font-semibold text-slate-900 dark:text-[#EDEDED] mt-1.5">
+          <div className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-[#EDEDED] mt-1.5 truncate">
             {familyData?.totalSizeBytes ? (familyData.totalSizeBytes / (1024 * 1024)).toFixed(1) + ' MB' : '0 MB'}
           </div>
-          <div className="text-xs text-[#10B981] dark:text-[#3ECF8E] font-medium mt-1">50 GB Free Tier</div>
+          <div className="text-xs text-[#10B981] dark:text-[#3ECF8E] font-medium mt-1 truncate">50 GB Free Tier</div>
         </div>
 
         <button
           type="button"
           onClick={() => setIsEmergencyModalOpen(true)}
-          className="bg-white dark:bg-[#1C1C1C] rounded-lg p-4 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none hover:border-red-400 dark:hover:border-red-500/40 text-left transition-colors cursor-pointer group"
+          className="bg-white dark:bg-[#1C1C1C] rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none hover:border-red-400 dark:hover:border-red-500/40 text-left transition-colors cursor-pointer group min-w-0"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400">
+            <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 truncate">
               Emergency Cards
             </span>
-            <HeartPulse size={15} className="text-red-500 dark:text-red-400 group-hover:scale-105 transition-transform" />
+            <HeartPulse size={16} className="text-red-500 dark:text-red-400 group-hover:scale-105 transition-transform shrink-0" />
           </div>
-          <div className="text-2xl font-semibold text-slate-900 dark:text-[#EDEDED] mt-1.5">
+          <div className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-[#EDEDED] mt-1.5 truncate">
             {members.filter((m) => m.bloodGroup).length}
           </div>
-          <div className="text-xs text-red-600 dark:text-red-400 font-medium mt-1">Open medical card →</div>
+          <div className="text-xs text-red-600 dark:text-red-400 font-medium mt-1 truncate">Open medical card →</div>
         </button>
       </div>
 

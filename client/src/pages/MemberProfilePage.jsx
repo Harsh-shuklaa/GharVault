@@ -115,7 +115,7 @@ export default function MemberProfilePage() {
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white truncate">
                 {member.name}
               </h1>
               <span
@@ -169,11 +169,11 @@ export default function MemberProfilePage() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
           <button
             type="button"
             onClick={() => setIsEditModalOpen(true)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#1C1C1C] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-800 dark:text-neutral-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            className="min-h-[44px] w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#1C1C1C] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-800 dark:text-neutral-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Edit3 className="w-4 h-4 text-[#10B981] dark:text-[#3ECF8E]" />
             <span>Edit Profile</span>
@@ -181,7 +181,7 @@ export default function MemberProfilePage() {
 
           <Link
             to={`/vault/upload?member=${member._id}`}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all flex items-center justify-center gap-1.5"
+            className="min-h-[44px] w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all flex items-center justify-center gap-1.5"
           >
             <Upload className="w-4 h-4" />
             <span>+ Upload Document</span>

@@ -126,11 +126,11 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1C1C1C] rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-[#2E2E2E] space-y-5 transition-colors"
+        className="fixed inset-x-0 bottom-0 rounded-t-2xl max-h-[90vh] overflow-y-auto md:static md:inset-auto md:rounded-xl md:max-w-lg w-full bg-white dark:bg-[#1C1C1C] p-4 sm:p-5 lg:p-6 shadow-2xl border border-slate-200 dark:border-[#2E2E2E] space-y-5 transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

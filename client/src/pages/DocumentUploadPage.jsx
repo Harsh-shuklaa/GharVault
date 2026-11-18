@@ -120,11 +120,11 @@ export default function DocumentUploadPage() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 sm:p-5 lg:p-6 space-y-5 sm:space-y-6">
       {/* Title */}
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Upload New Document</h1>
-        <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">Upload New Document</h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1">
           Simple 3-step upload with private encrypted cloud storage up to 25MB on Supabase Free Tier.
         </p>
       </div>
@@ -375,18 +375,18 @@ export default function DocumentUploadPage() {
         </div>
 
         {/* Submit Actions */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={() => navigate('/vault')}
-            className="px-5 py-3 rounded-xl border border-slate-200 dark:border-[#262626] hover:bg-slate-50 dark:hover:bg-[#1C1C1C] text-slate-700 dark:text-neutral-300 font-bold text-xs transition-colors cursor-pointer"
+            className="min-h-[44px] w-full sm:w-auto px-6 py-2.5 rounded-xl border border-slate-200 dark:border-[#262626] hover:bg-slate-50 dark:hover:bg-[#1C1C1C] text-slate-700 dark:text-neutral-300 font-bold text-xs transition-colors cursor-pointer text-center"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 transition-all cursor-pointer"
+            className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 transition-all cursor-pointer text-center"
           >
             <Upload size={16} />
             <span>{loading ? 'Uploading & Encrypting...' : 'Save to Family Vault'}</span>

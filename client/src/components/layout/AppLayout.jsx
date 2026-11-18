@@ -340,16 +340,16 @@ export default function AppLayout() {
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="md:hidden w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#1C1C1C] text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#262626] cursor-pointer"
+              className="md:hidden w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#1C1C1C] text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#262626] cursor-pointer"
               title="Search Vault"
             >
-              <Search size={15} />
+              <Search size={17} />
             </button>
 
             {/* Desktop Search Bar */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="hidden md:flex w-full h-9 sm:h-10 px-3 bg-slate-100 dark:bg-[#1C1C1C] hover:bg-slate-200/70 dark:hover:bg-[#262626] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200 dark:border-[#262626] transition-all cursor-pointer"
+              className="hidden md:flex w-full h-10 px-3 bg-slate-100 dark:bg-[#1C1C1C] hover:bg-slate-200/70 dark:hover:bg-[#262626] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200 dark:border-[#262626] transition-all cursor-pointer"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Search size={15} className="text-slate-400 dark:text-neutral-500 shrink-0" />
@@ -368,19 +368,19 @@ export default function AppLayout() {
               type="button"
               onClick={toggleTheme}
               title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+              className="w-10 h-10 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-xs"
             >
-              {isDark ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+              {isDark ? <Sun size={17} strokeWidth={2} /> : <Moon size={17} strokeWidth={2} />}
             </button>
 
             {/* Notification Bell */}
             <Link
               to="/notifications"
               title="Notifications"
-              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer shadow-xs"
+              className="relative w-10 h-10 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer shadow-xs"
             >
-              <Bell size={16} strokeWidth={1.8} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E]" />
+              <Bell size={17} strokeWidth={1.8} />
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#10B981] dark:bg-[#3ECF8E]" />
             </Link>
 
             {/* Mobile User Avatar */}
@@ -391,7 +391,7 @@ export default function AppLayout() {
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3ECF8E&color=121212`
                 }
                 alt={user?.name || 'User'}
-                className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-700"
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-700"
               />
             </Link>
 

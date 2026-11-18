@@ -142,11 +142,11 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-[1380px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="max-w-[1380px] mx-auto p-4 sm:p-5 lg:p-6 space-y-5 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Settings</h1>
-        <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">Settings</h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1">
           Manage theme preferences, family vault profile, invite codes, and cloud infrastructure status.
         </p>
       </div>
