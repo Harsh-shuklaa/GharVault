@@ -74,9 +74,13 @@ export const seedInitialData = async (isMongoConnected = false) => {
     }));
 
     if (isMongoConnected) {
-      const existingCats = await Category.find();
-      if (existingCats.length === 0) {
-        await Category.insertMany(memoryStore.categories);
+      const count = await Category.countDocuments();
+      if (count === 0) {
+        const mongoCategories = defaultCategories.map((c) => ({
+          ...c,
+          documentCount: 0,
+        }));
+        await Category.insertMany(mongoCategories);
       }
     }
     console.log('[Seed] Initialized clean database with standard category templates. ZERO dummy files or fake names.');

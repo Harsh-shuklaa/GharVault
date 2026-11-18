@@ -14,7 +14,7 @@ const categorySchema = new mongoose.Schema({
   },
   icon: {
     type: String,
-    default: 'folder', // Material symbol name e.g. badge, real_estate_agent, health_and_safety, account_balance
+    default: 'folder', // Material symbol name e.g. badge, health_and_safety, account_balance
   },
   color: {
     type: String,
@@ -27,7 +27,8 @@ const categorySchema = new mongoose.Schema({
   familyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Family',
-    required: true,
+    required: false,
+    default: null,
   },
   documentCount: {
     type: Number,
@@ -39,6 +40,6 @@ const categorySchema = new mongoose.Schema({
   },
 });
 
-categorySchema.index({ familyId: 1, slug: 1 }, { unique: true });
+categorySchema.index({ familyId: 1, slug: 1 });
 
 export default mongoose.models.Category || mongoose.model('Category', categorySchema);
