@@ -1,27 +1,29 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Shield, User, KeyRound, Lock, Delete, AlertCircle, ArrowRight, Mail } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Shield, Lock, AlertCircle, ArrowRight, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
-  const { loginWithGoogle, loginWithMpin } = useAuth();
+  const { loginWithGoogle } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('google'); // 'google', 'email', or 'mpin'
+  const location = useLocation();
   const [emailInput, setEmailInput] = useState('');
-  const [mpin, setMpin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
       setError('');
       const res = await loginWithGoogle();
-      if (!res?.redirected) {
-        navigate('/dashboard');
+      // If direct response or no redirect was needed
+      if (res?.token) {
+        navigate(from, { replace: true });
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed');
+      setError(err.message || 'Google authentication failed');
     } finally {
       setLoading(false);
     }
@@ -36,8 +38,10 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError('');
-      await loginWithGoogle(emailInput.trim());
-      navigate('/dashboard');
+      const res = await loginWithGoogle(emailInput.trim());
+      if (res?.token) {
+        navigate(from, { replace: true });
+      }
     } catch (err) {
       setError(err.message || 'Failed to sign in with email');
     } finally {
@@ -45,246 +49,112 @@ export default function LoginPage() {
     }
   };
 
-  const handleMpinSubmit = async (e) => {
-    if (e) e.preventDefault();
-    const pinToSubmit = mpin || '1234';
-    if (pinToSubmit.length < 4) {
-      setError('Please enter your 4-digit Vault PIN');
-      return;
-    }
-    try {
-      setLoading(true);
-      setError('');
-      await loginWithMpin(pinToSubmit);
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Invalid PIN. Please check and try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeypadPress = (val) => {
-    if (mpin.length < 6) {
-      setMpin((prev) => prev + val);
-    }
-  };
-
-  const handleBackspace = () => {
-    setMpin((prev) => prev.slice(0, -1));
-  };
-
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden transition-colors">
-      {/* Decorative Blur Backgrounds */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#121212] text-[#EDEDED] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-[#3ECF8E] selection:text-black">
+      {/* Decorative Subtle Emerald Glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-[#3ECF8E]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
-        <Link to="/" className="inline-flex items-center justify-center gap-2.5 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-600 dark:bg-[#3ECF8E] text-white dark:text-black flex items-center justify-center shadow-lg shadow-emerald-500/25">
-            <Shield className="w-6 h-6 stroke-[2.2]" />
+        <Link to="/" className="inline-flex items-center justify-center gap-2.5 mb-6 group">
+          <div className="w-10 h-10 rounded-xl bg-[#1C1C1C] border border-[#2E2E2E] group-hover:border-[#3ECF8E]/50 flex items-center justify-center shadow-md transition-colors">
+            <Shield className="w-5 h-5 text-[#3ECF8E] stroke-[2.2]" />
           </div>
-          <span className="font-headline font-bold text-2xl tracking-tight text-slate-900 dark:text-white">
+          <span className="font-semibold text-xl tracking-tight text-[#EDEDED]">
             GharVault
           </span>
         </Link>
-        <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <h2 className="text-2xl font-semibold tracking-tight text-[#EDEDED]">
           Welcome to Your Family Space
         </h2>
-        <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
+        <p className="mt-1 text-xs text-[#8F8F8F]">
           One family. One secure, encrypted vault.
         </p>
       </div>
 
-      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
-        <div className="bg-white dark:bg-[#1C1C1C] py-8 px-6 shadow-xl shadow-slate-200/50 dark:shadow-black/50 sm:rounded-3xl sm:px-10 border border-slate-200 dark:border-[#262626] space-y-6">
-          {/* Method Tabs */}
-          <div className="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-[#171717] p-1.5 rounded-2xl text-xs font-bold border border-transparent dark:border-[#262626]">
-            <button
-              onClick={() => {
-                setActiveTab('google');
-                setError('');
-              }}
-              className={`py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                activeTab === 'google'
-                  ? 'bg-white dark:bg-[#262626] text-emerald-600 dark:text-[#3ECF8E] shadow-xs'
-                  : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <User className="w-4 h-4" />
-              <span>Google Account</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('mpin');
-                setError('');
-              }}
-              className={`py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                activeTab === 'mpin'
-                  ? 'bg-white dark:bg-[#262626] text-emerald-600 dark:text-[#3ECF8E] shadow-xs'
-                  : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <KeyRound className="w-4 h-4" />
-              <span>Quick PIN / Keypad</span>
-            </button>
-          </div>
-
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="bg-[#1C1C1C] py-7 px-6 shadow-2xl rounded-xl border border-[#2E2E2E] space-y-5">
           {error && (
-            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="p-3.5 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400 text-xs font-medium flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
               <span>{error}</span>
             </div>
           )}
 
-          {activeTab === 'google' ? (
-            <div className="space-y-4">
-              <p className="text-xs text-slate-500 dark:text-neutral-400 text-center leading-relaxed">
-                Sign in with your Gmail. No passwords to remember, 100% free and private.
-              </p>
+          <div className="space-y-4">
+            <p className="text-xs text-[#8F8F8F] text-center leading-relaxed">
+              Sign in with your Google account. Zero passwords to remember, 100% free and encrypted.
+            </p>
 
-              {/* Single Prominent One-Click Google Login Button */}
-              <button
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-3 py-4 px-6 border-2 border-slate-200 dark:border-[#262626] hover:border-emerald-600 dark:hover:border-[#3ECF8E] rounded-2xl bg-white dark:bg-[#171717] hover:bg-slate-50 dark:hover:bg-[#222222] text-slate-800 dark:text-white font-bold text-sm shadow-sm transition-all cursor-pointer group"
-              >
-                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                <span>{loading ? 'Connecting...' : 'Continue with Google'}</span>
-              </button>
+            {/* Single Prominent One-Click Google Login Button */}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 py-3 px-5 border border-[#2E2E2E] hover:border-[#3ECF8E]/60 rounded-lg bg-[#171717] hover:bg-[#202020] text-[#EDEDED] font-medium text-sm shadow-sm transition-all cursor-pointer group disabled:opacity-50"
+            >
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              <span>{loading ? 'Authenticating with Google...' : 'Continue with Google'}</span>
+            </button>
 
-              {/* Direct Email Sign-In Form */}
-              <div className="pt-2 border-t border-slate-100 dark:border-[#262626]">
-                <form onSubmit={handleEmailLogin} className="space-y-2.5">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
-                    Or sign in with email
-                  </label>
-                  <div className="flex gap-2">
+            {/* Direct Email Sign-In Option */}
+            <div className="pt-4 border-t border-[#262626]">
+              <form onSubmit={handleEmailLogin} className="space-y-2.5">
+                <label className="block text-[11px] font-medium uppercase tracking-wider text-[#8F8F8F]">
+                  Or sign in with email
+                </label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Mail className="w-4 h-4 text-[#8F8F8F] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="email"
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
-                      placeholder="e.g. yourname@gmail.com"
-                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#171717] text-xs font-semibold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                      placeholder="name@example.com"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-[#2E2E2E] bg-[#141414] text-xs text-[#EDEDED] placeholder-[#555] focus:border-[#3ECF8E] focus:outline-none transition-colors"
                     />
-                    <button
-                      type="submit"
-                      disabled={loading || !emailInput}
-                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-[#262626] dark:hover:bg-[#333] text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
-                    >
-                      Sign In
-                    </button>
                   </div>
-                </form>
-              </div>
-
-              <div className="pt-2 text-center">
-                <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-neutral-500 font-medium">
-                  <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-[#3ECF8E]" />
-                  <span>Supabase Zero-Knowledge Authentication</span>
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-5">
-              {/* PIN Input Visualizer */}
-              <div className="text-center space-y-2">
-                <span className="text-xs text-slate-500 dark:text-neutral-400 font-medium">
-                  Enter your 4-digit Family PIN (Default: 1234)
-                </span>
-                <div className="flex items-center justify-center gap-3 pt-2">
-                  {[0, 1, 2, 3].map((idx) => (
-                    <div
-                      key={idx}
-                      className={`w-12 h-14 rounded-2xl border-2 flex items-center justify-center text-xl font-bold font-mono transition-all ${
-                        mpin.length > idx
-                          ? 'border-emerald-600 dark:border-[#3ECF8E] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-[#3ECF8E] scale-105 shadow-xs'
-                          : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#171717] text-slate-300 dark:text-neutral-600'
-                      }`}
-                    >
-                      {mpin.length > idx ? '●' : ''}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Number Keypad */}
-              <div className="grid grid-cols-3 gap-2.5 max-w-xs mx-auto">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                   <button
-                    key={num}
-                    type="button"
-                    onClick={() => handleKeypadPress(num.toString())}
-                    className="h-12 rounded-2xl bg-slate-50 dark:bg-[#171717] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-800 dark:text-white font-bold text-lg active:scale-95 transition-all shadow-xs cursor-pointer border border-transparent dark:border-[#262626]"
+                    type="submit"
+                    disabled={loading || !emailInput}
+                    className="px-4 py-2.5 rounded-lg bg-[#2E2E2E] hover:bg-[#383838] text-[#EDEDED] hover:text-white text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer"
                   >
-                    {num}
+                    Sign In
                   </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMpin('1234');
-                    handleMpinSubmit();
-                  }}
-                  className="h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-[#3ECF8E] font-bold text-xs flex flex-col items-center justify-center transition-all cursor-pointer border border-transparent dark:border-emerald-800/40"
-                  title="Click to unlock instantly with test PIN 1234"
-                >
-                  <KeyRound className="w-3.5 h-3.5" />
-                  <span className="text-[10px]">PIN 1234</span>
-                </button>
-                <button
-                  key="0"
-                  type="button"
-                  onClick={() => handleKeypadPress('0')}
-                  className="h-12 rounded-2xl bg-slate-50 dark:bg-[#171717] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-800 dark:text-white font-bold text-lg active:scale-95 transition-all shadow-xs cursor-pointer border border-transparent dark:border-[#262626]"
-                >
-                  0
-                </button>
-                <button
-                  type="button"
-                  onClick={handleBackspace}
-                  className="h-12 rounded-2xl bg-slate-50 dark:bg-[#171717] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-400 font-bold text-lg active:scale-95 transition-all flex items-center justify-center cursor-pointer border border-transparent dark:border-[#262626]"
-                >
-                  <Delete className="w-5 h-5" />
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleMpinSubmit}
-                disabled={loading || mpin.length < 4}
-                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] disabled:opacity-50 text-white dark:text-black font-bold text-sm shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
-              >
-                {loading ? 'Unlocking...' : 'Unlock Vault'}
-              </button>
+                </div>
+              </form>
             </div>
-          )}
+
+            <div className="pt-2 text-center">
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-[#8F8F8F] font-medium">
+                <Lock className="w-3.5 h-3.5 text-[#3ECF8E]" />
+                <span>Supabase Zero-Knowledge Authentication</span>
+              </span>
+            </div>
+          </div>
 
           {/* Create or Join Link */}
-          <div className="pt-4 border-t border-slate-100 dark:border-[#262626] text-center text-xs text-slate-500 dark:text-neutral-400">
+          <div className="pt-4 border-t border-[#262626] text-center text-xs text-[#8F8F8F]">
             First time here or received an invite code?{' '}
             <Link
               to="/family/setup"
-              className="font-bold text-emerald-600 dark:text-[#3ECF8E] hover:underline"
+              className="font-medium text-[#3ECF8E] hover:underline"
             >
               Create or Join Family Vault
             </Link>

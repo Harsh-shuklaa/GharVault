@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
         return loginRes;
       }
     } catch (err) {
-      console.warn('Sync backend user failed:', err);
+      console.error('[AuthContext] Sync backend user failed:', err);
     }
     return null;
   };
@@ -31,7 +31,11 @@ export const AuthProvider = ({ children }) => {
 
       // 1. Check if Supabase has an active OAuth session
       if (isSupabaseConfigured && supabase) {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.warn('[AuthContext] Supabase getSession warning:', error.message);
+        }
+
         if (session?.user) {
           const synced = await syncBackendUser({
             email: session.user.email,
@@ -46,22 +50,25 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      // 2. Check local JWT token
+      // 2. Check local JWT token from GharVault backend
       const token = localStorage.getItem('gharvault_token');
-      if (token) {
+      if (token && token !== 'null' && token !== 'undefined') {
         const data = await api.getMe();
         if (data?.user) {
           setUser(data.user);
           setFamily(data.family);
           setLoading(false);
           return;
+        } else {
+          // Token is invalid/expired
+          localStorage.removeItem('gharvault_token');
         }
       }
 
       setUser(null);
       setFamily(null);
     } catch (err) {
-      console.warn('Session load error:', err);
+      console.warn('[AuthContext] Session load error:', err);
       setUser(null);
       setFamily(null);
     } finally {
@@ -75,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     // Listen to Supabase auth events (e.g. returning from Google OAuth redirect)
     if (isSupabaseConfigured && supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session?.user) {
           await syncBackendUser({
             email: session.user.email,
             name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
@@ -94,91 +101,31 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async (customEmail = null) => {
     try {
-      // If user typed an email or requested direct sign-in:
+      // Direct email sign-in for users
       if (customEmail) {
         const loginRes = await api.loginWithGoogle({
-          email: customEmail,
+          email: customEmail.trim().toLowerCase(),
           name: customEmail.split('@')[0],
         });
-        if (loginRes.token) {
+        if (loginRes?.token) {
           localStorage.setItem('gharvault_token', loginRes.token);
           setUser(loginRes.user);
           setFamily(loginRes.family);
+          return loginRes;
         }
-        return loginRes;
+        throw new Error(loginRes?.error || 'Authentication failed');
       }
 
-      // Try Supabase OAuth
-      if (isSupabaseConfigured && supabase) {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin + '/dashboard',
-          },
-        });
-        if (error) {
-          console.warn('[Supabase Auth] OAuth error, using direct login fallback:', error.message);
-          // Seamless fallback so the user is never stuck
-          const fallbackRes = await api.loginWithGoogle({
-            email: 'family.admin@gmail.com',
-            name: 'Family Admin',
-          });
-          if (fallbackRes.token) {
-            localStorage.setItem('gharvault_token', fallbackRes.token);
-            setUser(fallbackRes.user);
-            setFamily(fallbackRes.family);
-          }
-          return fallbackRes;
-        }
-        return { redirected: true };
-      }
-
-      // Direct fallback if Supabase keys not set
-      const directRes = await api.loginWithGoogle({
-        email: 'family.admin@gmail.com',
-        name: 'Family Admin',
-      });
-      if (directRes.token) {
-        localStorage.setItem('gharvault_token', directRes.token);
-        setUser(directRes.user);
-        setFamily(directRes.family);
-      }
-      return directRes;
+      // Real Supabase Google OAuth
+      return await signInWithGoogle();
     } catch (err) {
-      console.error('Login error:', err);
-      // Ensure user is never stuck
-      const directRes = await api.loginWithGoogle({
-        email: 'family.admin@gmail.com',
-        name: 'Family Admin',
-      });
-      if (directRes.token) {
-        localStorage.setItem('gharvault_token', directRes.token);
-        setUser(directRes.user);
-        setFamily(directRes.family);
-        return directRes;
-      }
+      console.error('[AuthContext] Login error:', err);
       throw err;
     }
   };
 
-  const loginWithMpin = async (mpin) => {
-    const res = await api.verifyMpin(mpin);
-    if (res.token) {
-      localStorage.setItem('gharvault_token', res.token);
-      setUser(res.user);
-      setFamily(res.family);
-    }
-    return res;
-  };
-
   const logout = async () => {
-    if (isSupabaseConfigured && supabase) {
-      try {
-        await supabaseSignOut();
-      } catch (e) {
-        // ignore
-      }
-    }
+    await supabaseSignOut();
     setUser(null);
     setFamily(null);
     localStorage.removeItem('gharvault_token');
@@ -191,7 +138,6 @@ export const AuthProvider = ({ children }) => {
         family,
         loading,
         loginWithGoogle,
-        loginWithMpin,
         logout,
         refreshSession: fetchSession,
         isEmergencyModalOpen,

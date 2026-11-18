@@ -126,7 +126,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] text-slate-900 dark:text-neutral-100 font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] text-slate-900 dark:text-[#EDEDED] font-sans transition-colors duration-200">
       {/* ================= DESKTOP COLLAPSIBLE HOVER SIDEBAR (SUPABASE OBSIDIAN) ================= */}
       <aside
         onMouseEnter={() => setIsHovered(true)}

@@ -165,20 +165,28 @@ router.get('/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      const firstUser = isConnected ? await User.findOne() : memoryStore.users[0];
-      const firstFam = isConnected && firstUser ? await Family.findById(firstUser.familyId) : memoryStore.families[0];
       return res.json({
-        user: firstUser || null,
-        family: firstFam || null,
+        user: null,
+        family: null,
       });
     }
 
     const token = authHeader.split(' ')[1];
+    if (!token || token === 'null' || token === 'undefined') {
+      return res.json({
+        user: null,
+        family: null,
+      });
+    }
+
     let decoded;
     try {
       decoded = jwt.verify(token, JWT_SECRET);
     } catch (e) {
-      decoded = null;
+      return res.json({
+        user: null,
+        family: null,
+      });
     }
 
     let user = null;
@@ -196,19 +204,14 @@ router.get('/me', async (req, res) => {
       }
     }
 
-    if (!user) {
-      user = isConnected ? await User.findOne() : memoryStore.users[0];
-      family = isConnected && user ? await Family.findById(user.familyId) : memoryStore.families[0];
-    }
-
     res.json({
       user: user || null,
       family: family || null,
     });
   } catch (err) {
     res.json({
-      user: memoryStore.users[0] || null,
-      family: memoryStore.families[0] || null,
+      user: null,
+      family: null,
     });
   }
 });

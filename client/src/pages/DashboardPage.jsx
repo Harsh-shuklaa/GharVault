@@ -2,7 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { Plus, HeartPulse, Copy, Check, ChevronRight, FolderOpen, AlertTriangle, ShieldCheck } from 'lucide-react';
+import {
+  Plus,
+  HeartPulse,
+  Copy,
+  Check,
+  ChevronRight,
+  FolderOpen,
+  AlertTriangle,
+  CreditCard,
+  Building2,
+  FileText,
+  Users,
+  HardDrive
+} from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, family, setIsEmergencyModalOpen } = useAuth();
@@ -45,7 +58,7 @@ export default function DashboardPage() {
   };
 
   // Documents expiring soon (within next 30 days)
-  const expiringDocs = documents.filter(d => {
+  const expiringDocs = documents.filter((d) => {
     if (!d.expiryDate) return false;
     const now = Date.now();
     const exp = new Date(d.expiryDate).getTime();
@@ -53,41 +66,42 @@ export default function DashboardPage() {
   });
 
   // Recent ID Cards for quick 1-tap copy
-  const idCards = documents.filter(d => d.documentNumber && d.documentNumber.trim() !== '');
+  const idCards = documents.filter((d) => d.documentNumber && d.documentNumber.trim() !== '');
 
   return (
-    <div className="max-w-[1380px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="max-w-[1380px] mx-auto p-4 sm:p-6 space-y-5 font-sans">
       {/* ================= GREETING & WELCOME BANNER ================= */}
-      <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 lg:p-8 border border-slate-200/80 dark:border-[#262626] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors">
+      <div className="bg-[#1C1C1C] rounded-lg p-5 sm:p-6 border border-[#2E2E2E] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 transition-colors">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#3ECF8E]/10 border border-emerald-200/60 dark:border-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] text-xs font-semibold mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse"></span>
+          {/* Signature Supabase Emerald Pill */}
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25 text-xs font-medium mb-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse" />
             <span>Private Family Repository</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Welcome, {user?.name ? user.name.split(' ')[0] : 'Family'}! 👋
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#EDEDED]">
+            Welcome, {user?.name ? user.name.split(' ')[0] : 'Family'} 👋
           </h1>
-          <p className="text-sm text-slate-600 dark:text-neutral-400 mt-1.5">
-            Your family's secure space for essential ID cards, health records, and property papers.
+          <p className="text-sm text-[#8F8F8F] mt-1 leading-relaxed">
+            Your family's encrypted vault for vital ID cards, medical records, and property papers.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={() => setIsEmergencyModalOpen(true)}
-            className="px-5 py-3.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm flex items-center gap-2.5 shadow-md shadow-red-500/20 transition-all cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-red-950/60 hover:bg-red-900/60 text-red-400 border border-red-900/50 font-medium text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs"
           >
-            <HeartPulse size={18} strokeWidth={2} />
+            <HeartPulse size={15} />
             <span>Emergency Card</span>
           </button>
 
           <Link
             to="/vault/upload"
-            className="px-5 py-3.5 rounded-2xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-sm flex items-center gap-2 shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-semibold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
           >
-            <Plus size={18} strokeWidth={2.5} />
+            <Plus size={15} strokeWidth={2.5} />
             <span>Upload Document</span>
           </Link>
         </div>
@@ -95,20 +109,20 @@ export default function DashboardPage() {
 
       {/* ================= URGENT EXPIRY REMINDERS (If any) ================= */}
       {expiringDocs.length > 0 && (
-        <div className="w-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-3xl p-5 shadow-xs transition-colors">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <AlertTriangle size={20} />
+        <div className="w-full bg-[#1C1C1C] border border-amber-500/25 rounded-lg p-4 shadow-xs transition-colors">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0">
+                <AlertTriangle size={16} />
               </div>
               <div>
-                <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <div className="text-sm font-medium text-[#EDEDED] flex items-center gap-2">
                   <span>Document Renewal Reminder</span>
-                  <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 font-mono text-[10px] font-bold uppercase">
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-[10px] font-medium uppercase">
                     Expiring Soon
                   </span>
                 </div>
-                <div className="text-xs text-slate-600 dark:text-neutral-400 mt-1">
+                <div className="text-xs text-[#8F8F8F] mt-0.5">
                   {expiringDocs[0].title} expires on {new Date(expiringDocs[0].expiryDate).toLocaleDateString()}
                   {expiringDocs.length > 1 && ` (+${expiringDocs.length - 1} more)`}
                 </div>
@@ -116,7 +130,7 @@ export default function DashboardPage() {
             </div>
             <Link
               to={`/vault/documents/${expiringDocs[0]._id}`}
-              className="px-4 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] text-xs font-bold shrink-0 text-center"
+              className="px-3.5 py-1.5 rounded-lg bg-[#2E2E2E] hover:bg-[#383838] text-[#EDEDED] text-xs font-medium shrink-0 text-center transition-colors"
             >
               View Document
             </Link>
@@ -124,59 +138,123 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* ================= METRICS & STATS ================= */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <Link
+          to="/family"
+          className="bg-[#1C1C1C] rounded-lg p-4 border border-[#2E2E2E] hover:border-[#3ECF8E]/40 transition-colors block group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium uppercase tracking-wider text-[#8F8F8F]">
+              Family Members
+            </span>
+            <Users size={15} className="text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors" />
+          </div>
+          <div className="text-2xl font-semibold text-[#EDEDED] mt-1.5">{members.length}</div>
+          <div className="text-xs text-[#3ECF8E] font-medium mt-1">Manage family →</div>
+        </Link>
+
+        <Link
+          to="/vault"
+          className="bg-[#1C1C1C] rounded-lg p-4 border border-[#2E2E2E] hover:border-[#3ECF8E]/40 transition-colors block group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium uppercase tracking-wider text-[#8F8F8F]">
+              Total Documents
+            </span>
+            <FileText size={15} className="text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors" />
+          </div>
+          <div className="text-2xl font-semibold text-[#EDEDED] mt-1.5">{documents.length}</div>
+          <div className="text-xs text-[#3ECF8E] font-medium mt-1">Browse vault →</div>
+        </Link>
+
+        <div className="bg-[#1C1C1C] rounded-lg p-4 border border-[#2E2E2E]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium uppercase tracking-wider text-[#8F8F8F]">
+              Storage Used
+            </span>
+            <HardDrive size={15} className="text-[#8F8F8F]" />
+          </div>
+          <div className="text-2xl font-semibold text-[#EDEDED] mt-1.5">
+            {familyData?.totalSizeBytes ? (familyData.totalSizeBytes / (1024 * 1024)).toFixed(1) + ' MB' : '0 MB'}
+          </div>
+          <div className="text-xs text-[#3ECF8E] font-medium mt-1">50 GB Free Tier</div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsEmergencyModalOpen(true)}
+          className="bg-[#1C1C1C] rounded-lg p-4 border border-[#2E2E2E] hover:border-red-500/40 text-left transition-colors cursor-pointer group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium uppercase tracking-wider text-red-400">
+              Emergency Cards
+            </span>
+            <HeartPulse size={15} className="text-red-400 group-hover:scale-105 transition-transform" />
+          </div>
+          <div className="text-2xl font-semibold text-[#EDEDED] mt-1.5">
+            {members.filter((m) => m.bloodGroup).length}
+          </div>
+          <div className="text-xs text-red-400 font-medium mt-1">Open medical card →</div>
+        </button>
+      </div>
+
       {/* ================= ONE-TAP "COPY NUMBER" SECTION ================= */}
       {idCards.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">One-Tap ID Numbers</h2>
-              <p className="text-xs text-slate-500 dark:text-neutral-400">Copy your Aadhaar, PAN, or Passport number in 1 tap without opening files.</p>
+              <h2 className="text-base font-medium text-[#EDEDED]">One-Tap ID Numbers</h2>
+              <p className="text-xs text-[#8F8F8F]">Copy Aadhaar, PAN, or Passport number in 1 tap without opening files.</p>
             </div>
-            <Link to="/vault" className="text-xs font-bold text-emerald-600 dark:text-[#3ECF8E] hover:underline">
+            <Link to="/vault" className="text-xs font-medium text-[#3ECF8E] hover:underline">
               View all →
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {idCards.slice(0, 3).map((doc) => (
               <div
                 key={doc._id}
                 onClick={() => navigate(`/vault/documents/${doc._id}`)}
-                className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-4 border border-slate-200/80 dark:border-[#262626] shadow-xs hover:border-[#3ECF8E] dark:hover:border-[#3ECF8E] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+                className="bg-[#1C1C1C] rounded-lg p-4 border border-[#2E2E2E] hover:border-[#3ECF8E]/40 transition-all cursor-pointer flex flex-col justify-between"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-xl">
-                        {doc.category === 'ID Cards' ? 'badge' :
-                         doc.category === 'Medical & Health' ? 'health_and_safety' : 'account_balance'}
-                      </span>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/20 flex items-center justify-center shrink-0">
+                      {doc.category === 'ID Cards' ? (
+                        <CreditCard size={15} />
+                      ) : doc.category === 'Medical & Health' ? (
+                        <HeartPulse size={15} />
+                      ) : (
+                        <Building2 size={15} />
+                      )}
                     </div>
                     <div className="truncate">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{doc.title}</h4>
-                      <span className="text-[11px] text-slate-500 dark:text-neutral-400">{doc.category}</span>
+                      <h4 className="text-xs font-medium text-[#EDEDED] truncate">{doc.title}</h4>
+                      <span className="text-[11px] text-[#8F8F8F]">{doc.category}</span>
                     </div>
                   </div>
-                  <span className="text-xs text-slate-400 dark:text-neutral-500 font-semibold">
+                  <span className="text-[11px] text-[#8F8F8F] shrink-0">
                     {doc.assignedMember?.name?.split(' ')[0] || 'Family'}
                   </span>
                 </div>
 
                 {/* ID Number Box & One-Tap Copy Button */}
-                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between gap-2">
-                  <div className="font-mono text-xs font-bold text-slate-800 dark:text-neutral-200 bg-slate-50 dark:bg-[#141414] px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#262626] truncate">
+                <div className="mt-3 pt-2.5 border-t border-[#262626] flex items-center justify-between gap-2">
+                  <div className="font-mono text-xs font-semibold text-[#EDEDED] bg-[#141414] px-2 py-1 rounded border border-[#2E2E2E] truncate">
                     {doc.documentNumber}
                   </div>
                   <button
                     type="button"
                     onClick={(e) => handleCopyNumber(doc.documentNumber, doc._id, e)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shrink-0 ${
+                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
                       copiedId === doc._id
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E]'
+                        ? 'bg-[#3ECF8E] text-black font-semibold'
+                        : 'bg-[#262626] hover:bg-[#333] text-[#3ECF8E]'
                     }`}
                   >
-                    {copiedId === doc._id ? <Check size={14} /> : <Copy size={14} />}
+                    {copiedId === doc._id ? <Check size={12} /> : <Copy size={12} />}
                     <span>{copiedId === doc._id ? 'Copied!' : 'Copy'}</span>
                   </button>
                 </div>
@@ -186,55 +264,15 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ================= METRICS & STATS ================= */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link
-          to="/family"
-          className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-5 border border-slate-200/80 dark:border-[#262626] shadow-xs hover:border-[#3ECF8E] transition-colors block"
-        >
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Family Members</span>
-          <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{members.length}</div>
-          <div className="text-xs text-emerald-600 dark:text-[#3ECF8E] font-semibold mt-1">Manage family →</div>
-        </Link>
-
-        <Link
-          to="/vault"
-          className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-5 border border-slate-200/80 dark:border-[#262626] shadow-xs hover:border-[#3ECF8E] transition-colors block"
-        >
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Total Documents</span>
-          <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{documents.length}</div>
-          <div className="text-xs text-emerald-600 dark:text-[#3ECF8E] font-semibold mt-1">Browse vault →</div>
-        </Link>
-
-        <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-5 border border-slate-200/80 dark:border-[#262626] shadow-xs">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">Storage Used</span>
-          <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-            {familyData?.totalSizeBytes ? (familyData.totalSizeBytes / (1024 * 1024)).toFixed(1) + ' MB' : '0 MB'}
-          </div>
-          <div className="text-xs text-[#10B981] dark:text-[#3ECF8E] font-semibold mt-1">50 GB Free Tier</div>
-        </div>
-
-        <button
-          onClick={() => setIsEmergencyModalOpen(true)}
-          className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-5 border border-slate-200/80 dark:border-[#262626] shadow-xs hover:border-red-400 text-left transition-colors cursor-pointer"
-        >
-          <span className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400">Emergency Cards</span>
-          <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-            {members.filter(m => m.bloodGroup).length}
-          </div>
-          <div className="text-xs text-red-600 dark:text-red-400 font-semibold mt-1">Open medical card →</div>
-        </button>
-      </div>
-
       {/* ================= RECENT DOCUMENTS & EMPTY STATE ================= */}
-      <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 lg:p-8 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-5 transition-colors">
+      <div className="bg-[#1C1C1C] rounded-lg p-5 border border-[#2E2E2E] space-y-4 transition-colors">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent Documents</h2>
-            <p className="text-xs text-slate-500 dark:text-neutral-400">Recently uploaded papers in your family vault</p>
+            <h2 className="text-base font-medium text-[#EDEDED]">Recent Documents</h2>
+            <p className="text-xs text-[#8F8F8F]">Recently uploaded papers in your family vault</p>
           </div>
           {documents.length > 0 && (
-            <Link to="/vault" className="text-xs font-bold text-emerald-600 dark:text-[#3ECF8E] hover:underline">
+            <Link to="/vault" className="text-xs font-medium text-[#3ECF8E] hover:underline">
               See All Documents →
             </Link>
           )}
@@ -242,53 +280,55 @@ export default function DashboardPage() {
 
         {documents.length === 0 ? (
           /* Clean Friendly Zero-Mock Empty State */
-          <div className="py-12 text-center space-y-4">
-            <div className="w-16 h-16 rounded-3xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center mx-auto">
-              <FolderOpen size={32} />
+          <div className="py-10 text-center space-y-3">
+            <div className="w-12 h-12 rounded-lg bg-[#141414] border border-[#2E2E2E] text-[#8F8F8F] flex items-center justify-center mx-auto">
+              <FolderOpen size={24} className="text-[#3ECF8E]" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Your Family Vault is Ready!</h3>
-              <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-sm mx-auto mt-1">
-                Start by uploading your first essential document (Aadhaar, Passport, or Insurance) or add your family members.
+              <h3 className="text-base font-medium text-[#EDEDED]">Your Family Vault is Ready!</h3>
+              <p className="text-xs text-[#8F8F8F] max-w-sm mx-auto mt-1">
+                Upload your first essential document (Aadhaar, Passport, or Insurance) or add your family members.
               </p>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
               <Link
                 to="/vault/upload"
-                className="px-6 py-3 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md transition-all flex items-center gap-2"
+                className="px-4 py-2 rounded-lg bg-[#3ECF8E] hover:bg-[#34b27b] text-black font-semibold text-xs transition-all flex items-center gap-1.5"
               >
-                <Plus size={16} strokeWidth={2.5} />
+                <Plus size={14} strokeWidth={2.5} />
                 <span>Upload First Document</span>
               </Link>
               <Link
                 to="/family"
-                className="px-5 py-3 rounded-xl border border-slate-300 dark:border-[#262626] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 font-bold text-xs transition-colors flex items-center gap-2"
+                className="px-4 py-2 rounded-lg border border-[#2E2E2E] hover:bg-[#262626] text-[#EDEDED] text-xs font-medium transition-colors"
               >
                 <span>Add Family Members</span>
               </Link>
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-[#262626]">
+          <div className="divide-y divide-[#262626]">
             {documents.slice(0, 5).map((doc) => (
               <div
                 key={doc._id}
                 onClick={() => navigate(`/vault/documents/${doc._id}`)}
-                className="py-3.5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-[#262626]/50 px-2 rounded-xl transition-colors cursor-pointer group"
+                className="py-3 flex items-center justify-between hover:bg-[#222222] px-2 rounded-lg transition-colors cursor-pointer group"
               >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-xl">
-                      {doc.category === 'ID Cards' ? 'badge' :
-                       doc.category === 'Medical & Health' ? 'health_and_safety' :
-                       doc.category === 'Bank & Property' ? 'account_balance' : 'folder'}
-                    </span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#141414] border border-[#2E2E2E] text-[#3ECF8E] flex items-center justify-center shrink-0">
+                    {doc.category === 'ID Cards' ? (
+                      <CreditCard size={15} />
+                    ) : doc.category === 'Medical & Health' ? (
+                      <HeartPulse size={15} />
+                    ) : (
+                      <FileText size={15} />
+                    )}
                   </div>
                   <div className="truncate">
-                    <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#3ECF8E] truncate">
+                    <div className="text-xs font-medium text-[#EDEDED] group-hover:text-[#3ECF8E] truncate">
                       {doc.title}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-neutral-400 flex items-center gap-2 mt-0.5">
+                    <div className="text-[11px] text-[#8F8F8F] flex items-center gap-2 mt-0.5">
                       <span>{doc.category}</span>
                       {doc.documentNumber && <span>• {doc.documentNumber}</span>}
                       {doc.assignedMember && <span>• {doc.assignedMember.name}</span>}
@@ -296,18 +336,18 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   {doc.documentNumber && (
                     <button
                       type="button"
                       onClick={(e) => handleCopyNumber(doc.documentNumber, doc._id, e)}
-                      className="hidden sm:inline-flex px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 dark:hover:bg-[#333333] text-slate-700 dark:text-neutral-300 text-xs font-semibold items-center gap-1"
+                      className="hidden sm:inline-flex px-2 py-0.5 rounded bg-[#262626] hover:bg-[#333] text-[#EDEDED] text-[11px] font-medium items-center gap-1 cursor-pointer"
                     >
-                      {copiedId === doc._id ? <Check size={12} /> : <Copy size={12} />}
-                      <span>{copiedId === doc._id ? 'Copied!' : 'Copy ID'}</span>
+                      {copiedId === doc._id ? <Check size={11} className="text-[#3ECF8E]" /> : <Copy size={11} />}
+                      <span>{copiedId === doc._id ? 'Copied' : 'Copy'}</span>
                     </button>
                   )}
-                  <ChevronRight size={18} className="text-slate-400 dark:text-neutral-500 group-hover:text-[#3ECF8E]" />
+                  <ChevronRight size={15} className="text-[#8F8F8F] group-hover:text-[#3ECF8E] transition-colors" />
                 </div>
               </div>
             ))}
