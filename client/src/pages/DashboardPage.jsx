@@ -87,11 +87,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setIsEmergencyModalOpen(true)}
-            className="px-4 py-2 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 font-medium text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
           >
             <HeartPulse size={15} />
             <span>Emergency Card</span>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
 
           <Link
             to="/vault/upload"
-            className="px-4 py-2 rounded-lg bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-semibold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
           >
             <Plus size={15} strokeWidth={2.5} />
             <span>Upload Document</span>
@@ -241,14 +241,14 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ID Number Box & One-Tap Copy Button */}
-                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between gap-2">
-                  <div className="font-mono text-xs font-semibold text-slate-800 dark:text-[#EDEDED] bg-slate-100 dark:bg-[#141414] px-2 py-1 rounded border border-slate-200 dark:border-[#2E2E2E] truncate">
+                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between gap-2 min-w-0">
+                  <div className="font-mono text-xs font-semibold text-slate-800 dark:text-[#EDEDED] bg-slate-100 dark:bg-[#141414] px-2 py-1.5 rounded border border-slate-200 dark:border-[#2E2E2E] truncate min-w-0 flex-1">
                     {doc.documentNumber}
                   </div>
                   <button
                     type="button"
                     onClick={(e) => handleCopyNumber(doc.documentNumber, doc._id, e)}
-                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
+                    className={`min-h-[38px] px-3 py-1.5 rounded text-xs font-medium transition-all flex items-center justify-center gap-1 shrink-0 cursor-pointer ${
                       copiedId === doc._id
                         ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-semibold'
                         : 'bg-slate-100 hover:bg-slate-200 dark:bg-[#262626] dark:hover:bg-[#333] text-emerald-700 dark:text-[#3ECF8E]'
@@ -312,9 +312,9 @@ export default function DashboardPage() {
               <div
                 key={doc._id}
                 onClick={() => navigate(`/vault/documents/${doc._id}`)}
-                className="py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.04] px-2 rounded-lg transition-colors cursor-pointer group"
+                className="py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.04] px-2 rounded-lg transition-colors cursor-pointer group min-w-0 gap-2"
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
                     {doc.category === 'ID Cards' ? (
                       <CreditCard size={15} />
@@ -324,27 +324,27 @@ export default function DashboardPage() {
                       <FileText size={15} />
                     )}
                   </div>
-                  <div className="truncate">
+                  <div className="truncate min-w-0 flex-1">
                     <div className="text-xs font-medium text-slate-900 dark:text-[#EDEDED] group-hover:text-[#10B981] dark:group-hover:text-[#3ECF8E] truncate">
                       {doc.title}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-[#8F8F8F] flex items-center gap-2 mt-0.5">
+                    <div className="text-[11px] text-slate-500 dark:text-[#8F8F8F] flex items-center gap-1.5 mt-0.5 truncate">
                       <span>{doc.category}</span>
-                      {doc.documentNumber && <span>• {doc.documentNumber}</span>}
-                      {doc.assignedMember && <span>• {doc.assignedMember.name}</span>}
+                      {doc.documentNumber && <span className="truncate">• {doc.documentNumber}</span>}
+                      {doc.assignedMember && <span className="truncate hidden sm:inline">• {doc.assignedMember.name}</span>}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 shrink-0">
                   {doc.documentNumber && (
                     <button
                       type="button"
                       onClick={(e) => handleCopyNumber(doc.documentNumber, doc._id, e)}
-                      className="hidden sm:inline-flex px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#262626] dark:hover:bg-[#333] text-slate-700 dark:text-[#EDEDED] text-[11px] font-medium items-center gap-1 cursor-pointer"
+                      className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#262626] dark:hover:bg-[#333] text-slate-700 dark:text-[#EDEDED] text-[11px] font-medium flex items-center gap-1 cursor-pointer"
                     >
                       {copiedId === doc._id ? <Check size={11} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={11} />}
-                      <span>{copiedId === doc._id ? 'Copied' : 'Copy'}</span>
+                      <span className="hidden sm:inline">{copiedId === doc._id ? 'Copied' : 'Copy'}</span>
                     </button>
                   )}
                   <ChevronRight size={15} className="text-slate-400 group-hover:text-[#10B981] dark:text-[#8F8F8F] dark:group-hover:text-[#3ECF8E] transition-colors" />

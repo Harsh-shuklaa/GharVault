@@ -221,7 +221,7 @@ export default function VaultPage() {
         </div>
 
         {/* Category Tabs */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-[#262626]">
+        <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-[#262626] overflow-x-auto no-scrollbar whitespace-nowrap pb-1">
           {categories.map((cat) => {
             const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
             const count = cat.name === 'All'
@@ -232,7 +232,7 @@ export default function VaultPage() {
               <button
                 key={cat.name}
                 onClick={() => setSelectedCategory(cat.name)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
                     : 'bg-slate-50 dark:bg-[#141414] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-400 border border-transparent dark:border-[#262626]'
@@ -334,19 +334,19 @@ export default function VaultPage() {
 
                 {/* ONE-TAP "COPY NUMBER" BAR */}
                 {doc.documentNumber ? (
-                  <div className="my-3 p-2.5 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-neutral-500 tracking-wider">Number:</span>
+                  <div className="my-3 p-2.5 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-neutral-500 tracking-wider shrink-0">Number:</span>
                       <code className="text-xs font-mono font-bold text-slate-900 dark:text-neutral-200 truncate">
                         {doc.documentNumber}
                       </code>
                     </div>
                     <button
                       onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] text-xs font-bold flex items-center gap-1 transition-colors shrink-0 cursor-pointer"
+                      className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shrink-0 cursor-pointer shadow-2xs"
                       title="Copy document number in one tap"
                     >
-                      {copiedNumber === doc.documentNumber ? <Check size={12} /> : <Copy size={12} />}
+                      {copiedNumber === doc.documentNumber ? <Check size={14} /> : <Copy size={14} />}
                       <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
                     </button>
                   </div>
@@ -398,9 +398,80 @@ export default function VaultPage() {
           ))}
         </div>
       ) : (
-        /* TABLE VIEW WITH ONE-TAP COPY NUMBER COLUMN */
+        /* TABLE VIEW WITH ONE-TAP COPY NUMBER COLUMN (MOBILE-ADAPTIVE) */
         <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] overflow-hidden shadow-xs transition-colors">
-          <div className="overflow-x-auto">
+          {/* Mobile Document Cards (Visible only on < 768px screens) */}
+          <div className="block md:hidden divide-y divide-slate-100 dark:divide-[#262626]">
+            {filteredDocs.map((doc) => (
+              <div key={doc._id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <Link to={`/vault/documents/${doc._id}`} className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center font-bold shrink-0">
+                      <span className="material-symbols-outlined text-xl">
+                        {doc.category === 'ID Cards' ? 'badge' :
+                         doc.category === 'Medical & Health' ? 'health_and_safety' : 'description'}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                        {doc.title}
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-neutral-400 truncate">
+                        {doc.category} • For {doc.assignedMember?.name || 'Whole Family'}
+                      </div>
+                    </div>
+                  </Link>
+                  {getExpiryBadge(doc.expiryDate)}
+                </div>
+
+                {doc.documentNumber && (
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1 truncate">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block">ID Number</span>
+                      <code className="text-xs font-mono font-bold text-slate-900 dark:text-neutral-200 truncate block">
+                        {doc.documentNumber}
+                      </code>
+                    </div>
+                    <button
+                      onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
+                      className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-2xs"
+                    >
+                      {copiedNumber === doc.documentNumber ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy Number'}</span>
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <button
+                    onClick={(e) => handleShareSafely(doc._id, e)}
+                    className="text-slate-500 dark:text-neutral-400 hover:text-[#3ECF8E] font-semibold flex items-center gap-1.5 py-1.5 cursor-pointer"
+                  >
+                    <Share2 size={14} />
+                    <span>{shareFeedback?.id === doc._id ? 'Link Copied!' : 'Share Safely'}</span>
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/vault/documents/${doc._id}`}
+                      className="px-3.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] font-bold text-xs"
+                    >
+                      View
+                    </Link>
+                    <button
+                      onClick={(e) => handleDelete(doc._id, doc.title, e)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 cursor-pointer"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View (Hidden on mobile) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50/80 dark:bg-[#141414] border-b border-slate-200 dark:border-[#262626] text-slate-500 dark:text-neutral-400 uppercase font-bold tracking-wider text-[10px]">
                 <tr>

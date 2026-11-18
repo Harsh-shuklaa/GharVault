@@ -125,9 +125,12 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn"
+      onClick={onClose}
+    >
       <div
-        className="bg-white dark:bg-[#1C1C1C] rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-[#2E2E2E] space-y-6 transition-colors"
+        className="bg-white dark:bg-[#1C1C1C] rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-[#2E2E2E] space-y-5 transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -170,16 +173,16 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Avatar Upload Banner */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="relative">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative shrink-0">
                 <img
                   src={
                     formData.avatar ||
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name || 'Member')}&background=3ECF8E&color=121212`
                   }
                   alt={formData.name}
-                  className="w-16 h-16 rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-sm"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-sm"
                 />
                 <button
                   type="button"
@@ -191,12 +194,12 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                   <Camera size={13} strokeWidth={2.2} />
                 </button>
               </div>
-              <div>
-                <span className="text-xs font-bold text-slate-900 dark:text-white block">
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
                   Profile Photo
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-neutral-400 block mt-0.5">
-                  Stored securely on Supabase Storage
+                <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 block mt-0.5 truncate">
+                  Supabase Storage
                 </span>
               </div>
             </div>
@@ -213,7 +216,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#1C1C1C] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-bold transition-colors cursor-pointer"
+              className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#1C1C1C] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-bold transition-colors cursor-pointer shrink-0"
             >
               {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
             </button>
@@ -383,18 +386,18 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#262626]">
+          <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-[#262626]">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 font-bold text-xs transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 font-bold text-xs transition-colors cursor-pointer text-center"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
             >
               <Check size={15} strokeWidth={2.5} />
               <span>{loading ? 'Saving Profile...' : 'Save Changes'}</span>

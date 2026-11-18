@@ -55,26 +55,26 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-red-700 px-6 py-5 text-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs">
-              <HeartPulse size={24} strokeWidth={2.2} />
+        <div className="bg-red-700 px-4 py-3.5 sm:px-6 sm:py-5 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs shrink-0">
+              <HeartPulse size={22} strokeWidth={2.2} />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold">Family Emergency Medical Card</h2>
-                <span className="px-2 py-0.5 rounded-full bg-white text-red-700 font-mono text-[10px] font-extrabold uppercase">
+                <h2 className="text-sm sm:text-lg font-bold truncate">Family Emergency Medical Card</h2>
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-white text-red-700 font-mono text-[10px] font-extrabold uppercase">
                   Fast Access
                 </span>
               </div>
-              <p className="text-xs text-red-100">
+              <p className="text-[11px] sm:text-xs text-red-100 truncate">
                 Blood Groups, Emergency Contacts, & Cashless Health Insurance Details
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer shrink-0 ml-2"
           >
             <X size={18} />
           </button>
@@ -104,26 +104,26 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                   key={member.id}
                   className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] hover:border-red-400 dark:hover:border-red-500/40 transition-colors space-y-3"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <img
                         src={member.avatar}
                         alt={member.name}
-                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-white dark:ring-[#262626] shadow-xs shrink-0"
+                        className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover ring-2 ring-white dark:ring-[#262626] shadow-xs shrink-0"
                       />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">{member.name}</h4>
-                          <span className="text-xs px-2 py-0.5 rounded-md bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-neutral-300 font-semibold">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{member.name}</h4>
+                          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-neutral-300 font-semibold shrink-0">
                             {member.relationship}
                           </span>
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 flex items-center gap-2">
-                          <span>Phone: {member.phone}</span>
+                        <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 flex items-center gap-2 truncate">
+                          <span className="truncate">Phone: {member.phone}</span>
                           {member.phone && member.phone !== 'Not set' && (
                             <button
                               onClick={() => copyToClipboard(member.phone, member.id + '-phone')}
-                              className="text-[11px] text-[#3ECF8E] hover:underline font-semibold cursor-pointer"
+                              className="text-[11px] text-[#3ECF8E] hover:underline font-semibold cursor-pointer shrink-0"
                             >
                               {copiedText === member.id + '-phone' ? 'Copied' : 'Copy'}
                             </button>
@@ -133,9 +133,9 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                     </div>
 
                     {/* Blood Group Badge */}
-                    <div className="px-3.5 py-1.5 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-center shrink-0 border border-red-200 dark:border-red-500/30">
-                      <span className="text-[10px] uppercase font-bold text-red-600 dark:text-red-400 block">Blood Group</span>
-                      <span className="text-base font-extrabold font-mono text-red-700 dark:text-red-300">
+                    <div className="px-3 py-1.5 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-center shrink-0 border border-red-200 dark:border-red-500/30">
+                      <span className="text-[9px] uppercase font-bold text-red-600 dark:text-red-400 block">Blood</span>
+                      <span className="text-sm sm:text-base font-extrabold font-mono text-red-700 dark:text-red-300">
                         {member.bloodGroup || '—'}
                       </span>
                     </div>

@@ -63,10 +63,10 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] text-slate-900 dark:text-[#EDEDED] font-sans selection:bg-[#3ECF8E] selection:text-black transition-colors">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] text-slate-900 dark:text-[#EDEDED] font-sans selection:bg-[#3ECF8E] selection:text-black transition-colors overflow-x-hidden">
       {/* ================= STICKY NAVIGATION BAR ================= */}
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#121212]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#262626] transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-[#1C1C1C] border border-emerald-200 dark:border-[#2E2E2E] group-hover:border-[#10B981] dark:group-hover:border-[#3ECF8E]/50 flex items-center justify-center shadow-xs transition-colors">
               <Shield className="w-4 h-4 text-[#10B981] dark:text-[#3ECF8E] stroke-[2.2]" />
@@ -344,8 +344,8 @@ export default function LandingPage() {
       </section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="bg-white dark:bg-[#121212] text-slate-600 dark:text-[#8F8F8F] py-10 border-t border-slate-200 dark:border-[#262626] transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <footer className="bg-white dark:bg-[#121212] text-slate-600 dark:text-[#8F8F8F] py-8 sm:py-10 border-t border-slate-200 dark:border-[#262626] transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-[#1C1C1C] border border-emerald-200 dark:border-[#2E2E2E] flex items-center justify-center shadow-xs">
               <Shield className="w-3.5 h-3.5 text-[#10B981] dark:text-[#3ECF8E] stroke-[2.2]" />
@@ -358,7 +358,7 @@ export default function LandingPage() {
             © 2026 GharVault. Built with Supabase Storage, MongoDB Atlas, and React.
           </p>
 
-          <div className="flex items-center gap-4 text-xs font-medium text-slate-600 dark:text-[#8F8F8F]">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-medium text-slate-600 dark:text-[#8F8F8F]">
             <Link to="/auth/login" className="hover:text-slate-900 dark:hover:text-[#EDEDED] transition-colors">
               Sign In
             </Link>

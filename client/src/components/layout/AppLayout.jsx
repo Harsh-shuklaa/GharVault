@@ -18,6 +18,7 @@ import {
   Sun,
   Moon,
   Plus,
+  Bell,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -307,21 +308,27 @@ export default function AppLayout() {
       </aside>
 
       {/* ================= MAIN CONTENT WRAPPER ================= */}
-      <div className="md:pl-16 min-h-screen flex flex-col pb-20 md:pb-0 transition-all duration-200">
+      <div className="ml-0 md:ml-16 min-h-screen flex flex-col pb-24 md:pb-8 transition-all duration-200 overflow-x-hidden">
         {/* Fixed Topbar */}
-        <header className="fixed top-0 left-0 md:left-16 right-0 h-16 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#262626] z-40 flex items-center justify-between px-4 sm:px-8 shadow-xs transition-colors duration-200">
+        <header className="fixed top-0 left-0 md:left-16 right-0 h-14 sm:h-16 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#262626] z-40 flex items-center justify-between px-3 sm:px-6 shadow-xs transition-colors duration-200">
           {/* Left: Mobile Brand / Desktop Breadcrumb */}
-          <div className="flex items-center gap-2.5">
-            {/* Mobile Brand Shield */}
-            <div className="md:hidden w-8 h-8 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] flex items-center justify-center text-white dark:text-[#121212] font-bold">
-              <Shield size={17} strokeWidth={2.2} />
-            </div>
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Mobile Brand Shield & Name */}
+            <Link to="/dashboard" className="flex items-center gap-2 min-w-0" title="GharVault">
+              <div className="w-8 h-8 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] flex items-center justify-center text-white dark:text-[#121212] font-bold shadow-xs shrink-0">
+                <Shield size={17} strokeWidth={2.2} />
+              </div>
+              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white truncate block md:hidden">
+                GharVault
+              </span>
+            </Link>
 
-            <div>
-              <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate block max-w-[150px] sm:max-w-none">
+            {/* Desktop Family Details */}
+            <div className="hidden md:block min-w-0">
+              <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate block max-w-[200px] lg:max-w-none">
                 {family?.name || 'My Family Vault'}
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-[#3ECF8E] font-medium">
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-[#3ECF8E] font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] animate-pulse"></span>
                 <span>Private & Encrypted</span>
               </span>
@@ -329,14 +336,24 @@ export default function AppLayout() {
           </div>
 
           {/* Search Trigger */}
-          <div className="flex-1 max-w-md mx-2 sm:mx-6">
+          <div className="flex-1 max-w-md mx-2 sm:mx-6 flex justify-end md:justify-center">
+            {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-full h-9 sm:h-10 px-3 bg-slate-100 dark:bg-[#1C1C1C] hover:bg-slate-200/70 dark:hover:bg-[#262626] rounded-xl text-xs text-slate-500 dark:text-neutral-400 flex items-center justify-between border border-slate-200 dark:border-[#262626] transition-all cursor-pointer"
+              className="md:hidden w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#1C1C1C] text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#262626] cursor-pointer"
+              title="Search Vault"
+            >
+              <Search size={15} />
+            </button>
+
+            {/* Desktop Search Bar */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="hidden md:flex w-full h-9 sm:h-10 px-3 bg-slate-100 dark:bg-[#1C1C1C] hover:bg-slate-200/70 dark:hover:bg-[#262626] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200 dark:border-[#262626] transition-all cursor-pointer"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Search size={15} className="text-slate-400 dark:text-neutral-500 shrink-0" />
-                <span className="truncate text-[11px] sm:text-xs">Search IDs, insurance, deed...</span>
+                <span className="truncate text-xs">Search IDs, insurance, deed...</span>
               </div>
               <kbd className="hidden lg:inline-block px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#262626] text-slate-600 dark:text-neutral-400 font-mono text-[10px]">
                 Ctrl + K
@@ -344,32 +361,54 @@ export default function AppLayout() {
             </button>
           </div>
 
-          {/* Topbar Actions: Theme Toggle + Emergency Card + Upload */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Topbar Actions */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Dark / Light Mode Toggle */}
             <button
               type="button"
               onClick={toggleTheme}
               title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
-              className="w-9 h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-xs"
             >
-              {isDark ? <Sun size={17} strokeWidth={2} /> : <Moon size={17} strokeWidth={2} />}
+              {isDark ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
             </button>
 
-            {/* Quick Emergency Card Button in Topbar */}
+            {/* Notification Bell */}
+            <Link
+              to="/notifications"
+              title="Notifications"
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer shadow-xs"
+            >
+              <Bell size={16} strokeWidth={1.8} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E]" />
+            </Link>
+
+            {/* Mobile User Avatar */}
+            <Link to="/settings" className="md:hidden block shrink-0" title="Profile Settings">
+              <img
+                src={
+                  user?.avatar ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3ECF8E&color=121212`
+                }
+                alt={user?.name || 'User'}
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-700"
+              />
+            </Link>
+
+            {/* Desktop Quick Emergency Card Button */}
             <button
               type="button"
               onClick={() => setIsEmergencyModalOpen(true)}
-              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-400 dark:border-red-500/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="hidden md:inline-flex px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-400 dark:border-red-500/20 text-xs font-bold items-center gap-1.5 transition-colors cursor-pointer"
             >
               <HeartPulse size={15} className="text-red-600 dark:text-red-400 shrink-0" />
-              <span className="hidden sm:inline">Emergency Card</span>
+              <span>Emergency Card</span>
             </button>
 
-            {/* Upload Document CTA (Desktop) */}
+            {/* Desktop Upload Document CTA */}
             <Link
               to="/vault/upload"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-xs transition-all cursor-pointer"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-xs transition-all cursor-pointer"
             >
               <Plus size={16} strokeWidth={2.5} />
               <span>Upload</span>
@@ -378,13 +417,13 @@ export default function AppLayout() {
         </header>
 
         {/* ================= PAGE OUTLET ================= */}
-        <main className="w-full pt-16 flex-1">
+        <main className="w-full pt-14 sm:pt-16 flex-1 min-w-0">
           <Outlet />
         </main>
       </div>
 
       {/* ================= MOBILE BOTTOM NAVIGATION BAR (< 768px) ================= */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#262626] z-50 flex items-center justify-around px-2 shadow-lg">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 h-16 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#262626] flex items-center justify-around px-2 shadow-lg select-none">
         {/* Home */}
         <Link
           to="/dashboard"
@@ -412,13 +451,13 @@ export default function AppLayout() {
         </Link>
 
         {/* Central Floating Action Button (Supabase Green +) */}
-        <div className="relative -top-4">
+        <div className="relative -top-3.5 flex items-center justify-center">
           <Link
             to="/vault/upload"
-            className="w-[52px] h-[52px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 active:scale-95 transition-all"
+            className="w-[50px] h-[50px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 active:scale-95 transition-all"
             title="Upload Document"
           >
-            <Plus size={26} strokeWidth={2.8} />
+            <Plus size={24} strokeWidth={2.8} />
           </Link>
         </div>
 
