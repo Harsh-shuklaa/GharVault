@@ -160,6 +160,7 @@ router.get('/:id', async (req, res) => {
         ...doc,
         assignedMember: member,
         signedUrl,
+        fileUrl: signedUrl,
       },
     });
   } catch (err) {
@@ -420,12 +421,21 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET /api/documents/raw/:path
-router.get('/raw/:path', (req, res) => {
+router.get('/raw/:path', async (req, res) => {
   const storagePath = decodeURIComponent(req.params.path);
   const localFilePath = path.resolve('server/uploads/vault', storagePath.replace(/\//g, '_'));
 
   if (fs.existsSync(localFilePath)) {
     return res.sendFile(localFilePath);
+  }
+
+  try {
+    const signedUrl = await createSignedUrl(storagePath, 3600);
+    if (signedUrl && signedUrl.startsWith('http')) {
+      return res.redirect(signedUrl);
+    }
+  } catch (err) {
+    console.warn('[Raw] Could not sign url:', err.message);
   }
 
   res.setHeader('Content-Type', 'application/pdf');
