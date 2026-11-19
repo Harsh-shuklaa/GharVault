@@ -12,11 +12,31 @@ export const AuthProvider = ({ children }) => {
 
   const syncBackendUser = async (profileData) => {
     try {
-      const loginRes = await api.syncAuth(profileData);
+      const pendingCode = localStorage.getItem('pending_invite_code') || sessionStorage.getItem('pending_invite_code');
+      const pendingRelation = localStorage.getItem('pending_invite_relation') || sessionStorage.getItem('pending_invite_relation');
+      const pendingName = localStorage.getItem('pending_invite_name') || sessionStorage.getItem('pending_invite_name');
+
+      const payload = {
+        ...profileData,
+        ...(pendingCode ? { inviteCode: pendingCode.trim().toUpperCase(), relationship: pendingRelation || 'Member' } : {}),
+        ...(pendingName ? { name: pendingName } : {}),
+      };
+
+      const loginRes = await api.syncAuth(payload);
       if (loginRes?.token) {
         localStorage.setItem('gharvault_token', loginRes.token);
         setUser(loginRes.user);
         setFamily(loginRes.family);
+
+        if (pendingCode) {
+          localStorage.removeItem('pending_invite_code');
+          localStorage.removeItem('pending_invite_relation');
+          localStorage.removeItem('pending_invite_name');
+          sessionStorage.removeItem('pending_invite_code');
+          sessionStorage.removeItem('pending_invite_relation');
+          sessionStorage.removeItem('pending_invite_name');
+        }
+
         return loginRes;
       }
     } catch (err) {
@@ -102,9 +122,28 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async (customEmail = null) => {
     try {
+      // Preserve pending invite credentials across logins
+      const pendingCode = localStorage.getItem('pending_invite_code') || sessionStorage.getItem('pending_invite_code');
+      const pendingRelation = localStorage.getItem('pending_invite_relation') || sessionStorage.getItem('pending_invite_relation');
+      const pendingName = localStorage.getItem('pending_invite_name') || sessionStorage.getItem('pending_invite_name');
+
       // Clear previous cached session state
       localStorage.removeItem('gharvault_token');
       sessionStorage.clear();
+
+      if (pendingCode) {
+        localStorage.setItem('pending_invite_code', pendingCode);
+        sessionStorage.setItem('pending_invite_code', pendingCode);
+      }
+      if (pendingRelation) {
+        localStorage.setItem('pending_invite_relation', pendingRelation);
+        sessionStorage.setItem('pending_invite_relation', pendingRelation);
+      }
+      if (pendingName) {
+        localStorage.setItem('pending_invite_name', pendingName);
+        sessionStorage.setItem('pending_invite_name', pendingName);
+      }
+
       setUser(null);
       setFamily(null);
 
@@ -112,12 +151,24 @@ export const AuthProvider = ({ children }) => {
       if (customEmail) {
         const loginRes = await api.loginWithGoogle({
           email: customEmail.trim().toLowerCase(),
-          name: customEmail.split('@')[0],
+          name: pendingName || customEmail.split('@')[0],
+          inviteCode: pendingCode ? pendingCode.trim().toUpperCase() : undefined,
+          relationship: pendingRelation || undefined,
         });
         if (loginRes?.token) {
           localStorage.setItem('gharvault_token', loginRes.token);
           setUser(loginRes.user);
           setFamily(loginRes.family);
+
+          if (pendingCode) {
+            localStorage.removeItem('pending_invite_code');
+            localStorage.removeItem('pending_invite_relation');
+            localStorage.removeItem('pending_invite_name');
+            sessionStorage.removeItem('pending_invite_code');
+            sessionStorage.removeItem('pending_invite_relation');
+            sessionStorage.removeItem('pending_invite_name');
+          }
+
           return loginRes;
         }
         throw new Error(loginRes?.error || 'Authentication failed');

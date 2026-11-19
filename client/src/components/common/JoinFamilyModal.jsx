@@ -1,17 +1,29 @@
-import React, { useState } from 'react';
-import { Shield, KeyRound, CheckCircle2, AlertCircle, X, Users, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { KeyRound, CheckCircle2, AlertCircle, X, ArrowRight } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 
 export default function JoinFamilyModal({ isOpen, onClose, onJoined }) {
   const { user, refreshSession } = useAuth();
+  const { toast } = useToast();
   const [inviteCode, setInviteCode] = useState('');
   const [relationship, setRelationship] = useState('Member');
   const [phone, setPhone] = useState(user?.phone || '');
   const [bloodGroup, setBloodGroup] = useState(user?.bloodGroup || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -26,7 +38,6 @@ export default function JoinFamilyModal({ isOpen, onClose, onJoined }) {
     try {
       setLoading(true);
       setError('');
-      setSuccess('');
 
       const res = await api.joinFamily({
         inviteCode: cleanCode,
@@ -45,69 +56,71 @@ export default function JoinFamilyModal({ isOpen, onClose, onJoined }) {
         localStorage.setItem('gharvault_token', res.token);
       }
 
-      setSuccess(`Joined "${res.family?.name || 'Family Vault'}" successfully!`);
+      const familyName = res.family?.name || 'Family Vault';
+      toast.success(`Successfully joined "${familyName}"!`);
       await refreshSession();
 
       if (onJoined) {
         onJoined(res.family);
       }
 
-      setTimeout(() => {
-        setSuccess('');
-        onClose();
-      }, 1200);
+      onClose();
+      window.location.href = '/dashboard';
     } catch (err) {
       setError(err.message || 'Failed to join family vault. Please check the code.');
+      toast.error(err.message || 'Failed to join family vault');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-md bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200 dark:border-[#2E2E2E] shadow-2xl p-6 sm:p-7 space-y-5 text-slate-900 dark:text-[#EDEDED] relative transition-colors"
+        className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors cursor-pointer"
-        >
-          <X size={18} />
-        </button>
-
-        {/* Modal Header */}
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
-            <KeyRound className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-              Join Existing Family Vault
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-neutral-400">
-              Enter your family invite code (e.g. <span className="font-mono text-[#10B981] dark:text-[#3ECF8E]">GHAR-XXXX</span>)
-            </p>
-          </div>
+        {/* Mobile Drag Handle Pill */}
+        <div className="md:hidden flex justify-center pt-2.5 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-neutral-600" />
         </div>
 
-        {error && (
-          <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#27272A] shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 border border-emerald-100 dark:border-[#3ECF8E]/20 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
+              <KeyRound size={20} strokeWidth={2.2} />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                Join Family Vault
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-neutral-400">
+                Enter your invite code (e.g. <span className="font-mono text-[#10B981] dark:text-[#3ECF8E]">GHAR-XXXX</span>)
+              </p>
+            </div>
           </div>
-        )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-[#27272A] text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-        {success && (
-          <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-[#3ECF8E] text-xs font-semibold flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>{success}</span>
-          </div>
-        )}
+        {/* Scrollable Body */}
+        <form id="join-family-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+          {error && (
+            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
+              <AlertCircle size={16} className="shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300 mb-1.5">
               Family Invite Code *
@@ -118,11 +131,11 @@ export default function JoinFamilyModal({ isOpen, onClose, onJoined }) {
               placeholder="e.g. GHAR-4892"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-slate-900 dark:text-white font-mono text-sm tracking-widest uppercase focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] text-slate-900 dark:text-white font-mono text-sm tracking-widest uppercase focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300 mb-1.5">
                 Your Relationship
@@ -130,7 +143,7 @@ export default function JoinFamilyModal({ isOpen, onClose, onJoined }) {
               <select
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none cursor-pointer"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none cursor-pointer"
               >
                 <option value="Self">Self</option>
                 <option value="Spouse">Spouse</option>
@@ -151,7 +164,7 @@ export default function JoinFamilyModal({ isOpen, onClose, onJoined }) {
               <select
                 value={bloodGroup}
                 onChange={(e) => setBloodGroup(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none cursor-pointer"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none cursor-pointer"
               >
                 <option value="">Not Specified</option>
                 <option value="O+">O+</option>
@@ -175,28 +188,30 @@ export default function JoinFamilyModal({ isOpen, onClose, onJoined }) {
               placeholder="+91 98765 43210"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white font-mono focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
             />
           </div>
-
-          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center gap-2.5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] text-slate-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-[#262626] text-xs font-bold transition-colors cursor-pointer text-center"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !inviteCode.trim()}
-              className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-emerald-500/20 disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-2"
-            >
-              <span>{loading ? 'Joining Vault...' : 'Join Family Vault'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
         </form>
+
+        {/* Fixed Footer */}
+        <div className="px-5 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"
+          >
+            Cancel
+          </button>
+          <button
+            form="join-family-form"
+            type="submit"
+            disabled={loading || !inviteCode.trim()}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 disabled:opacity-50 transition-all cursor-pointer text-center"
+          >
+            <span>{loading ? 'Joining Vault...' : 'Join Family Vault'}</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
       </div>
     </div>
   );

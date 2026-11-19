@@ -1,8 +1,23 @@
 import mongoose from 'mongoose';
-import dns from 'dns';
 import { seedInitialData } from './seed.js';
 
 let isConnected = false;
+
+// Dynamically track Mongoose connection state
+mongoose.connection.on('connected', () => {
+  isConnected = true;
+  console.log('[Database] MongoDB Atlas connection established.');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.warn('[Database] MongoDB Atlas connection warning:', err.message);
+  isConnected = false;
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('[Database] MongoDB Atlas disconnected. Using in-memory fallback store.');
+  isConnected = false;
+});
 
 export const connectDB = async () => {
   const mongoUri = process.env.MONGODB_URI;
@@ -14,26 +29,25 @@ export const connectDB = async () => {
     return;
   }
 
-  // Set reliable public DNS resolvers so ISP routers do not time out on SRV record queries
-  try {
-    dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-  } catch (dnsErr) {
-    // ignore if restricted
-  }
-
   try {
     const conn = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
       family: 4,
     });
     isConnected = true;
     console.log(`[Database] MongoDB Atlas Connected: ${conn.connection.host}`);
     await seedInitialData(true);
   } catch (err) {
+    isConnected = false;
     console.error(`[Database] MongoDB Atlas connection failed: ${err.message}`);
     console.log('[Database] Falling back to high-fidelity In-Memory Store so GharVault remains 100% operational.');
     await seedInitialData(false);
   }
+};
+
+export const getIsConnected = () => {
+  return isConnected && mongoose.connection.readyState === 1;
 };
 
 export { isConnected };

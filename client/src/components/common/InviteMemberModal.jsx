@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { UserPlus, Copy, Check, X, AlertCircle, MailCheck } from 'lucide-react';
 import { api } from '../../lib/api';
+import { useToast } from '../../context/ToastContext';
 
 export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    relationship: 'Son',
+    relationship: 'Family Member',
     role: 'MEMBER',
     isEmergencyContact: false,
     canSignQuorum: false,
@@ -13,6 +16,29 @@ export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) 
   const [loading, setLoading] = useState(false);
   const [inviteResult, setInviteResult] = useState(null);
   const [error, setError] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Reset state on open
+  useEffect(() => {
+    if (isOpen) {
+      setInviteResult(null);
+      setError('');
+      setCopiedLink(false);
+      setCopiedCode(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -24,80 +50,144 @@ export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) 
       const res = await api.inviteMember(formData);
       if (res.success) {
         setInviteResult(res);
+        toast.success(`Invite created for ${formData.name}!`);
         if (onInviteSuccess) onInviteSuccess(res.member);
+      } else {
+        throw new Error(res.error || 'Failed to create invitation');
       }
     } catch (err) {
       setError(err.message || 'Failed to send invite');
+      toast.error(err.message || 'Failed to send invite');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCopyCode = () => {
+    if (inviteResult?.inviteCode) {
+      navigator.clipboard.writeText(inviteResult.inviteCode);
+      setCopiedCode(true);
+      toast.success('Invite code copied to clipboard!');
+      setTimeout(() => setCopiedCode(false), 2000);
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (inviteResult?.inviteLink) {
+      navigator.clipboard.writeText(inviteResult.inviteLink);
+      setCopiedLink(true);
+      toast.success('Invite link copied to clipboard!');
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-fadeIn">
+    <div
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
+        className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-lg bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-[#0F172A] px-6 py-5 text-white flex items-center justify-between border-b border-[#1E293B]">
+        {/* Mobile Drag Handle Pill */}
+        <div className="md:hidden flex justify-center pt-2.5 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-neutral-600" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#27272A] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/30 text-blue-400 flex items-center justify-center border border-blue-500/40">
-              <span className="material-symbols-outlined text-2xl">person_add</span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 border border-emerald-100 dark:border-[#3ECF8E]/20 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
+              <UserPlus size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-white">Invite Family Member</h3>
-              <p className="text-xs text-slate-400">Sharma Family Ghar Custodian Access</p>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                Invite Family Member
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-neutral-400">
+                Grant secure access to your shared family vault
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1">
-            <span className="material-symbols-outlined text-xl">close</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-[#27272A] text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+          >
+            <X size={18} />
           </button>
         </div>
 
-        <div className="p-6">
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4">
           {inviteResult ? (
             <div className="text-center py-4 space-y-4">
-              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                <span className="material-symbols-outlined text-3xl">mark_email_read</span>
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-[#3ECF8E]/10 border border-emerald-200 dark:border-[#3ECF8E]/30 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center mx-auto shadow-sm">
+                <MailCheck size={28} />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-slate-900">Invitation Generated!</h4>
-                <p className="text-xs text-slate-600 mt-1">
-                  Share this secure access link or invite code with {formData.name}.
+                <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                  Invitation Created!
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+                  Share this secure access code or direct link with {formData.name}.
                 </p>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-left font-mono text-xs text-slate-800 space-y-1.5">
-                <div className="text-[11px] text-slate-500 font-sans font-semibold">Invite Code:</div>
-                <div className="text-base font-bold text-blue-600 tracking-wider">{inviteResult.inviteCode}</div>
-                <div className="text-[11px] text-slate-500 font-sans font-semibold pt-1">Direct Link:</div>
-                <div className="break-all text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-200">
-                  {inviteResult.inviteLink}
+              <div className="p-4 bg-slate-50 dark:bg-[#141414] rounded-2xl border border-slate-200 dark:border-[#27272A] text-left space-y-3">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">
+                    Family Invite Code:
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A]">
+                    <span className="font-mono font-extrabold text-base text-[#10B981] dark:text-[#3ECF8E] tracking-widest">
+                      {inviteResult.inviteCode}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyCode}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-[#27272A] hover:bg-slate-200 text-slate-700 dark:text-neutral-200 transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      {copiedCode ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedCode ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(inviteResult.inviteLink);
-                  alert('Invite link copied to clipboard!');
-                  onClose();
-                }}
-                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-base">content_copy</span>
-                <span>Copy Link & Done</span>
-              </button>
+                {inviteResult.inviteLink && (
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400 mb-1">
+                      Direct Join Link:
+                    </div>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] gap-2">
+                      <span className="font-mono text-xs text-slate-700 dark:text-neutral-300 truncate">
+                        {inviteResult.inviteLink}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCopyLink}
+                        className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                      >
+                        {copiedLink ? <Check size={13} /> : <Copy size={13} />}
+                        <span>{copiedLink ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form id="invite-member-form" onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold">
-                  {error}
+                <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
+                  <AlertCircle size={16} className="shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
                   Full Name *
                 </label>
                 <input
@@ -106,12 +196,12 @@ export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) 
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Aarav Sharma"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 focus:border-blue-600"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
                   Email Address *
                 </label>
                 <input
@@ -119,87 +209,71 @@ export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) 
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="e.g. aarav.sharma@gmail.com"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 focus:border-blue-600"
+                  placeholder="member@gmail.com"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
                     Relationship
                   </label>
                   <select
                     value={formData.relationship}
                     onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 bg-white"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none cursor-pointer"
                   >
                     <option value="Spouse">Spouse</option>
+                    <option value="Father">Father</option>
+                    <option value="Mother">Mother</option>
                     <option value="Son">Son</option>
                     <option value="Daughter">Daughter</option>
-                    <option value="Mother">Mother</option>
-                    <option value="Father">Father</option>
                     <option value="Brother">Brother</option>
-                    <option value="Legal Nominee">Legal Nominee</option>
+                    <option value="Sister">Sister</option>
+                    <option value="Family Member">Family Member</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Role & Privileges
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
+                    Vault Role
                   </label>
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium text-slate-900 bg-white"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none cursor-pointer"
                   >
-                    <option value="MEMBER">Member (Upload & View)</option>
-                    <option value="GUARDIAN">Guardian (Quorum Signer)</option>
-                    <option value="VIEW_ONLY">View-Only Custodian</option>
-                    <option value="ADMIN">Co-Admin</option>
+                    <option value="MEMBER">Member (View & Edit own)</option>
+                    <option value="EDITOR">Editor (Manage all documents)</option>
+                    <option value="VIEWER">Viewer (Read only)</option>
                   </select>
                 </div>
               </div>
-
-              <div className="space-y-2 pt-2">
-                <label className="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.isEmergencyContact}
-                    onChange={(e) => setFormData({ ...formData, isEmergencyContact: e.target.checked })}
-                    className="rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Designate as Emergency Contact (Receives Break-Glass alerts)</span>
-                </label>
-
-                <label className="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.canSignQuorum}
-                    onChange={(e) => setFormData({ ...formData, canSignQuorum: e.target.checked })}
-                    className="rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Authorize for Dual-Key Quorum Signatures</span>
-                </label>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20"
-                >
-                  {loading ? 'Creating Invitation...' : 'Send Invitation'}
-                </button>
-              </div>
             </form>
+          )}
+        </div>
+
+        {/* Fixed Footer */}
+        <div className="px-5 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"
+          >
+            {inviteResult ? 'Done' : 'Cancel'}
+          </button>
+          {!inviteResult && (
+            <button
+              form="invite-member-form"
+              type="submit"
+              disabled={loading}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer text-center"
+            >
+              <UserPlus size={15} strokeWidth={2.5} />
+              <span>{loading ? 'Generating Code...' : 'Send Invitation'}</span>
+            </button>
           )}
         </div>
       </div>

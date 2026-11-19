@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
-import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, Lock, Shield } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export default function DocumentUploadPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const preselectedMember = searchParams.get('member') || '';
 
@@ -22,6 +24,7 @@ export default function DocumentUploadPage() {
     expiryDate: '',
     whoCanViewType: 'ALL', // 'ALL' or 'SPECIFIC'
     selectedWhoCanView: [],
+    isMpinProtected: false,
     notes: '',
   });
 
@@ -75,19 +78,32 @@ export default function DocumentUploadPage() {
       setError('Please choose or drop a document to upload.');
       return;
     }
+    const cleanTitle = (formData.title || file.name || '').trim();
+    if (!cleanTitle) {
+      setError('Please enter a document title.');
+      return;
+    }
     try {
       setLoading(true);
       setError('');
 
       const data = new FormData();
       data.append('file', file);
-      data.append('title', formData.title || file.name);
+      data.append('title', cleanTitle);
       data.append('category', formData.category);
-      if (formData.assignedMemberId) {
+      if (formData.assignedMemberId && formData.assignedMemberId !== 'null' && formData.assignedMemberId !== 'undefined') {
         data.append('assignedMemberId', formData.assignedMemberId);
       }
-      data.append('documentNumber', formData.documentNumber);
-      data.append('expiryDate', formData.expiryDate);
+      if (formData.documentNumber) {
+        data.append('documentNumber', formData.documentNumber.trim());
+      }
+      if (formData.expiryDate) {
+        data.append('expiryDate', formData.expiryDate);
+      }
+
+      // MPIN Sensitive Protection
+      data.append('isMpinProtected', formData.isMpinProtected ? 'true' : 'false');
+      data.append('isSensitive', formData.isMpinProtected ? 'true' : 'false');
 
       // Who Can View
       const whoCanViewArray = formData.whoCanViewType === 'ALL'
@@ -98,13 +114,17 @@ export default function DocumentUploadPage() {
       data.append('whoCanView', JSON.stringify(whoCanViewArray));
 
       const res = await api.uploadDocument(data);
-      if (res.document) {
-        navigate(`/vault/documents/${res.document._id}`);
+      toast.success(`"${cleanTitle}" uploaded and encrypted securely!`);
+      if (res?.document) {
+        const docId = res.document._id || res.document.id;
+        navigate(`/vault/documents/${docId}`);
       } else {
         navigate('/vault');
       }
     } catch (err) {
-      setError(err.message || 'Upload failed. Please try again.');
+      console.error('Upload document error:', err);
+      setError(err.message || 'Upload failed. Please check your connection and file format.');
+      toast.error(err.message || 'Upload failed. Please check format.');
     } finally {
       setLoading(false);
     }
@@ -215,7 +235,11 @@ export default function DocumentUploadPage() {
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => setFormData({ ...formData, category: cat.id })}
+                  onClick={() => setFormData(prev => ({
+                    ...prev,
+                    category: cat.id,
+                    isMpinProtected: (cat.id === 'Bank & Property' || cat.id === 'Legal') ? true : prev.isMpinProtected,
+                  }))}
                   className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                     formData.category === cat.id
                       ? 'border-[#3ECF8E] bg-[#3ECF8E]/10 ring-2 ring-[#3ECF8E]/20'
@@ -303,6 +327,53 @@ export default function DocumentUploadPage() {
             <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1">
               GharVault will remind you 30 days before it expires (useful for Driving Licences, Passports, and Insurance).
             </p>
+          </div>
+
+          {/* 4-Digit Security MPIN Protection Toggle */}
+          <div className="pt-4 border-t border-slate-100 dark:border-[#262626]">
+            <div className={`p-4 rounded-2xl border transition-all flex items-start justify-between gap-4 ${
+              formData.isMpinProtected
+                ? 'bg-amber-50/70 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30'
+                : 'bg-slate-50/60 dark:bg-[#141414] border-slate-200 dark:border-[#262626]'
+            }`}>
+              <div className="flex items-start gap-3">
+                <div className={`p-2.5 rounded-xl shrink-0 ${
+                  formData.isMpinProtected
+                    ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                    : 'bg-slate-200 dark:bg-[#262626] text-slate-400 dark:text-neutral-500'
+                }`}>
+                  <Lock size={18} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <label htmlFor="mpin-toggle" className="text-xs font-bold text-slate-900 dark:text-white cursor-pointer">
+                      Lock with 4-Digit Security MPIN (Sensitive Document)
+                    </label>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      formData.isMpinProtected
+                        ? 'bg-amber-200/80 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
+                        : 'bg-slate-200 dark:bg-[#262626] text-slate-600 dark:text-neutral-400'
+                    }`}>
+                      {formData.isMpinProtected ? 'Locked with MPIN' : 'Standard Protection'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-1">
+                    Require entering your family 4-digit MPIN before anyone can open, view, or decrypt this paper (e.g. Property Deeds, Bank Passbooks, Wills, Financial Secrets).
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                <input
+                  id="mpin-toggle"
+                  type="checkbox"
+                  checked={formData.isMpinProtected}
+                  onChange={(e) => setFormData({ ...formData, isMpinProtected: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-[#262626] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-[#10B981] dark:peer-checked:bg-[#3ECF8E]"></div>
+              </label>
+            </div>
           </div>
 
           {/* Who Can View */}

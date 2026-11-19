@@ -5,14 +5,14 @@ import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function FamilySetupPage() {
-  const { refreshSession } = useAuth();
+  const { user, refreshSession } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState('create'); // 'create' or 'join'
   const [formData, setFormData] = useState({
     name: '',
     inviteCode: '',
-    memberName: '',
-    memberEmail: '',
+    memberName: user?.name || '',
+    memberEmail: user?.email || '',
     relationship: 'Self',
   });
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,9 @@ export default function FamilySetupPage() {
         }
         setSuccessMsg(`Family Vault "${res.family.name}" created! Your invite code: ${res.family.inviteCode}`);
         await refreshSession();
-        setTimeout(() => navigate('/dashboard'), 1500);
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1200);
       }
     } catch (err) {
       setError(err.message || 'Failed to setup family vault');
@@ -58,8 +60,8 @@ export default function FamilySetupPage() {
       setError('');
       const res = await api.joinFamily({
         inviteCode: formData.inviteCode.trim().toUpperCase(),
-        name: formData.memberName.trim(),
-        email: formData.memberEmail.trim(),
+        name: formData.memberName.trim() || user?.name,
+        email: formData.memberEmail.trim() || user?.email,
         relationship: formData.relationship,
       });
 
@@ -67,9 +69,11 @@ export default function FamilySetupPage() {
         if (res.token) {
           localStorage.setItem('gharvault_token', res.token);
         }
-        setSuccessMsg(`Joined "${res.family.name}" as ${res.member.relationship}!`);
+        setSuccessMsg(`Joined "${res.family.name}" as ${res.member?.relationship || 'Family Member'}!`);
         await refreshSession();
-        setTimeout(() => navigate('/dashboard'), 1500);
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1200);
       }
     } catch (err) {
       setError(err.message || 'Failed to join family vault. Please check the code.');

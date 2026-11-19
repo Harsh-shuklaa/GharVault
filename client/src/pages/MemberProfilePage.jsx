@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Upload,
@@ -19,12 +19,17 @@ import {
   AlertCircle,
   Edit3,
   Calendar,
+  Trash2,
 } from 'lucide-react';
 import { api } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import EditMemberModal from '../components/common/EditMemberModal';
+import DeleteMemberModal from '../components/common/DeleteMemberModal';
 
 export default function MemberProfilePage() {
   const { memberId } = useParams();
+  const navigate = useNavigate();
+  const { family, user } = useAuth();
   const [member, setMember] = useState(null);
   const [assignedDocs, setAssignedDocs] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -32,6 +37,7 @@ export default function MemberProfilePage() {
   const [loading, setLoading] = useState(true);
   const [copiedNumber, setCopiedNumber] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     loadMemberProfile();
@@ -178,6 +184,55 @@ export default function MemberProfilePage() {
             <Edit3 className="w-4 h-4 text-[#10B981] dark:text-[#3ECF8E]" />
             <span>Edit Profile</span>
           </button>
+
+          {(() => {
+            const adminId = family?.adminId?._id || family?.adminId;
+            const isVaultAdmin = Boolean(
+              adminId &&
+              (member._id?.toString() === adminId.toString() || member.id?.toString() === adminId.toString())
+            );
+
+            const isCurrentUserAdmin =
+              user?.role === 'ADMIN' ||
+              !adminId ||
+              (adminId && (user?._id?.toString() === adminId.toString() || user?.id?.toString() === adminId.toString()));
+
+            const isSelf =
+              member._id?.toString() === user?._id?.toString() ||
+              member.id?.toString() === user?._id?.toString();
+
+            const canDelete = !isVaultAdmin && (isCurrentUserAdmin || isSelf);
+
+            if (canDelete) {
+              return (
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="min-h-[44px] w-full sm:w-auto px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/40 bg-white dark:bg-[#1C1C1C] hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  title={isSelf ? 'Leave Family Vault' : 'Remove / Partition Member'}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{isSelf ? 'Leave Vault' : 'Remove Member'}</span>
+                </button>
+              );
+            }
+
+            if (isVaultAdmin && isSelf) {
+              return (
+                <button
+                  type="button"
+                  disabled
+                  className="min-h-[44px] w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] text-slate-400 dark:text-neutral-600 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-not-allowed opacity-60 shadow-xs"
+                  title="Transfer ownership before leaving"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Transfer ownership before leaving</span>
+                </button>
+              );
+            }
+
+            return null;
+          })()}
 
           <Link
             to={`/vault/upload?member=${member._id}`}
@@ -390,6 +445,19 @@ export default function MemberProfilePage() {
         onMemberUpdated={(updated) => {
           setMember(updated);
           loadMemberProfile();
+        }}
+      />
+
+      {/* Delete Member Confirmation Modal */}
+      <DeleteMemberModal
+        isOpen={isDeleteModalOpen}
+        member={{
+          ...member,
+          assignedDocumentsCount: assignedDocs.length,
+        }}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onDeleted={() => {
+          navigate('/family');
         }}
       />
     </div>

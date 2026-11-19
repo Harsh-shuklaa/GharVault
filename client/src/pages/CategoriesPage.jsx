@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FolderPlus, X, Folder, AlertCircle } from 'lucide-react';
 import { api } from '../lib/api';
+import { useToast } from '../context/ToastContext';
 
 export default function CategoriesPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,6 +16,17 @@ export default function CategoriesPage() {
     color: '#10B981',
     description: '',
   });
+
+  // Close modal on Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        setIsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isModalOpen]);
 
   useEffect(() => {
     loadCategories();
@@ -35,11 +49,12 @@ export default function CategoriesPage() {
     if (!newCat.name) return;
     try {
       await api.createCategory(newCat);
+      toast.success(`Category "${newCat.name}" created successfully!`);
       setIsModalOpen(false);
       setNewCat({ name: '', icon: 'folder', color: '#10B981', description: '' });
       loadCategories();
     } catch (err) {
-      alert(err.message || 'Error creating category');
+      toast.error(err.message || 'Error creating category');
     }
   };
 
@@ -105,26 +120,43 @@ export default function CategoriesPage() {
 
       {/* Create Custom Category Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn">
+        <div
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+          onClick={() => setIsModalOpen(false)}
+        >
           <div
-            className="w-full max-w-md bg-white dark:bg-[#1C1C1C] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#262626] overflow-hidden transition-colors"
+            className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-slate-50 dark:bg-[#141414] px-6 py-5 text-slate-900 dark:text-white flex items-center justify-between border-b border-slate-200 dark:border-[#262626]">
+            {/* Mobile Drag Handle Pill */}
+            <div className="md:hidden flex justify-center pt-2.5 pb-1 shrink-0">
+              <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-neutral-600" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#27272A] shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center">
-                  <span className="material-symbols-outlined text-xl">create_new_folder</span>
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center border border-emerald-100 dark:border-[#3ECF8E]/20 shrink-0">
+                  <FolderPlus size={18} />
                 </div>
-                <h3 className="font-bold text-base text-slate-900 dark:text-white">Create Custom Category</h3>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">Create Custom Category</h3>
+                  <p className="text-xs text-slate-500 dark:text-neutral-400">Organize unique family records</p>
+                </div>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 cursor-pointer">
-                <span className="material-symbols-outlined text-xl">close</span>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-[#27272A] text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateCategory} className="p-6 space-y-4">
+            {/* Scrollable Body */}
+            <form id="create-category-form" onSubmit={handleCreateCategory} className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
                   Category Name *
                 </label>
                 <input
@@ -133,13 +165,13 @@ export default function CategoriesPage() {
                   value={newCat.name}
                   onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
                   placeholder="e.g. Overseas Assets / Tax Records"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#141414] text-xs font-medium text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
-                  Icon
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
+                  Select Icon
                 </label>
                 <div className="grid grid-cols-5 gap-2">
                   {iconOptions.map((icon) => (
@@ -150,44 +182,47 @@ export default function CategoriesPage() {
                       className={`p-2.5 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
                         newCat.icon === icon
                           ? 'border-[#10B981] dark:border-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] scale-105 shadow-xs'
-                          : 'border-slate-200 dark:border-[#262626] text-slate-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-[#262626]'
+                          : 'border-slate-200 dark:border-[#27272A] text-slate-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-[#27272A]'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-xl">{icon}</span>
+                      <span className="material-symbols-outlined text-lg">{icon}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
                   Description
                 </label>
                 <textarea
                   value={newCat.description}
                   onChange={(e) => setNewCat({ ...newCat, description: e.target.value })}
                   placeholder="e.g. Special assets, trusts, foreign remittances..."
-                  rows={3}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#141414] text-xs font-medium text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                  rows={2}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] text-xs font-medium text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none"
                 />
               </div>
-
-              <div className="pt-3 border-t border-slate-100 dark:border-[#262626] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-[#262626] text-slate-600 dark:text-neutral-300 text-xs font-semibold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold shadow-md shadow-[#3ECF8E]/20 cursor-pointer"
-                >
-                  Save Category
-                </button>
-              </div>
             </form>
+
+            {/* Fixed Footer */}
+            <div className="px-5 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"
+              >
+                Cancel
+              </button>
+              <button
+                form="create-category-form"
+                type="submit"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer text-center"
+              >
+                <FolderPlus size={15} />
+                <span>Save Category</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

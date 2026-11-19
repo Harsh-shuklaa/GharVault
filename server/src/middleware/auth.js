@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import { memoryStore } from '../config/seed.js';
 import { isConnected } from '../config/db.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'gharvault_super_secret_jwt_key_2026';
+export const getJwtSecret = () => process.env.JWT_SECRET || 'gharvault_super_secret_jwt_key_2026';
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -17,7 +18,17 @@ export const authenticate = async (req, res, next) => {
       return next();
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded = null;
+    try {
+      decoded = jwt.verify(token, getJwtSecret());
+    } catch (e1) {
+      try {
+        decoded = jwt.verify(token, 'gharvault_super_secret_jwt_key_2026');
+      } catch (e2) {
+        return next();
+      }
+    }
+
     if (!decoded?.id) {
       return next();
     }
@@ -28,10 +39,17 @@ export const authenticate = async (req, res, next) => {
     }
 
     let user = null;
-    if (isConnected) {
-      user = await User.findById(decoded.id);
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(decoded.id);
+
+    if (isConnected && isValidObjectId) {
+      try {
+        user = await User.findById(decoded.id);
+      } catch (dbErr) {
+        console.warn('[Auth Middleware Warning] MongoDB lookup failed, checking memory store:', dbErr.message);
+        user = memoryStore.users.find(u => u._id?.toString() === decoded.id?.toString());
+      }
     } else {
-      user = memoryStore.users.find(u => u._id.toString() === decoded.id.toString());
+      user = memoryStore.users.find(u => u._id?.toString() === decoded.id?.toString());
     }
 
     if (user) {

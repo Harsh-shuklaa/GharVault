@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { api } from '../lib/api';
 import {
   Sun,
@@ -31,6 +32,7 @@ import JoinFamilyModal from '../components/common/JoinFamilyModal';
 export default function SettingsPage() {
   const { user, family, updateUser } = useAuth();
   const { theme, isDark, setTheme } = useTheme();
+  const { toast } = useToast();
   const [copiedCode, setCopiedCode] = useState(false);
   const [downloadingBackup, setDownloadingBackup] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -167,8 +169,9 @@ export default function SettingsPage() {
       a.download = `${(family?.name || 'GharVault').replace(/\s+/g, '_')}_Backup_${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      toast.success('Family Vault backup JSON exported successfully!');
     } catch (err) {
-      alert('Failed to generate vault backup: ' + err.message);
+      toast.error('Failed to generate vault backup: ' + (err.message || 'Error'));
     } finally {
       setDownloadingBackup(false);
     }

@@ -70,8 +70,9 @@ app.get('/api/health', (req, res) => {
 // Serve local uploads in offline/fallback mode securely
 app.use('/api/documents/raw', (req, res, next) => {
   const filePath = req.path.replace(/^\//, '');
-  const localTarget = path.resolve('server/uploads/vault', decodeURIComponent(filePath).replace(/\//g, '_'));
-  if (path.resolve(localTarget).startsWith(path.resolve('server/uploads/vault'))) {
+  const baseUploads = path.resolve(__dirname, '../uploads/vault');
+  const localTarget = path.resolve(baseUploads, decodeURIComponent(filePath).replace(/\//g, '_'));
+  if (path.resolve(localTarget).startsWith(baseUploads)) {
     res.sendFile(localTarget, (err) => {
       if (err) next();
     });

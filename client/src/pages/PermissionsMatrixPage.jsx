@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
+import { useToast } from '../context/ToastContext';
 
 export default function PermissionsMatrixPage() {
+  const { toast } = useToast();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [successMsg, setSuccessMsg] = useState('');
@@ -35,9 +37,10 @@ export default function PermissionsMatrixPage() {
       await api.updateMemberPermissions(memberId, { permissions: updatedPermissions });
       setMembers(prev => prev.map(m => m._id === memberId ? { ...m, permissions: updatedPermissions } : m));
       setSuccessMsg(`Updated authorization for ${member.name}`);
+      toast.success(`Updated authorization for ${member.name}`);
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
-      alert('Error updating permission: ' + err.message);
+      toast.error('Error updating permission: ' + (err.message || 'Error'));
     }
   };
 

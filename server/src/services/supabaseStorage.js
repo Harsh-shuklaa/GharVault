@@ -56,7 +56,7 @@ export const getSupabaseClient = () => {
 };
 
 // Local storage fallback directory
-const LOCAL_STORAGE_DIR = path.resolve('server/uploads/vault');
+const LOCAL_STORAGE_DIR = path.resolve(__dirname, '../../uploads/vault');
 if (!fs.existsSync(LOCAL_STORAGE_DIR)) {
   fs.mkdirSync(LOCAL_STORAGE_DIR, { recursive: true });
 }

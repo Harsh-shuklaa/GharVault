@@ -100,7 +100,12 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError('');
-      // Store pending invite code in sessionStorage so AuthCallback can link it upon return!
+      // Store in BOTH localStorage and sessionStorage so it never gets wiped by cross-domain OAuth redirects!
+      localStorage.setItem('pending_invite_code', cleanCode);
+      localStorage.setItem('pending_invite_relation', relationship);
+      if (joinName.trim()) {
+        localStorage.setItem('pending_invite_name', joinName.trim());
+      }
       sessionStorage.setItem('pending_invite_code', cleanCode);
       sessionStorage.setItem('pending_invite_relation', relationship);
       if (joinName.trim()) {
@@ -150,8 +155,8 @@ export default function LoginPage() {
       await refreshSession();
 
       setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 1000);
+        window.location.href = '/dashboard';
+      }, 800);
     } catch (err) {
       setError(err.message || 'Failed to join family. Please verify the invite code.');
     } finally {

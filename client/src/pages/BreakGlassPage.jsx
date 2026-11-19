@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { AlertTriangle, X } from 'lucide-react';
 import { api } from '../lib/api';
+import { useToast } from '../context/ToastContext';
 
 export default function BreakGlassPage() {
+  const { toast } = useToast();
   const [session, setSession] = useState(null);
   const [delayHours, setDelayHours] = useState(48);
   const [emergencyContacts, setEmergencyContacts] = useState([]);
@@ -9,6 +12,18 @@ export default function BreakGlassPage() {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ hours: 47, minutes: 59, seconds: 40 });
+  const [confirmModal, setConfirmModal] = useState(null);
+
+  // Close confirm modal on Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && confirmModal) {
+        setConfirmModal(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [confirmModal]);
 
   useEffect(() => {
     loadBreakGlassState();
@@ -40,47 +55,74 @@ export default function BreakGlassPage() {
     }
   }, [session]);
 
-  const handleArm = async (e) => {
+  const executeArm = async () => {
+    try {
+      setLoading(true);
+      const res = await api.armBreakGlass({ reason, notes });
+      setSession(res.session);
+      toast.success('Break-Glass Protocol armed. 48-hour countdown started.');
+    } catch (err) {
+      toast.error('Failed to arm protocol: ' + (err.message || 'Error'));
+    } finally {
+      setLoading(false);
+      setConfirmModal(null);
+    }
+  };
+
+  const handleArm = (e) => {
     e.preventDefault();
-    if (window.confirm('Are you sure you want to arm the 48-Hour Emergency Break-Glass Protocol? All family guardians will be notified immediately.')) {
-      try {
-        setLoading(true);
-        const res = await api.armBreakGlass({ reason, notes });
-        setSession(res.session);
-      } catch (err) {
-        alert('Failed to arm protocol: ' + err.message);
-      } finally {
-        setLoading(false);
-      }
+    setConfirmModal({
+      title: 'Arm 48-Hour Break-Glass Protocol',
+      desc: 'Are you sure you want to arm the 48-Hour Emergency Break-Glass Protocol? All designated family guardians will be notified immediately.',
+      confirmText: 'Arm Protocol',
+      onConfirm: executeArm,
+    });
+  };
+
+  const executeCancel = async () => {
+    try {
+      setLoading(true);
+      const res = await api.cancelBreakGlass();
+      setSession(res.session);
+      toast.success('Emergency break-glass protocol disarmed.');
+    } catch (err) {
+      toast.error('Failed to cancel: ' + (err.message || 'Error'));
+    } finally {
+      setLoading(false);
+      setConfirmModal(null);
     }
   };
 
-  const handleCancel = async () => {
-    if (window.confirm('Cancel and disarm the emergency break-glass countdown?')) {
-      try {
-        setLoading(true);
-        const res = await api.cancelBreakGlass();
-        setSession(res.session);
-      } catch (err) {
-        alert('Failed to cancel: ' + err.message);
-      } finally {
-        setLoading(false);
-      }
+  const handleCancel = () => {
+    setConfirmModal({
+      title: 'Disarm Emergency Protocol',
+      desc: 'Are you sure you want to cancel and disarm the emergency break-glass countdown?',
+      confirmText: 'Disarm Protocol',
+      onConfirm: executeCancel,
+    });
+  };
+
+  const executeForceTrigger = async () => {
+    try {
+      setLoading(true);
+      const res = await api.triggerBreakGlass();
+      setSession(res.session);
+      toast.success('Emergency override triggered: all records unlocked.');
+    } catch (err) {
+      toast.error('Failed to trigger override: ' + (err.message || 'Error'));
+    } finally {
+      setLoading(false);
+      setConfirmModal(null);
     }
   };
 
-  const handleForceTrigger = async () => {
-    if (window.confirm('EMERGENCY OVERRIDE: Immediately unlock all sealed records for medical/succession handover?')) {
-      try {
-        setLoading(true);
-        const res = await api.triggerBreakGlass();
-        setSession(res.session);
-      } catch (err) {
-        alert('Failed to trigger override: ' + err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const handleForceTrigger = () => {
+    setConfirmModal({
+      title: 'Emergency Medical / Succession Override',
+      desc: 'EMERGENCY OVERRIDE: Immediately unlock all sealed records for medical / succession handover?',
+      confirmText: 'Trigger Override',
+      onConfirm: executeForceTrigger,
+    });
   };
 
   const isCountdownActive = session && session.status === 'COUNTDOWN_ACTIVE';
@@ -304,6 +346,71 @@ export default function BreakGlassPage() {
           </div>
         </div>
       </div>
+
+      {/* Break-Glass Action Confirmation Modal */}
+      {confirmModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+          onClick={() => setConfirmModal(null)}
+        >
+          <div
+            className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Mobile Drag Handle Pill */}
+            <div className="md:hidden flex justify-center pt-2.5 pb-1 shrink-0">
+              <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-neutral-600" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#27272A] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                    {confirmModal.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-neutral-400">Emergency Protocol Confirmation</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-[#27272A] text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-3">
+              <p className="text-xs text-slate-700 dark:text-neutral-300 leading-relaxed">
+                {confirmModal.desc}
+              </p>
+            </div>
+
+            {/* Fixed Footer */}
+            <div className="px-5 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmModal.onConfirm}
+                disabled={loading}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md shadow-red-600/20 transition-all cursor-pointer text-center"
+              >
+                <span>{loading ? 'Processing...' : confirmModal.confirmText || 'Confirm'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

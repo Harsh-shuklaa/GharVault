@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import multer from 'multer';
 import crypto from 'crypto';
 import path from 'path';
@@ -9,18 +10,29 @@ import User from '../models/User.js';
 import Family from '../models/Family.js';
 import { isConnected } from '../config/db.js';
 import { uploadDocument, createSignedUrl, deleteDocument } from '../services/supabaseStorage.js';
+import { recordAuditLog } from '../services/auditService.js';
 
 const router = express.Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 26214400 }, // 25 MB Free Tier Limit
+  limits: { fileSize: 26214400 }, // 25 MB Limit
   fileFilter: (req, file, cb) => {
-    const allowed = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
-    if (allowed.includes(file.mimetype)) {
+    const allowed = [
+      'application/pdf',
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/webp',
+      'image/bmp',
+      'image/tiff',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (allowed.includes((file.mimetype || '').toLowerCase())) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF, PNG, and JPEG files up to 25MB are allowed.'));
+      cb(new Error('Please upload a PDF, PNG, JPEG, or WebP document (up to 25MB).'));
     }
   },
 });
@@ -69,33 +81,42 @@ router.get('/', async (req, res) => {
 
     let docs = [];
     let members = [];
+    let useMongo = isConnected && mongoose.connection.readyState === 1;
 
-    if (isConnected) {
-      const query = { familyId: targetFamilyId };
+    if (useMongo) {
+      try {
+        const query = { familyId: targetFamilyId };
 
-      if (category && category !== 'All') {
-        const safeCat = category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        query.category = new RegExp(`^${safeCat}$`, 'i');
-      }
-      if (memberId && memberId !== 'All' && memberId !== 'undefined' && memberId !== 'null') {
-        query.assignedMemberId = memberId;
-      }
-      if (status && status !== 'All') {
-        query.status = status;
-      }
-      if (search && search.trim()) {
-        const safeSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        query.$or = [
-          { title: new RegExp(safeSearch, 'i') },
-          { documentNumber: new RegExp(safeSearch, 'i') },
-          { category: new RegExp(safeSearch, 'i') },
-          { tags: new RegExp(safeSearch, 'i') },
-        ];
-      }
+        if (category && category !== 'All') {
+          const safeCat = category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          query.category = new RegExp(`^${safeCat}$`, 'i');
+        }
+        if (memberId && memberId !== 'All' && memberId !== 'undefined' && memberId !== 'null') {
+          query.assignedMemberId = memberId;
+        }
+        if (status && status !== 'All') {
+          query.status = status;
+        }
+        if (search && search.trim()) {
+          const safeSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          query.$or = [
+            { title: new RegExp(safeSearch, 'i') },
+            { documentNumber: new RegExp(safeSearch, 'i') },
+            { category: new RegExp(safeSearch, 'i') },
+            { tags: new RegExp(safeSearch, 'i') },
+          ];
+        }
 
-      docs = await Document.find(query).sort({ createdAt: -1 }).lean();
-      members = await User.find({ familyId: targetFamilyId }).lean();
-    } else {
+        docs = await Document.find(query).sort({ createdAt: -1 }).lean();
+        members = await User.find({ familyId: targetFamilyId }).lean();
+      } catch (dbErr) {
+        useMongo = false;
+        docs = [];
+        members = [];
+      }
+    }
+
+    if (!useMongo) {
       // Memory Store: strictly isolated by familyId
       docs = memoryStore.documents.filter(d => d.familyId?.toString() === targetFamilyId.toString());
       members = memoryStore.users.filter(u => u.familyId?.toString() === targetFamilyId.toString());
@@ -120,8 +141,27 @@ router.get('/', async (req, res) => {
       }
     }
 
+    // Filter by whoCanView permissions
+    const currentUserId = (req.userId || req.user?._id)?.toString();
+    const visibleDocs = docs.filter(d => {
+      const who = d.whoCanView;
+      // If whoCanView has 'ALL' or is empty/null -> visible to whole family
+      if (!who || !Array.isArray(who) || who.length === 0 || who.includes('ALL')) {
+        return true;
+      }
+      if (!currentUserId) return false;
+      // Uploader can always view their document
+      if (d.uploaderId && d.uploaderId.toString() === currentUserId) {
+        return true;
+      }
+      // Allowed if current user's ID is in the permitted members list
+      return who.some(id => id && id.toString() === currentUserId);
+    });
+
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+
     // Populate assigned member info
-    const populated = docs.map(d => {
+    const populated = visibleDocs.map(d => {
       const member = members.find(m => m._id.toString() === d.assignedMemberId?.toString());
       const enrichedMember = member ? {
         ...member,
@@ -134,6 +174,16 @@ router.get('/', async (req, res) => {
         avatar: member.avatar,
       } : null;
 
+      let enrichedShareLink = null;
+      if (d.shareLink && d.shareLink.token) {
+        const isExpired = d.shareLink.expiresAt ? new Date(d.shareLink.expiresAt) < new Date() : false;
+        enrichedShareLink = {
+          ...d.shareLink,
+          shareUrl: `${origin}/share/${d.shareLink.token}`,
+          isExpired,
+        };
+      }
+
       return {
         ...d,
         id: d._id,
@@ -144,6 +194,7 @@ router.get('/', async (req, res) => {
         isMpinProtected: Boolean(d.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(d.category)),
         isSensitive: Boolean(d.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(d.category)),
         assignedMember: enrichedMember,
+        shareLink: enrichedShareLink,
       };
     });
 
@@ -185,6 +236,20 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
+    // Strict Permission Verification based on whoCanView
+    const currentUserId = (req.userId || req.user?._id)?.toString();
+    const who = doc.whoCanView;
+    const isPublic = !who || !Array.isArray(who) || who.length === 0 || who.includes('ALL');
+    const isUploader = doc.uploaderId && doc.uploaderId.toString() === currentUserId;
+    const isPermitted = Array.isArray(who) && who.some(id => id && id.toString() === currentUserId);
+
+    if (!isPublic && !isUploader && !isPermitted) {
+      return res.status(403).json({
+        error: 'Access restricted. You do not have permission to view this document.',
+        restricted: true,
+      });
+    }
+
     // Generate secure time-limited link
     let signedUrl = '';
     try {
@@ -204,6 +269,28 @@ router.get('/:id', async (req, res) => {
       avatar: member.avatar,
     } : null;
 
+    let enrichedShareLink = null;
+    if (doc.shareLink && doc.shareLink.token) {
+      const isExpired = doc.shareLink.expiresAt ? new Date(doc.shareLink.expiresAt) < new Date() : false;
+      enrichedShareLink = {
+        ...doc.shareLink,
+        shareUrl: `${origin}/share/${doc.shareLink.token}`,
+        isExpired,
+      };
+    }
+
+    // Immutable SHA-256 Chained Audit Log for Safe Share Link Creation
+    recordAuditLog({
+      familyId: doc.familyId || targetFamilyId,
+      action: 'SHARE_LINK_GENERATED',
+      performedBy: req.user?._id || null,
+      performerName: req.user?.name || 'Family Member',
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: { finalMinutes, expiresAt },
+      req,
+    }).catch(e => console.warn('[Audit Warning] Share link log error:', e.message));
+
     res.json({
       document: {
         ...doc,
@@ -215,6 +302,7 @@ router.get('/:id', async (req, res) => {
         isMpinProtected: Boolean(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)),
         isSensitive: Boolean(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)),
         assignedMember: enrichedMember,
+        shareLink: enrichedShareLink,
         signedUrl,
         fileUrl: signedUrl,
       },
@@ -225,7 +313,19 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/documents/upload
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'File size exceeds 25MB limit. Please upload a smaller file.' });
+      }
+      return res.status(400).json({ error: 'Upload failed: ' + err.message });
+    } else if (err) {
+      return res.status(400).json({ error: err.message || 'Please upload a PDF, PNG, JPEG, or WebP document.' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const {
       title,
@@ -243,8 +343,16 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     } = req.body;
 
     const uploaderId = req.userId || req.user?._id;
-    const finalMemberId = assignedMemberId || memberId || uploaderId;
-    const finalSensitive = Boolean(isSensitive || isMpinProtected || ['Property & Legal', 'Financial', 'Legal'].includes(category));
+    const rawMemberId = assignedMemberId || memberId;
+    const finalMemberId = rawMemberId && rawMemberId !== 'null' && rawMemberId !== 'undefined'
+      ? rawMemberId
+      : uploaderId;
+    
+    const isProtectedExplicitly = (isMpinProtected === 'true' || isMpinProtected === true || isSensitive === 'true' || isSensitive === true);
+    const isProtectedExplicitlyFalse = (isMpinProtected === 'false' || isMpinProtected === false || isSensitive === 'false' || isSensitive === false);
+    const finalSensitive = isProtectedExplicitlyFalse
+      ? false
+      : (isProtectedExplicitly || ['Property & Legal', 'Financial', 'Legal'].includes(category));
 
     let fileBuffer;
     let originalName;
@@ -277,11 +385,21 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const ocrData = simulateOCR(originalName, title || '', category);
     const finalDocNumber = documentNumber?.trim() || ocrData.documentNumber || '';
 
+    // Safe date parsing helper
+    const parseSafeDate = (val) => {
+      if (!val || val === 'null' || val === 'undefined' || val === '') return null;
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const finalExpiryDate = parseSafeDate(expiryDate);
+    const finalIssueDate = parseSafeDate(issueDate) || new Date();
+
     // Check expiry
     const now = Date.now();
     let status = 'ACTIVE';
-    if (expiryDate) {
-      const exp = new Date(expiryDate).getTime();
+    if (finalExpiryDate) {
+      const exp = finalExpiryDate.getTime();
       if (exp <= now) {
         status = 'EXPIRED';
       } else if (exp <= now + 30 * 86400000) {
@@ -308,43 +426,114 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       parsedTags = [category];
     }
 
-    const familyId = req.familyId || req.user?.familyId;
+    let familyId = req.familyId || req.user?.familyId || req.body?.familyId;
+
+    if (!familyId && (req.user?._id || req.userId)) {
+      const uId = req.user?._id || req.userId;
+      if (isConnected) {
+        let fam = await Family.findOne({ adminId: uId });
+        if (!fam) {
+          const u = await User.findById(uId);
+          if (u?.familyId) fam = await Family.findById(u.familyId);
+        }
+        if (!fam) {
+          fam = await Family.create({
+            name: `${(req.user?.name || 'My').split(' ')[0]}'s Family Vault`,
+            inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
+            adminId: uId,
+          });
+        }
+        familyId = fam._id;
+        if (req.user) req.user.familyId = fam._id;
+      } else {
+        let fam = memoryStore.families.find(f => f.adminId?.toString() === uId.toString());
+        if (!fam) {
+          fam = {
+            _id: 'fam_' + Date.now(),
+            name: `${(req.user?.name || 'My').split(' ')[0]}'s Family Vault`,
+            inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
+            adminId: uId,
+            createdAt: new Date(),
+          };
+          memoryStore.families.push(fam);
+        }
+        familyId = fam._id;
+      }
+    }
 
     if (!familyId) {
       return res.status(400).json({ error: 'You must belong to a family vault to upload documents.' });
     }
 
-    if (isConnected) {
-      const newDoc = await Document.create({
-        title: title || originalName.replace(fileExt, ''),
-        originalFileName: originalName,
-        mimeType,
-        fileSize,
-        category,
-        familyId,
-        assignedMemberId: finalMemberId,
-        documentNumber: finalDocNumber,
-        issueDate: issueDate ? new Date(issueDate) : new Date(),
-        expiryDate: expiryDate ? new Date(expiryDate) : null,
-        status,
-        isSensitive: finalSensitive,
-        whoCanView: parsedWhoCanView,
-        tags: parsedTags,
-        storagePath,
-        sha256Hash,
-        ocrExtractedData: ocrData,
-        uploaderId,
-      });
+    const toSafeObjectId = (val) => {
+      if (!val || val === 'null' || val === 'undefined' || val === '') return null;
+      return mongoose.Types.ObjectId.isValid(val) ? val : null;
+    };
 
-      return res.status(201).json({
-        success: true,
-        document: newDoc,
-        message: 'Document saved securely in your family vault!',
-      });
+    let useMongo = isConnected && mongoose.connection.readyState === 1;
+    let newDoc = null;
+
+    if (useMongo) {
+      try {
+        const safeFamId = toSafeObjectId(familyId) || familyId;
+        const safeMemberId = toSafeObjectId(finalMemberId);
+        const safeUploaderId = toSafeObjectId(uploaderId);
+
+        newDoc = await Document.create({
+          title: title || originalName.replace(fileExt, ''),
+          originalFileName: originalName,
+          mimeType,
+          fileSize,
+          category,
+          familyId: safeFamId,
+          assignedMemberId: safeMemberId,
+          documentNumber: finalDocNumber,
+          issueDate: finalIssueDate,
+          expiryDate: finalExpiryDate,
+          status,
+          isSensitive: finalSensitive,
+          whoCanView: parsedWhoCanView,
+          tags: parsedTags,
+          storagePath,
+          sha256Hash,
+          ocrExtractedData: ocrData,
+          uploaderId: safeUploaderId,
+        });
+
+        const normalizedDoc = {
+          ...(newDoc.toObject ? newDoc.toObject() : newDoc),
+          id: newDoc._id,
+          memberId: newDoc.assignedMemberId,
+          visibility: newDoc.whoCanView,
+          isMpinProtected: finalSensitive,
+        };
+
+        // Immutable SHA-256 Chained Audit Log for Document Upload
+        recordAuditLog({
+          familyId: newDoc.familyId,
+          action: 'DOCUMENT_UPLOAD',
+          performedBy: req.user?._id || null,
+          performerName: req.user?.name || 'Family Member',
+          documentId: newDoc._id,
+          documentTitle: newDoc.title,
+          details: { category: newDoc.category, fileSize: newDoc.fileSize, documentNumber: newDoc.documentNumber },
+          req,
+        }).catch(e => console.warn('[Audit Warning] Upload log error:', e.message));
+
+        return res.status(201).json({
+          success: true,
+          document: normalizedDoc,
+          message: 'Document saved securely in your family vault!',
+        });
+      } catch (dbErr) {
+        console.warn('[Database Fallback] Document.create failed, falling back to memory store:', dbErr.message);
+        useMongo = false;
+        newDoc = null;
+      }
     }
 
     // Memory Store: Tag with user's actual familyId and uploaderId!
-    const newDoc = {
+    newDoc = {
       _id: 'doc_' + Date.now(),
       title: title || originalName.replace(fileExt, ''),
       originalFileName: originalName,
@@ -352,10 +541,10 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       fileSize,
       category,
       familyId,
-      assignedMemberId: finalMemberId,
+      assignedMemberId: finalMemberId || null,
       documentNumber: finalDocNumber,
-      issueDate: issueDate ? new Date(issueDate) : new Date(),
-      expiryDate: expiryDate ? new Date(expiryDate) : null,
+      issueDate: finalIssueDate,
+      expiryDate: finalExpiryDate,
       status,
       isSensitive: finalSensitive,
       whoCanView: parsedWhoCanView,
@@ -363,17 +552,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       storagePath,
       sha256Hash,
       ocrExtractedData: ocrData,
-      uploaderId,
-      documentNumber: finalDocNumber,
-      issueDate: issueDate ? new Date(issueDate) : new Date(),
-      expiryDate: expiryDate ? new Date(expiryDate) : null,
-      status,
-      whoCanView: parsedWhoCanView,
-      tags: parsedTags,
-      storagePath,
-      sha256Hash,
-      ocrExtractedData: ocrData,
-      uploaderId,
+      uploaderId: uploaderId || null,
       version: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -441,6 +620,18 @@ router.get('/shared/:token', async (req, res) => {
       signedUrl = `/api/documents/raw/${encodeURIComponent(doc.storagePath)}`;
     }
 
+    // Immutable SHA-256 Chained Audit Log for Safe Share Link Creation
+    recordAuditLog({
+      familyId: doc.familyId || targetFamilyId,
+      action: 'SHARE_LINK_GENERATED',
+      performedBy: req.user?._id || null,
+      performerName: req.user?.name || 'Family Member',
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: { finalMinutes, expiresAt },
+      req,
+    }).catch(e => console.warn('[Audit Warning] Share link log error:', e.message));
+
     res.json({
       success: true,
       document: {
@@ -501,13 +692,66 @@ router.post('/:id/share-link', async (req, res) => {
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
     const directShareUrl = `${origin}/share/${token}`;
 
+    // Immutable SHA-256 Chained Audit Log for Safe Share Link Creation
+    recordAuditLog({
+      familyId: doc.familyId || targetFamilyId,
+      action: 'SHARE_LINK_GENERATED',
+      performedBy: req.user?._id || null,
+      performerName: req.user?.name || 'Family Member',
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: { finalMinutes, expiresAt },
+      req,
+    }).catch(e => console.warn('[Audit Warning] Share link log error:', e.message));
+
     res.json({
       success: true,
       shareUrl: directShareUrl,
+      shareLink: directShareUrl,
       token,
       expiresAt,
       message: `Secure share link created (valid for ${finalMinutes >= 60 ? (finalMinutes / 60) + ' hour(s)' : finalMinutes + ' minutes'})`,
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/documents/:id/share-link (Revoke / Expire external share access immediately)
+router.delete('/:id/share-link', async (req, res) => {
+  try {
+    const targetFamilyId = req.familyId || req.user?.familyId;
+    let doc = null;
+    if (isConnected) {
+      doc = await Document.findById(req.params.id);
+    } else {
+      doc = memoryStore.documents.find(d => d._id.toString() === req.params.id);
+    }
+
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+    if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+      return res.status(403).json({ error: 'Access forbidden. You cannot modify documents from another family vault.' });
+    }
+
+    doc.shareLink = undefined;
+    if (isConnected) {
+      doc.markModified('shareLink');
+      await doc.save();
+    }
+
+    // Immutable SHA-256 Chained Audit Log for Safe Share Link Revocation
+    recordAuditLog({
+      familyId: doc.familyId || targetFamilyId,
+      action: 'SHARE_LINK_REVOKED',
+      performedBy: req.user?._id || null,
+      performerName: req.user?.name || 'Family Member',
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: { revokedAt: new Date() },
+      req,
+    }).catch(e => console.warn('[Audit Warning] Share link revoke error:', e.message));
+
+    res.json({ success: true, message: 'Safe share link revoked successfully. External access is now closed.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -519,6 +763,20 @@ router.put('/:id/who-can-view', async (req, res) => {
     const { whoCanView } = req.body;
     const targetFamilyId = req.familyId || req.user?.familyId;
 
+    let parsedWhoCanView = ['ALL'];
+    if (whoCanView !== undefined) {
+      if (Array.isArray(whoCanView)) {
+        parsedWhoCanView = whoCanView;
+      } else if (typeof whoCanView === 'string') {
+        try {
+          const parsed = JSON.parse(whoCanView);
+          parsedWhoCanView = Array.isArray(parsed) ? parsed : [whoCanView];
+        } catch (e) {
+          parsedWhoCanView = [whoCanView];
+        }
+      }
+    }
+
     let doc = null;
     if (isConnected) {
       doc = await Document.findById(req.params.id);
@@ -526,7 +784,7 @@ router.put('/:id/who-can-view', async (req, res) => {
       if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
         return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
       }
-      doc.whoCanView = whoCanView;
+      doc.whoCanView = parsedWhoCanView;
       await doc.save();
     } else {
       doc = memoryStore.documents.find(d => d._id.toString() === req.params.id);
@@ -534,10 +792,70 @@ router.put('/:id/who-can-view', async (req, res) => {
       if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
         return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
       }
-      doc.whoCanView = whoCanView;
+      doc.whoCanView = parsedWhoCanView;
     }
 
+    // Immutable SHA-256 Chained Audit Log for Permission Changed
+    recordAuditLog({
+      familyId: doc.familyId || targetFamilyId,
+      action: 'PERMISSION_CHANGED',
+      performedBy: req.user?._id || null,
+      performerName: req.user?.name || 'Family Member',
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: { whoCanView: parsedWhoCanView },
+      req,
+    }).catch(e => console.warn('[Audit Warning] Permission change log error:', e.message));
+
     res.json({ success: true, whoCanView: doc.whoCanView });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/documents/:id/mpin-protection (Toggle MPIN lock status)
+router.put('/:id/mpin-protection', async (req, res) => {
+  try {
+    const { isMpinProtected } = req.body;
+    const targetFamilyId = req.familyId || req.user?.familyId;
+    const shouldLock = Boolean(isMpinProtected === true || isMpinProtected === 'true');
+
+    let doc = null;
+    if (isConnected) {
+      doc = await Document.findById(req.params.id);
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+      if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+        return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
+      }
+      doc.isSensitive = shouldLock;
+      await doc.save();
+    } else {
+      doc = memoryStore.documents.find(d => d._id.toString() === req.params.id);
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+      if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+        return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
+      }
+      doc.isSensitive = shouldLock;
+    }
+
+    // Immutable SHA-256 Chained Audit Log for MPIN Lock Change
+    recordAuditLog({
+      familyId: doc.familyId || targetFamilyId,
+      action: 'MPIN_PROTECTION_TOGGLED',
+      performedBy: req.user?._id || null,
+      performerName: req.user?.name || 'Family Member',
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: { isMpinProtected: shouldLock },
+      req,
+    }).catch(e => console.warn('[Audit Warning] MPIN lock log error:', e.message));
+
+    res.json({
+      success: true,
+      isMpinProtected: shouldLock,
+      isSensitive: shouldLock,
+      message: shouldLock ? 'Document locked with 4-digit MPIN' : 'MPIN protection removed',
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -573,6 +891,18 @@ router.delete('/:id', async (req, res) => {
     } catch (e) {
       // Ignored
     }
+
+    // Immutable SHA-256 Chained Audit Log for Document Delete
+    recordAuditLog({
+      familyId: doc.familyId || targetFamilyId,
+      action: 'DOCUMENT_DELETE',
+      performedBy: req.user?._id || null,
+      performerName: req.user?.name || 'Family Member',
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: { category: doc.category },
+      req,
+    }).catch(e => console.warn('[Audit Warning] Document delete log error:', e.message));
 
     res.json({ success: true, message: 'Document deleted successfully' });
   } catch (err) {

@@ -91,11 +91,17 @@ export default function AuthCallbackPage() {
         const authUser = activeSession.user;
         setStatus('Loading your family vault records...');
 
+        const pendingInviteCode = localStorage.getItem('pending_invite_code') || sessionStorage.getItem('pending_invite_code');
+        const pendingRelation = localStorage.getItem('pending_invite_relation') || sessionStorage.getItem('pending_invite_relation') || 'Member';
+        const pendingName = localStorage.getItem('pending_invite_name') || sessionStorage.getItem('pending_invite_name');
+
         const syncData = {
           email: authUser.email,
-          name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0],
+          name: pendingName || authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0],
           avatar: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture,
           googleId: authUser.id,
+          inviteCode: pendingInviteCode ? pendingInviteCode.trim().toUpperCase() : undefined,
+          relationship: pendingRelation,
         };
 
         const res = await api.syncAuth(syncData);
@@ -104,14 +110,9 @@ export default function AuthCallbackPage() {
           throw new Error(res?.error || 'Failed to open your Family Vault. Please try again.');
         }
 
-        const pendingInviteCode = sessionStorage.getItem('pending_invite_code');
-        const pendingRelation = sessionStorage.getItem('pending_invite_relation') || 'Member';
-        const pendingName = sessionStorage.getItem('pending_invite_name');
-
-        sessionStorage.clear();
         localStorage.setItem('gharvault_token', res.token);
 
-        // If user came with a pending invite code, automatically join that family now!
+        // If user came with a pending invite code, also ensure joinFamily confirms the link!
         if (pendingInviteCode) {
           setStatus(`Joining family vault with invite code ${pendingInviteCode}...`);
           try {
@@ -125,8 +126,15 @@ export default function AuthCallbackPage() {
               localStorage.setItem('gharvault_token', joinRes.token);
             }
           } catch (joinErr) {
-            console.warn('[AuthCallback] Failed to join with pending invite code:', joinErr);
+            console.warn('[AuthCallback] joinFamily notice:', joinErr.message);
           }
+          // Clean up pending invite items
+          localStorage.removeItem('pending_invite_code');
+          localStorage.removeItem('pending_invite_relation');
+          localStorage.removeItem('pending_invite_name');
+          sessionStorage.removeItem('pending_invite_code');
+          sessionStorage.removeItem('pending_invite_relation');
+          sessionStorage.removeItem('pending_invite_name');
         }
 
         await refreshSession();
@@ -137,16 +145,16 @@ export default function AuthCallbackPage() {
 
         // If user joined via invite or has a family, go directly to /dashboard
         if (pendingInviteCode) {
-          navigate('/dashboard', { replace: true });
+          window.location.href = '/dashboard';
           return;
         }
 
         // Redirect: New user with no family -> /family/setup, Returning user with family -> /dashboard
         const hasFamily = Boolean(res.family?._id || res.user?.familyId);
         if (res.isNewUser || !hasFamily) {
-          navigate('/family/setup', { replace: true });
+          window.location.href = '/family/setup';
         } else {
-          navigate('/dashboard', { replace: true });
+          window.location.href = '/dashboard';
         }
       } catch (err) {
         if (!isMounted) return;
