@@ -74,25 +74,22 @@ router.get('/', async (req, res) => {
       const query = { familyId: targetFamilyId };
 
       if (category && category !== 'All') {
-        query.category = new RegExp(`^${category}$`, 'i');
+        const safeCat = category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.category = new RegExp(`^${safeCat}$`, 'i');
       }
-      if (memberId && memberId !== 'All') {
+      if (memberId && memberId !== 'All' && memberId !== 'undefined' && memberId !== 'null') {
         query.assignedMemberId = memberId;
       }
       if (status && status !== 'All') {
         query.status = status;
       }
-      if (search) {
-        query.$and = [
-          { familyId: targetFamilyId },
-          {
-            $or: [
-              { title: new RegExp(search, 'i') },
-              { documentNumber: new RegExp(search, 'i') },
-              { category: new RegExp(search, 'i') },
-              { tags: new RegExp(search, 'i') },
-            ],
-          },
+      if (search && search.trim()) {
+        const safeSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.$or = [
+          { title: new RegExp(safeSearch, 'i') },
+          { documentNumber: new RegExp(safeSearch, 'i') },
+          { category: new RegExp(safeSearch, 'i') },
+          { tags: new RegExp(safeSearch, 'i') },
         ];
       }
 

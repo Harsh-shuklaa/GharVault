@@ -104,13 +104,42 @@ export default function AuthCallbackPage() {
           throw new Error(res?.error || 'Failed to synchronize user session with GharVault backend.');
         }
 
+        const pendingInviteCode = sessionStorage.getItem('pending_invite_code');
+        const pendingRelation = sessionStorage.getItem('pending_invite_relation') || 'Member';
+        const pendingName = sessionStorage.getItem('pending_invite_name');
+
         sessionStorage.clear();
         localStorage.setItem('gharvault_token', res.token);
+
+        // If user came with a pending invite code, automatically join that family now!
+        if (pendingInviteCode) {
+          setStatus(`Joining family vault with invite code ${pendingInviteCode}...`);
+          try {
+            const joinRes = await api.joinFamily({
+              inviteCode: pendingInviteCode.trim().toUpperCase(),
+              name: pendingName || syncData.name,
+              email: syncData.email,
+              relationship: pendingRelation,
+            });
+            if (joinRes?.token) {
+              localStorage.setItem('gharvault_token', joinRes.token);
+            }
+          } catch (joinErr) {
+            console.warn('[AuthCallback] Failed to join with pending invite code:', joinErr);
+          }
+        }
+
         await refreshSession();
 
         setStatus('Success! Redirecting to your family vault...');
 
         if (!isMounted) return;
+
+        // If user joined via invite or has a family, go directly to /dashboard
+        if (pendingInviteCode) {
+          navigate('/dashboard', { replace: true });
+          return;
+        }
 
         // Redirect: New user with no family -> /family/setup, Returning user with family -> /dashboard
         const hasFamily = Boolean(res.family?._id || res.user?.familyId);

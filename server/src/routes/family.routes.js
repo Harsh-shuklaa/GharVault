@@ -159,66 +159,96 @@ router.post('/setup', async (req, res) => {
     const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
     const vaultName = name?.trim() || 'My Family Vault';
 
+    let user = req.user;
+    if (!user && req.userId) {
+      if (isConnected) {
+        user = await User.findById(req.userId);
+      } else {
+        user = memoryStore.users.find(u => u._id.toString() === req.userId.toString());
+      }
+    }
+
     let family;
-    let user;
     if (isConnected) {
       family = await Family.create({
         name: vaultName,
         inviteCode,
+        adminId: user ? user._id : null,
         storageLimitBytes: 53687091200,
         storageUsedBytes: 0,
       });
 
-      user = await User.create({
-        name: 'Family Admin',
-        email: `admin_${Date.now()}@gharvault.local`,
-        avatar: 'https://ui-avatars.com/api/?name=Admin&background=3ECF8E&color=000&size=150',
-        role: 'ADMIN',
-        relationship: 'Head of Family',
-        familyId: family._id,
-        permissions: {
+      if (user) {
+        user.familyId = family._id;
+        user.role = 'ADMIN';
+        user.relationship = user.relationship || 'Head of Family';
+        user.permissions = {
           canUpload: true,
           canDownload: true,
           canDelete: true,
           canViewSensitive: true,
           canSignQuorum: true,
           canArmBreakGlass: true,
-        },
-      });
-
-      family.adminId = user._id;
-      await family.save();
+        };
+        await user.save();
+      } else {
+        user = await User.create({
+          name: 'Family Admin',
+          email: `admin_${Date.now()}@gharvault.local`,
+          avatar: 'https://ui-avatars.com/api/?name=Admin&background=3ECF8E&color=000&size=150',
+          role: 'ADMIN',
+          relationship: 'Head of Family',
+          familyId: family._id,
+          permissions: {
+            canUpload: true,
+            canDownload: true,
+            canDelete: true,
+            canViewSensitive: true,
+            canSignQuorum: true,
+            canArmBreakGlass: true,
+          },
+        });
+        family.adminId = user._id;
+        await family.save();
+      }
     } else {
       family = {
         _id: 'fam_' + Date.now(),
         name: vaultName,
         inviteCode,
-        adminId: null,
+        adminId: user ? user._id : null,
         storageLimitBytes: 53687091200,
         storageUsedBytes: 0,
         createdAt: new Date(),
       };
-      user = {
-        _id: 'user_' + Date.now(),
-        name: 'Family Admin',
-        email: `admin_${Date.now()}@gharvault.local`,
-        avatar: 'https://ui-avatars.com/api/?name=Admin&background=3ECF8E&color=000&size=150',
-        role: 'ADMIN',
-        relationship: 'Head of Family',
-        familyId: family._id,
-        permissions: {
-          canUpload: true,
-          canDownload: true,
-          canDelete: true,
-          canViewSensitive: true,
-          canSignQuorum: true,
-          canArmBreakGlass: true,
-        },
-        createdAt: new Date(),
-      };
+
+      if (user) {
+        user.familyId = family._id;
+        user.role = 'ADMIN';
+        user.relationship = user.relationship || 'Head of Family';
+      } else {
+        user = {
+          _id: 'user_' + Date.now(),
+          name: 'Family Admin',
+          email: `admin_${Date.now()}@gharvault.local`,
+          avatar: 'https://ui-avatars.com/api/?name=Admin&background=3ECF8E&color=000&size=150',
+          role: 'ADMIN',
+          relationship: 'Head of Family',
+          familyId: family._id,
+          permissions: {
+            canUpload: true,
+            canDownload: true,
+            canDelete: true,
+            canViewSensitive: true,
+            canSignQuorum: true,
+            canArmBreakGlass: true,
+          },
+          createdAt: new Date(),
+        };
+        memoryStore.users.push(user);
+      }
       family.adminId = user._id;
-      memoryStore.families = [family];
-      memoryStore.users = [user];
+      memoryStore.families.push(family);
     }
 
     const token = generateToken(user);
@@ -402,14 +432,9 @@ router.post('/members', async (req, res) => {
     const cleanEmail = email?.trim() ? email.toLowerCase().trim() : `${cleanName.toLowerCase().replace(/\s+/g, '.')}${Date.now().toString().slice(-4)}@family.ghar`;
     const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=2563EB&color=fff&size=150`;
 
-    let familyId = req.familyId;
+    let familyId = req.familyId || req.user?.familyId;
     if (!familyId) {
-      if (isConnected) {
-        const fam = await Family.findOne().sort({ createdAt: -1 });
-        familyId = fam?._id;
-      } else {
-        familyId = memoryStore.families[0]?._id;
-      }
+      return res.status(400).json({ error: 'You must belong to a family vault to add members.' });
     }
 
     let newMember;

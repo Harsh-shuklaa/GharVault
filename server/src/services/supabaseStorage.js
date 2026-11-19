@@ -91,18 +91,21 @@ export const ensureBucketExists = async () => {
 export const uploadDocument = async (fileBuffer, storagePath, mimeType) => {
   const supabase = getSupabaseClient();
   if (supabase) {
-    const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(storagePath, fileBuffer, {
-        contentType: mimeType,
-        upsert: true,
-      });
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(storagePath, fileBuffer, {
+          contentType: mimeType,
+          upsert: true,
+        });
 
-    if (error) {
-      console.error('[Supabase Storage] Upload error:', error.message);
-      throw error;
+      if (!error && data?.path) {
+        return { path: data.path, provider: 'supabase' };
+      }
+      console.warn('[Supabase Storage] Cloud upload returned error, using local secure vault:', error?.message);
+    } catch (networkErr) {
+      console.warn('[Supabase Storage] Network offline or unreachable, using local secure vault:', networkErr.message);
     }
-    return { path: data.path, provider: 'supabase' };
   }
 
   // Fallback: store locally in secure encrypted/hash directory
@@ -114,15 +117,17 @@ export const uploadDocument = async (fileBuffer, storagePath, mimeType) => {
 export const createSignedUrl = async (storagePath, expiresInSeconds = 3600) => {
   const supabase = getSupabaseClient();
   if (supabase) {
-    const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .createSignedUrl(storagePath, expiresInSeconds);
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .createSignedUrl(storagePath, expiresInSeconds);
 
-    if (error) {
-      console.error('[Supabase Storage] CreateSignedUrl error:', error.message);
-      throw error;
+      if (!error && data?.signedUrl) {
+        return data.signedUrl;
+      }
+    } catch (e) {
+      // Fall through to local fallback
     }
-    return data.signedUrl;
   }
 
   // Local fallback: generate a time-limited signed token URL
@@ -140,16 +145,18 @@ export const createSignedUrl = async (storagePath, expiresInSeconds = 3600) => {
 export const downloadDocumentBuffer = async (storagePath) => {
   const supabase = getSupabaseClient();
   if (supabase) {
-    const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .download(storagePath);
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .download(storagePath);
 
-    if (error) {
-      console.error('[Supabase Storage] Download error:', error.message);
-      throw error;
+      if (!error && data) {
+        const arrayBuffer = await data.arrayBuffer();
+        return Buffer.from(arrayBuffer);
+      }
+    } catch (e) {
+      // Fall through to local fallback
     }
-    const arrayBuffer = await data.arrayBuffer();
-    return Buffer.from(arrayBuffer);
   }
 
   const localFilePath = path.join(LOCAL_STORAGE_DIR, storagePath.replace(/\//g, '_'));
