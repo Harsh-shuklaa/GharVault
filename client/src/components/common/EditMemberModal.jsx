@@ -199,7 +199,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                   Profile Photo
                 </span>
                 <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 block mt-0.5 truncate">
-                  Supabase Storage
+                  Bank-Grade Encrypted Vault
                 </span>
               </div>
             </div>

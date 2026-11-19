@@ -35,7 +35,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
 
   const copyAllSummary = () => {
     const summary = data.members.map(m =>
-      `• ${m.name} (${m.relationship})\n  Blood Group: ${m.bloodGroup}\n  Phone: ${m.phone}\n  Emergency Contact: ${m.emergencyContactPhone}\n  Insurance: ${m.healthInsurancePolicy}`
+      `• ${m.name} (${m.relationship || m.relation || 'Member'})\n  Blood Group: ${m.bloodGroup || 'Not specified'}\n  Phone: ${m.phone || 'Not set'}\n  Emergency Contact: ${m.emergencyContactPhone || m.phone || 'Not set'}\n  Insurance: ${m.healthInsurancePolicy || 'No policy added'}${m.allergies && m.allergies !== 'None reported' ? '\n  Allergies: ' + m.allergies : ''}`
     ).join('\n\n');
 
     navigator.clipboard.writeText(`🏥 EMERGENCY MEDICAL DIRECTIVE — ${family?.name || 'GharVault'}\n\n${summary}`);
@@ -99,79 +99,94 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
             </div>
           ) : (
             <div className="space-y-4">
-              {data.members.map((member) => (
-                <div
-                  key={member.id}
-                  className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] hover:border-red-400 dark:hover:border-red-500/40 transition-colors space-y-3"
-                >
-                  <div className="flex items-center justify-between gap-3 min-w-0">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover ring-2 ring-white dark:ring-[#262626] shadow-xs shrink-0"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{member.name}</h4>
-                          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-neutral-300 font-semibold shrink-0">
-                            {member.relationship}
-                          </span>
+              {data.members.map((member) => {
+                const memberKey = member.id || member._id;
+                return (
+                  <div
+                    key={memberKey}
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] hover:border-red-400 dark:hover:border-red-500/40 transition-colors space-y-3"
+                  >
+                    <div className="flex items-center justify-between gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <img
+                          src={member.avatar || member.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                          alt={member.name}
+                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover ring-2 ring-white dark:ring-[#262626] shadow-xs shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{member.name}</h4>
+                            <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-slate-200 dark:bg-[#262626] text-slate-700 dark:text-neutral-300 font-semibold shrink-0">
+                              {member.relationship || member.relation || 'Member'}
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 flex items-center gap-2 truncate">
+                            <span className="truncate">Phone: {member.phone}</span>
+                            {member.phone && member.phone !== 'Not set' && (
+                              <button
+                                onClick={() => copyToClipboard(member.phone, memberKey + '-phone')}
+                                className="text-[11px] text-[#3ECF8E] hover:underline font-semibold cursor-pointer shrink-0"
+                              >
+                                {copiedText === memberKey + '-phone' ? 'Copied' : 'Copy'}
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 flex items-center gap-2 truncate">
-                          <span className="truncate">Phone: {member.phone}</span>
-                          {member.phone && member.phone !== 'Not set' && (
-                            <button
-                              onClick={() => copyToClipboard(member.phone, member.id + '-phone')}
-                              className="text-[11px] text-[#3ECF8E] hover:underline font-semibold cursor-pointer shrink-0"
+                      </div>
+
+                      {/* Blood Group Badge */}
+                      <div className="px-3 py-1.5 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-center shrink-0 border border-red-200 dark:border-red-500/30">
+                        <span className="text-[9px] uppercase font-bold text-red-600 dark:text-red-400 block">Blood</span>
+                        <span className="text-sm sm:text-base font-extrabold font-mono text-red-700 dark:text-red-300">
+                          {member.bloodGroup || '—'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Medical Insurance & Emergency Contact Line */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/70 dark:border-[#262626] text-xs">
+                      <div className="bg-white dark:bg-[#1C1C1C] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#262626]">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block mb-0.5">
+                          Health Insurance / TPA Card
+                        </span>
+                        <div className="font-semibold text-slate-900 dark:text-neutral-200 truncate">
+                          {member.healthInsurancePolicy || 'No policy added'}
+                        </div>
+                      </div>
+
+                      <div className="bg-white dark:bg-[#1C1C1C] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#262626]">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block mb-0.5">
+                          Emergency Contact Phone
+                        </span>
+                        <div className="font-semibold text-slate-900 dark:text-neutral-200 truncate flex items-center justify-between">
+                          <span>{member.emergencyContactPhone || 'Same as primary'}</span>
+                          {member.emergencyContactPhone && (
+                            <a
+                              href={`tel:${member.emergencyContactPhone}`}
+                              className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2 py-0.5 rounded font-bold hover:bg-emerald-100"
                             >
-                              {copiedText === member.id + '-phone' ? 'Copied' : 'Copy'}
-                            </button>
+                              <Phone size={10} />
+                              <span>Call</span>
+                            </a>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Blood Group Badge */}
-                    <div className="px-3 py-1.5 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-center shrink-0 border border-red-200 dark:border-red-500/30">
-                      <span className="text-[9px] uppercase font-bold text-red-600 dark:text-red-400 block">Blood</span>
-                      <span className="text-sm sm:text-base font-extrabold font-mono text-red-700 dark:text-red-300">
-                        {member.bloodGroup || '—'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Medical Insurance & Emergency Contact Line */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/70 dark:border-[#262626] text-xs">
-                    <div className="bg-white dark:bg-[#1C1C1C] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#262626]">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block mb-0.5">
-                        Health Insurance / TPA Card
-                      </span>
-                      <div className="font-semibold text-slate-900 dark:text-neutral-200 truncate">
-                        {member.healthInsurancePolicy || 'No policy added'}
+                    {/* Known Allergies Callout */}
+                    {member.allergies && member.allergies !== 'None reported' && (
+                      <div className="bg-amber-50 dark:bg-amber-500/10 p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-500/20 text-xs">
+                        <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400 block mb-0.5">
+                          Known Allergies
+                        </span>
+                        <div className="font-semibold text-amber-900 dark:text-amber-300">
+                          ⚠️ {member.allergies}
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-[#1C1C1C] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#262626]">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block mb-0.5">
-                        Emergency Contact Phone
-                      </span>
-                      <div className="font-semibold text-slate-900 dark:text-neutral-200 truncate flex items-center justify-between">
-                        <span>{member.emergencyContactPhone || 'Same as primary'}</span>
-                        {member.emergencyContactPhone && (
-                          <a
-                            href={`tel:${member.emergencyContactPhone}`}
-                            className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2 py-0.5 rounded font-bold hover:bg-emerald-100"
-                          >
-                            <Phone size={10} />
-                            <span>Call</span>
-                          </a>
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

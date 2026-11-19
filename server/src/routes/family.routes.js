@@ -124,9 +124,14 @@ router.get('/emergency-card', async (req, res) => {
 
     const emergencyRoster = members.map(m => ({
       id: m._id,
+      _id: m._id,
       name: m.name,
-      relationship: m.relationship,
+      relation: m.relationship || 'Member',
+      relationship: m.relationship || 'Member',
       avatar: m.avatar,
+      avatarUrl: m.avatar,
+      dob: m.dateOfBirth || '',
+      dateOfBirth: m.dateOfBirth || '',
       phone: m.phone || 'Not set',
       bloodGroup: m.bloodGroup || 'Not specified',
       emergencyContactPhone: m.emergencyContactPhone || m.phone || 'Not set',
@@ -394,6 +399,13 @@ router.get('/members', async (req, res) => {
       const assigned = docs.filter(d => d.assignedMemberId?.toString() === m._id?.toString());
       return {
         ...m,
+        id: m._id,
+        relation: m.relationship || 'Member',
+        relationship: m.relationship || 'Member',
+        dob: m.dateOfBirth || '',
+        dateOfBirth: m.dateOfBirth || '',
+        avatarUrl: m.avatar,
+        avatar: m.avatar,
         assignedDocumentsCount: assigned.length,
       };
     });
@@ -537,8 +549,19 @@ router.get('/members/:id', async (req, res) => {
       return res.status(404).json({ error: 'Family member not found' });
     }
 
+    const enrichedMember = {
+      ...(member.toObject ? member.toObject() : member),
+      id: member._id,
+      relation: member.relationship || 'Member',
+      relationship: member.relationship || 'Member',
+      dob: member.dateOfBirth || '',
+      dateOfBirth: member.dateOfBirth || '',
+      avatarUrl: member.avatar,
+      avatar: member.avatar,
+    };
+
     res.json({
-      member,
+      member: enrichedMember,
       assignedDocuments: assignedDocs,
     });
   } catch (err) {
@@ -553,10 +576,12 @@ router.put('/members/:id', async (req, res) => {
     const {
       name,
       relationship,
+      relation,
       phone,
       email,
       bloodGroup,
       dateOfBirth,
+      dob,
       healthInsurancePolicy,
       tpaNumber,
       allergies,
@@ -572,13 +597,16 @@ router.put('/members/:id', async (req, res) => {
       return res.status(403).json({ error: 'Access forbidden. Member belongs to another family vault.' });
     }
 
+    const finalRel = relationship !== undefined ? relationship : relation;
+    const finalDob = dateOfBirth !== undefined ? dateOfBirth : dob;
+
     const updates = {};
     if (name?.trim()) updates.name = name.trim();
-    if (relationship?.trim()) updates.relationship = relationship.trim();
+    if (finalRel?.trim()) updates.relationship = finalRel.trim();
     if (phone !== undefined) updates.phone = phone.trim();
     if (email !== undefined) updates.email = email.toLowerCase().trim();
     if (bloodGroup !== undefined) updates.bloodGroup = bloodGroup.trim();
-    if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth.trim();
+    if (finalDob !== undefined) updates.dateOfBirth = finalDob.trim();
     if (healthInsurancePolicy !== undefined) updates.healthInsurancePolicy = healthInsurancePolicy.trim();
     if (tpaNumber !== undefined) updates.tpaNumber = tpaNumber.trim();
     if (allergies !== undefined) updates.allergies = allergies.trim();
@@ -603,9 +631,20 @@ router.put('/members/:id', async (req, res) => {
 
     if (!member) return res.status(404).json({ error: 'Family member not found' });
 
+    const enrichedUpdated = {
+      ...(member?.toObject ? member.toObject() : member),
+      id: member?._id,
+      relation: member?.relationship || 'Member',
+      relationship: member?.relationship || 'Member',
+      dob: member?.dateOfBirth || '',
+      dateOfBirth: member?.dateOfBirth || '',
+      avatarUrl: member?.avatar,
+      avatar: member?.avatar,
+    };
+
     res.json({
       success: true,
-      member,
+      member: enrichedUpdated,
       message: `${member.name}'s profile updated successfully!`,
     });
   } catch (err) {

@@ -125,7 +125,7 @@ export default function DocumentUploadPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">Upload New Document</h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1">
-          Simple 3-step upload with private encrypted cloud storage up to 25MB on Supabase Free Tier.
+          Simple 3-step upload with 256-bit bank-grade encrypted locker storage up to 25MB.
         </p>
       </div>
 
@@ -189,7 +189,7 @@ export default function DocumentUploadPage() {
                   Click to select file, or drag and drop here
                 </p>
                 <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">
-                  Supports PDF, PNG, JPG, or JPEG (up to 25MB on Supabase Free Tier)
+                  Supports PDF, PNG, JPG, or JPEG (up to 25MB per file)
                 </p>
               </div>
             )}

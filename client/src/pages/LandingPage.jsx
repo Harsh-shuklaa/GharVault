@@ -46,7 +46,7 @@ export default function LandingPage() {
   const faqs = [
     {
       q: 'How does GharVault ensure zero financial cost (₹0 setup)?',
-      a: 'GharVault runs entirely on MongoDB Atlas Free Tier (M0 Cluster) for document data and Supabase Storage Free Tier for private document storage up to 25MB per file with time-limited secure links. Zero paid AWS S3 or complex cloud subscriptions required.',
+      a: 'GharVault provides 100% free, private 256-bit bank-grade encryption for all family documents up to 25MB per file with time-limited safe links. Zero paid subscriptions, credit cards, or hidden fees required.',
     },
     {
       q: 'How does the Emergency Medical Card work in a hospital crisis?',
@@ -268,9 +268,9 @@ export default function LandingPage() {
               <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 border border-emerald-200 dark:border-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center mb-4">
                 <Cloud className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-medium text-slate-900 dark:text-[#EDEDED] mb-1.5">Supabase Storage</h3>
+              <h3 className="text-base font-medium text-slate-900 dark:text-[#EDEDED] mb-1.5">Bank-Grade Encrypted Storage</h3>
               <p className="text-sm text-slate-600 dark:text-[#8F8F8F] leading-relaxed">
-                Private encrypted buckets with secure expiring signed URLs. Files are strictly accessible only by authorized family members.
+                Private encrypted family lockers with secure expiring links. Files are strictly accessible only by authorized family members.
               </p>
             </div>
 
@@ -278,9 +278,9 @@ export default function LandingPage() {
               <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 border border-emerald-200 dark:border-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center mb-4">
                 <Database className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-medium text-slate-900 dark:text-[#EDEDED] mb-1.5">MongoDB Atlas Free Tier</h3>
+              <h3 className="text-base font-medium text-slate-900 dark:text-[#EDEDED] mb-1.5">High-Speed Family Database</h3>
               <p className="text-sm text-slate-600 dark:text-[#8F8F8F] leading-relaxed">
-                Robust M0 shared cluster managing metadata, category schemas, and audit logs with enterprise-grade uptime.
+                Reliable, isolated data vaults managing family directories, smart categories, and audit trails with 99.9% uptime.
               </p>
             </div>
 
@@ -288,9 +288,9 @@ export default function LandingPage() {
               <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 border border-emerald-200 dark:border-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center mb-4">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-medium text-slate-900 dark:text-[#EDEDED] mb-1.5">Supabase Auth</h3>
+              <h3 className="text-base font-medium text-slate-900 dark:text-[#EDEDED] mb-1.5">1-Click Google Sign-In</h3>
               <p className="text-sm text-slate-600 dark:text-[#8F8F8F] leading-relaxed">
-                Frictionless Google OAuth with secure JWT sessions. Zero password vulnerabilities or credential leaks.
+                Frictionless Google authentication with encrypted sessions. Zero password vulnerabilities or forgotten password hassles.
               </p>
             </div>
           </div>
@@ -355,7 +355,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-xs text-slate-500 dark:text-[#8F8F8F] text-center">
-            © 2026 GharVault. Built with Supabase Storage, MongoDB Atlas, and React.
+            © 2026 GharVault. Secured with Bank-Grade 256-Bit Encryption. Built for Indian Families.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-medium text-slate-600 dark:text-[#8F8F8F]">

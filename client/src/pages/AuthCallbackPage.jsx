@@ -9,7 +9,7 @@ export default function AuthCallbackPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { refreshSession } = useAuth();
-  const [status, setStatus] = useState('Connecting to Supabase...');
+  const [status, setStatus] = useState('Connecting to Secure Vault...');
   const [error, setError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
 
@@ -28,7 +28,7 @@ export default function AuthCallbackPage() {
           throw new Error(oauthErrorDesc || `Authentication failed: ${oauthError}`);
         }
 
-        setStatus('Verifying Google OAuth session...');
+        setStatus('Verifying Google account...');
 
         let activeSession = null;
 
@@ -89,7 +89,7 @@ export default function AuthCallbackPage() {
         }
 
         const authUser = activeSession.user;
-        setStatus('Syncing family vault profile with MongoDB...');
+        setStatus('Loading your family vault records...');
 
         const syncData = {
           email: authUser.email,
@@ -101,7 +101,7 @@ export default function AuthCallbackPage() {
         const res = await api.syncAuth(syncData);
 
         if (!res?.token) {
-          throw new Error(res?.error || 'Failed to synchronize user session with GharVault backend.');
+          throw new Error(res?.error || 'Failed to open your Family Vault. Please try again.');
         }
 
         const pendingInviteCode = sessionStorage.getItem('pending_invite_code');
@@ -226,7 +226,7 @@ export default function AuthCallbackPage() {
             </div>
 
             <div className="pt-2 text-[11px] text-slate-400 dark:text-[#666] font-mono">
-              Zero-Knowledge AES-256 • Supabase Live Session
+              Zero-Knowledge AES-256 • Bank-Grade Encrypted
             </div>
           </div>
         )}

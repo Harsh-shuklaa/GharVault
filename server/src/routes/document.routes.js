@@ -123,9 +123,27 @@ router.get('/', async (req, res) => {
     // Populate assigned member info
     const populated = docs.map(d => {
       const member = members.find(m => m._id.toString() === d.assignedMemberId?.toString());
+      const enrichedMember = member ? {
+        ...member,
+        id: member._id,
+        relation: member.relationship || 'Member',
+        relationship: member.relationship || 'Member',
+        dob: member.dateOfBirth || '',
+        dateOfBirth: member.dateOfBirth || '',
+        avatarUrl: member.avatar,
+        avatar: member.avatar,
+      } : null;
+
       return {
         ...d,
-        assignedMember: member || null,
+        id: d._id,
+        memberId: d.assignedMemberId,
+        assignedMemberId: d.assignedMemberId,
+        visibility: d.whoCanView,
+        whoCanView: d.whoCanView,
+        isMpinProtected: Boolean(d.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(d.category)),
+        isSensitive: Boolean(d.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(d.category)),
+        assignedMember: enrichedMember,
       };
     });
 
@@ -175,10 +193,28 @@ router.get('/:id', async (req, res) => {
       signedUrl = `/api/documents/raw/${encodeURIComponent(doc.storagePath)}`;
     }
 
+    const enrichedMember = member ? {
+      ...member,
+      id: member._id,
+      relation: member.relationship || 'Member',
+      relationship: member.relationship || 'Member',
+      dob: member.dateOfBirth || '',
+      dateOfBirth: member.dateOfBirth || '',
+      avatarUrl: member.avatar,
+      avatar: member.avatar,
+    } : null;
+
     res.json({
       document: {
         ...doc,
-        assignedMember: member,
+        id: doc._id,
+        memberId: doc.assignedMemberId,
+        assignedMemberId: doc.assignedMemberId,
+        visibility: doc.whoCanView,
+        whoCanView: doc.whoCanView,
+        isMpinProtected: Boolean(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)),
+        isSensitive: Boolean(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)),
+        assignedMember: enrichedMember,
         signedUrl,
         fileUrl: signedUrl,
       },
@@ -195,12 +231,20 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       title,
       category = 'ID Cards',
       assignedMemberId,
+      memberId,
       documentNumber = '',
       issueDate,
       expiryDate,
       whoCanView = 'ALL',
+      visibility,
+      isSensitive,
+      isMpinProtected,
       tags = '',
     } = req.body;
+
+    const uploaderId = req.userId || req.user?._id;
+    const finalMemberId = assignedMemberId || memberId || uploaderId;
+    const finalSensitive = Boolean(isSensitive || isMpinProtected || ['Property & Legal', 'Financial', 'Legal'].includes(category));
 
     let fileBuffer;
     let originalName;
@@ -222,11 +266,11 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // 1. Calculate SHA-256 Checksum
     const sha256Hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
 
-    // 2. Storage Path in Private Supabase Bucket
+    // 2. Storage Path in Private Encrypted Bucket
     const fileExt = path.extname(originalName) || '.pdf';
     const storagePath = `vault/${category.toLowerCase().replace(/[^a-z0-9]/g, '_')}/${Date.now()}_${crypto.randomBytes(4).toString('hex')}${fileExt}`;
 
-    // 3. Upload to Supabase Storage
+    // 3. Upload to Encrypted Storage
     await uploadDocument(fileBuffer, storagePath, mimeType);
 
     // 4. Auto-extract number if not provided
@@ -245,9 +289,16 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       }
     }
 
+    const rawWhoCanView = whoCanView || visibility || 'ALL';
     let parsedWhoCanView = ['ALL'];
-    if (whoCanView && whoCanView !== 'ALL') {
-      parsedWhoCanView = Array.isArray(whoCanView) ? whoCanView : whoCanView.split(',').map(s => s.trim());
+    if (rawWhoCanView && rawWhoCanView !== 'ALL') {
+      try {
+        parsedWhoCanView = typeof rawWhoCanView === 'string' && (rawWhoCanView.startsWith('[') || rawWhoCanView.startsWith('{'))
+          ? JSON.parse(rawWhoCanView)
+          : Array.isArray(rawWhoCanView) ? rawWhoCanView : rawWhoCanView.split(',').map(s => s.trim());
+      } catch (e) {
+        parsedWhoCanView = Array.isArray(rawWhoCanView) ? rawWhoCanView : rawWhoCanView.split(',').map(s => s.trim());
+      }
     }
 
     let parsedTags = [];
@@ -258,7 +309,6 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     const familyId = req.familyId || req.user?.familyId;
-    const uploaderId = req.userId || req.user?._id;
 
     if (!familyId) {
       return res.status(400).json({ error: 'You must belong to a family vault to upload documents.' });
@@ -272,11 +322,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         fileSize,
         category,
         familyId,
-        assignedMemberId: assignedMemberId || uploaderId,
+        assignedMemberId: finalMemberId,
         documentNumber: finalDocNumber,
         issueDate: issueDate ? new Date(issueDate) : new Date(),
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         status,
+        isSensitive: finalSensitive,
         whoCanView: parsedWhoCanView,
         tags: parsedTags,
         storagePath,
@@ -301,7 +352,18 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       fileSize,
       category,
       familyId,
-      assignedMemberId: assignedMemberId || uploaderId,
+      assignedMemberId: finalMemberId,
+      documentNumber: finalDocNumber,
+      issueDate: issueDate ? new Date(issueDate) : new Date(),
+      expiryDate: expiryDate ? new Date(expiryDate) : null,
+      status,
+      isSensitive: finalSensitive,
+      whoCanView: parsedWhoCanView,
+      tags: parsedTags,
+      storagePath,
+      sha256Hash,
+      ocrExtractedData: ocrData,
+      uploaderId,
       documentNumber: finalDocNumber,
       issueDate: issueDate ? new Date(issueDate) : new Date(),
       expiryDate: expiryDate ? new Date(expiryDate) : null,

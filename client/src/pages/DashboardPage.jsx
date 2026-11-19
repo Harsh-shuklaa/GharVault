@@ -412,7 +412,9 @@ export default function DashboardPage() {
       <JoinFamilyModal
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
-        onJoined={() => window.location.reload()}
+        onJoined={async () => {
+          await loadDashboard();
+        }}
       />
     </div>
   );

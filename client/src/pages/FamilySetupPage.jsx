@@ -175,7 +175,7 @@ export default function FamilySetupPage() {
                     <span>100% Free Forever</span>
                   </div>
                   <p className="text-emerald-800/80 dark:text-emerald-300/80 leading-relaxed text-[11px]">
-                    Includes unlimited family members, private encrypted storage via Supabase buckets, and instant one-click sharing.
+                    Includes unlimited family members, 256-bit private encrypted family locker storage, and instant one-click sharing.
                   </p>
                 </div>
 

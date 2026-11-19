@@ -353,7 +353,18 @@ export default function VaultPage() {
                       </div>
                     </div>
                   </div>
-                  {getExpiryBadge(doc.expiryDate)}
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    {getExpiryBadge(doc.expiryDate)}
+                    {doc.whoCanView && Array.isArray(doc.whoCanView) && !doc.whoCanView.includes('ALL') ? (
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#141414] text-[9px] font-semibold text-slate-600 dark:text-neutral-400">
+                        🔒 Only Me / Tagged
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#3ECF8E]/10 text-[9px] font-semibold text-emerald-700 dark:text-[#3ECF8E]">
+                        👥 Family
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* ONE-TAP "COPY NUMBER" BAR */}
@@ -383,9 +394,20 @@ export default function VaultPage() {
                 {/* Meta details */}
                 <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-neutral-500 font-medium pt-1">
                   <span>Size: {(doc.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
-                  {doc.expiryDate && (
-                    <span>Valid to: {new Date(doc.expiryDate).toLocaleDateString()}</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {doc.whoCanView && Array.isArray(doc.whoCanView) && !doc.whoCanView.includes('ALL') ? (
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#141414] text-[10px] font-semibold text-slate-600 dark:text-neutral-400">
+                        🔒 Restricted
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#3ECF8E]/10 text-[10px] font-semibold text-emerald-700 dark:text-[#3ECF8E]">
+                        👥 Entire Family
+                      </span>
+                    )}
+                    {doc.expiryDate && (
+                      <span>Valid to: {new Date(doc.expiryDate).toLocaleDateString()}</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -457,7 +479,18 @@ export default function VaultPage() {
                       </div>
                     </div>
                   </Link>
-                  {getExpiryBadge(doc.expiryDate)}
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    {getExpiryBadge(doc.expiryDate)}
+                    {doc.whoCanView && Array.isArray(doc.whoCanView) && !doc.whoCanView.includes('ALL') ? (
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#141414] text-[9px] font-semibold text-slate-600 dark:text-neutral-400">
+                        🔒 Only Me / Tagged
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#3ECF8E]/10 text-[9px] font-semibold text-emerald-700 dark:text-[#3ECF8E]">
+                        👥 Family
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {doc.documentNumber && (
@@ -588,7 +621,18 @@ export default function VaultPage() {
                           <div className="text-[11px] font-semibold text-slate-800 dark:text-neutral-200">
                             {new Date(doc.expiryDate).toLocaleDateString()}
                           </div>
-                          {getExpiryBadge(doc.expiryDate)}
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                    {getExpiryBadge(doc.expiryDate)}
+                    {doc.whoCanView && Array.isArray(doc.whoCanView) && !doc.whoCanView.includes('ALL') ? (
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#141414] text-[9px] font-semibold text-slate-600 dark:text-neutral-400">
+                        🔒 Only Me / Tagged
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#3ECF8E]/10 text-[9px] font-semibold text-emerald-700 dark:text-[#3ECF8E]">
+                        👥 Family
+                      </span>
+                    )}
+                  </div>
                         </div>
                       ) : (
                         <span className="text-slate-400 dark:text-neutral-500 text-[11px]">No Expiry</span>

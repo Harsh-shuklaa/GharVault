@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { memoryStore } from '../config/seed.js';
 import User from '../models/User.js';
 import Family from '../models/Family.js';
@@ -362,84 +363,36 @@ router.get('/me', async (req, res) => {
 router.post('/verify-mpin', async (req, res) => {
   const { mpin } = req.body;
   if (!mpin || mpin.length < 4) {
-    return res.status(400).json({ error: 'Invalid PIN. Must be at least 4 digits.' });
+    return res.status(400).json({ success: false, valid: false, error: 'Invalid PIN. Must be at least 4 digits.' });
   }
 
   try {
-    let user = null;
-    let family = null;
+    let user = req.user;
+    if (!user && req.userId) {
+      user = isConnected ? await User.findById(req.userId) : memoryStore.users.find(u => u._id.toString() === req.userId.toString());
+    }
+    if (!user && req.body.email) {
+      const em = req.body.email.toLowerCase().trim();
+      user = isConnected ? await User.findOne({ email: em }) : memoryStore.users.find(u => u.email?.toLowerCase() === em);
+    }
 
-    if (isConnected) {
-      user = await User.findOne({ role: 'ADMIN' });
-      if (!user) {
-        user = await User.findOne();
-      }
-
-      if (!user) {
-        family = await Family.create({
-          name: 'My Family Vault',
-          inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
-          storageLimitBytes: 53687091200,
-          storageUsedBytes: 0,
-        });
-
-        user = await User.create({
-          email: 'admin@gharvault.local',
-          name: 'Family Admin',
-          role: 'ADMIN',
-          relationship: 'Head of Family',
-          familyId: family._id,
-          permissions: {
-            canUpload: true,
-            canDownload: true,
-            canDelete: true,
-            canViewSensitive: true,
-            canSignQuorum: true,
-            canArmBreakGlass: true,
-          },
-        });
-
-        family.adminId = user._id;
-        await family.save();
+    if (!user) {
+      if (isConnected) {
+        user = await User.findOne({ role: 'ADMIN' }) || await User.findOne();
       } else {
-        family = await Family.findById(user.familyId);
+        user = memoryStore.users[0];
       }
-    } else {
-      user = memoryStore.users[0];
-      family = memoryStore.families[0];
+    }
 
-      if (!user) {
-        family = {
-          _id: 'fam_' + Date.now(),
-          name: 'My Family Vault',
-          inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
-          storageLimitBytes: 53687091200,
-          storageUsedBytes: 0,
-          createdAt: new Date(),
-        };
+    if (!user) {
+      return res.status(404).json({ success: false, valid: false, error: 'User profile not found.' });
+    }
 
-        user = {
-          _id: 'user_' + Date.now(),
-          email: 'admin@gharvault.local',
-          name: 'Family Admin',
-          role: 'ADMIN',
-          relationship: 'Head of Family',
-          familyId: family._id,
-          permissions: {
-            canUpload: true,
-            canDownload: true,
-            canDelete: true,
-            canViewSensitive: true,
-            canSignQuorum: true,
-            canArmBreakGlass: true,
-          },
-          createdAt: new Date(),
-        };
-
-        family.adminId = user._id;
-        memoryStore.families.push(family);
-        memoryStore.users.push(user);
-      }
+    let family = null;
+    if (user.familyId) {
+      family = isConnected
+        ? await Family.findById(user.familyId)
+        : memoryStore.families.find(f => f._id.toString() === user.familyId.toString());
     }
 
     // Check MPIN match
@@ -447,12 +400,12 @@ router.post('/verify-mpin', async (req, res) => {
     if (user.mpinHash) {
       const match = await bcrypt.compare(cleanPin, user.mpinHash);
       if (!match) {
-        return res.status(401).json({ error: 'Incorrect 4-digit MPIN. Please try again.' });
+        return res.status(401).json({ success: false, verified: false, valid: false, error: 'Incorrect 4-digit MPIN. Please try again.' });
       }
     } else {
       // Default initial PIN is 1234 if not customized yet
       if (cleanPin !== '1234') {
-        return res.status(401).json({ error: 'Incorrect MPIN. (Default initial PIN is 1234. You can change it in Settings).' });
+        return res.status(401).json({ success: false, verified: false, valid: false, error: 'Incorrect MPIN. (Default initial PIN is 1234. You can change it in Settings).' });
       }
     }
 
@@ -460,6 +413,7 @@ router.post('/verify-mpin', async (req, res) => {
     res.json({
       success: true,
       verified: true,
+      valid: true,
       token,
       user,
       family,
@@ -467,7 +421,7 @@ router.post('/verify-mpin', async (req, res) => {
     });
   } catch (err) {
     console.error('Verify MPIN error:', err);
-    res.status(500).json({ error: 'Failed to verify PIN' });
+    res.status(500).json({ success: false, valid: false, error: 'Failed to verify PIN' });
   }
 });
 
@@ -484,23 +438,29 @@ router.post('/set-mpin', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const mpinHash = await bcrypt.hash(cleanPin, salt);
 
-    let user = null;
-    if (isConnected) {
-      if (email) {
-        user = await User.findOne({ email: email.toLowerCase().trim() });
-      }
-      if (!user) {
+    let user = req.user;
+    if (!user && req.userId) {
+      user = isConnected ? await User.findById(req.userId) : memoryStore.users.find(u => u._id.toString() === req.userId.toString());
+    }
+    if (!user && email) {
+      const em = email.toLowerCase().trim();
+      user = isConnected ? await User.findOne({ email: em }) : memoryStore.users.find(u => u.email?.toLowerCase() === em);
+    }
+    if (!user) {
+      if (isConnected) {
         user = await User.findOne();
+      } else {
+        user = memoryStore.users[0];
       }
-      if (user) {
-        user.mpinHash = mpinHash;
-        await user.save();
-      }
-    } else {
-      user = memoryStore.users[0];
-      if (user) {
-        user.mpinHash = mpinHash;
-      }
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.mpinHash = mpinHash;
+    if (isConnected) {
+      await user.save();
     }
 
     res.json({

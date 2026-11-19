@@ -185,12 +185,12 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Theme & Family Vault (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
-          {/* Theme Switcher Card (Supabase Dark Mode & Light Mode) */}
+          {/* Theme Switcher Card (Obsidian Dark Mode & Light Mode) */}
           <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-4 transition-colors">
             <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center justify-between">
               <span>Appearance & Theme</span>
               <span className="text-xs font-mono font-semibold text-[#10B981] dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-[#3ECF8E]/20">
-                {isDark ? 'Supabase Dark Active' : 'Light Mode Active'}
+                {isDark ? 'Obsidian Dark Active' : 'Light Mode Active'}
               </span>
             </h2>
 
@@ -217,7 +217,7 @@ export default function SettingsPage() {
                     <span className="w-2 h-2 rounded-full bg-[#3ECF8E]"></span>
                   )}
                 </div>
-                <div className="text-xs font-bold text-slate-900 dark:text-white">Supabase Dark</div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white">Obsidian Dark</div>
                 <div className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5">
                   Obsidian canvas with emerald green accents
                 </div>
@@ -351,15 +351,15 @@ export default function SettingsPage() {
             </p>
 
             <div className="space-y-3 text-xs">
-              {/* Supabase Storage */}
+              {/* Encrypted Document Locker */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#3ECF8E]/15 text-[#3ECF8E] flex items-center justify-center font-bold text-base">
-                    S
+                    <Shield size={18} />
                   </div>
                   <div>
-                    <div className="font-bold text-slate-900 dark:text-white">Supabase Storage (Free Tier)</div>
-                    <div className="text-[11px] text-slate-500 dark:text-neutral-400">Private Buckets • 25MB max file size • Expiring signed links</div>
+                    <div className="font-bold text-slate-900 dark:text-white">Encrypted Document Locker</div>
+                    <div className="text-[11px] text-slate-500 dark:text-neutral-400">Private 256-Bit Storage • 25MB max file size • Time-limited safe links</div>
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-mono text-[10px] font-bold">
@@ -367,14 +367,14 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              {/* MongoDB Atlas */}
+              {/* Primary Family Database */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold text-base">
-                    M
+                    <Database size={18} />
                   </div>
                   <div>
-                    <div className="font-bold text-slate-900 dark:text-white">MongoDB Atlas (M0 Free Cluster)</div>
+                    <div className="font-bold text-slate-900 dark:text-white">Primary Family Database</div>
                     <div className="text-[11px] text-slate-500 dark:text-neutral-400">Document metadata • Family roster • Secure indexing</div>
                   </div>
                 </div>
@@ -383,14 +383,14 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              {/* Supabase Auth */}
+              {/* Secure Google Sign-In */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-base">
-                    G
+                    <CheckCircle2 size={18} />
                   </div>
                   <div>
-                    <div className="font-bold text-slate-900 dark:text-white">Google OAuth via Supabase Auth</div>
+                    <div className="font-bold text-slate-900 dark:text-white">Secure Google Sign-In</div>
                     <div className="text-[11px] text-slate-500 dark:text-neutral-400">Frictionless 1-click login • Zero passwords to remember</div>
                   </div>
                 </div>
@@ -453,7 +453,7 @@ export default function SettingsPage() {
                   <span>{isUploadingAvatar ? 'Uploading...' : 'Change Photo'}</span>
                 </button>
                 <p className="text-[11px] text-slate-400 dark:text-neutral-500">
-                  JPG, PNG or WEBP (Max 5MB). Stored securely in Supabase.
+                  JPG, PNG or WEBP (Max 5MB). Stored securely in your encrypted vault.
                 </p>
               </div>
             </div>
@@ -492,7 +492,7 @@ export default function SettingsPage() {
                 <label className="block text-slate-500 dark:text-neutral-400 font-semibold mb-1 flex items-center justify-between">
                   <span>Google Account Email</span>
                   <span className="text-[10px] text-emerald-700 dark:text-[#3ECF8E] flex items-center gap-1">
-                    <ShieldCheck size={12} /> Verified OAuth
+                    <ShieldCheck size={12} /> Verified Google Account
                   </span>
                 </label>
                 <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#141414]/60 border border-slate-200/80 dark:border-[#262626] text-slate-500 dark:text-neutral-400 font-mono text-xs">

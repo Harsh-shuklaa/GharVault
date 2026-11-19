@@ -739,7 +739,7 @@ export default function DocumentPreviewPage() {
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500 dark:text-neutral-400">Storage Protection:</span>
-                <span className="font-bold text-emerald-700 dark:text-[#3ECF8E]">Supabase Encrypted Bucket</span>
+                <span className="font-bold text-emerald-700 dark:text-[#3ECF8E]">256-Bit Encrypted Family Locker</span>
               </div>
             </div>
           </div>
