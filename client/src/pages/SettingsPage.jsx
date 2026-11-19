@@ -11,6 +11,7 @@ import {
   Home,
   Cloud,
   User,
+  Shield,
   ShieldCheck,
   Camera,
   Save,
@@ -23,6 +24,7 @@ import {
   Mail,
   ShieldAlert,
   KeyRound,
+  Database,
 } from 'lucide-react';
 import JoinFamilyModal from '../components/common/JoinFamilyModal';
 
