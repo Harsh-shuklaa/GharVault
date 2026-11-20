@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
+import { PWAInstallProvider } from './context/PWAInstallContext';
 
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
@@ -29,39 +30,41 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Routes>
-            {/* Public Landing, Auth & Safe Share */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/auth/login" element={<LoginPage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/share/:token" element={<PublicShareViewPage />} />
+          <PWAInstallProvider>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <Routes>
+              {/* Public Landing, Auth & Safe Share */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/auth/login" element={<LoginPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/share/:token" element={<PublicShareViewPage />} />
 
-            {/* Protected Routes (Strictly blocked if unauthenticated) */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/family/setup" element={<FamilySetupPage />} />
-              <Route path="/family/join" element={<FamilySetupPage />} />
+              {/* Protected Routes (Strictly blocked if unauthenticated) */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/family/setup" element={<FamilySetupPage />} />
+                <Route path="/family/join" element={<FamilySetupPage />} />
 
-              <Route element={<AppLayout />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/vault" element={<VaultPage />} />
-                <Route path="/vault/upload" element={<DocumentUploadPage />} />
-                <Route path="/vault/documents/:id" element={<DocumentPreviewPage />} />
-                <Route path="/family" element={<FamilyDirectoryPage />} />
-                <Route path="/family/:memberId" element={<MemberProfilePage />} />
-                <Route path="/categories" element={<CategoriesPage />} />
-                <Route path="/activity" element={<ActivityAuditPage />} />
-                <Route path="/permissions" element={<PermissionsMatrixPage />} />
-                <Route path="/break-glass" element={<BreakGlassPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route element={<AppLayout />}>
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/vault" element={<VaultPage />} />
+                  <Route path="/vault/upload" element={<DocumentUploadPage />} />
+                  <Route path="/vault/documents/:id" element={<DocumentPreviewPage />} />
+                  <Route path="/family" element={<FamilyDirectoryPage />} />
+                  <Route path="/family/:memberId" element={<MemberProfilePage />} />
+                  <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="/activity" element={<ActivityAuditPage />} />
+                  <Route path="/permissions" element={<PermissionsMatrixPage />} />
+                  <Route path="/break-glass" element={<BreakGlassPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                </Route>
               </Route>
-            </Route>
 
-            {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
+              {/* Catch-all */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+          </PWAInstallProvider>
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>

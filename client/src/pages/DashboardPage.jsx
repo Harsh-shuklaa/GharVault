@@ -81,7 +81,7 @@ export default function DashboardPage() {
   const idCards = documents.filter((d) => d.documentNumber && d.documentNumber.trim() !== '');
 
   return (
-    <div className="max-w-[1380px] mx-auto p-4 sm:p-5 lg:p-6 space-y-5 sm:space-y-6 font-sans">
+    <div className="max-w-[1380px] mx-auto p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6 font-sans">
       {/* ================= GREETING & WELCOME BANNER ================= */}
       <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-4 sm:p-5 lg:p-6 border border-slate-200 dark:border-[#2E2E2E] shadow-sm dark:shadow-none flex flex-col md:flex-row md:items-center justify-between gap-5 transition-colors">
         <div>

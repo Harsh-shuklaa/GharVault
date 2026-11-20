@@ -19,12 +19,17 @@ import {
   Moon,
   Plus,
   Bell,
+  Smartphone,
+  Download,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { usePWAInstall } from '../../context/PWAInstallContext';
 import GlobalSearchModal from '../common/GlobalSearchModal';
 import EmergencyCardModal from '../common/EmergencyCardModal';
 import LogoutModal from '../common/LogoutModal';
+import InstallAppModal from '../common/InstallAppModal';
 
 export default function AppLayout() {
   const {
@@ -39,6 +44,16 @@ export default function AppLayout() {
     isLoggingOut,
   } = useAuth();
   const { theme, isDark, toggleTheme } = useTheme();
+  const {
+    isInstallable,
+    isStandalone,
+    isInstallModalOpen,
+    openInstallModal,
+    closeInstallModal,
+    triggerNativeInstall,
+    isBannerDismissed,
+    dismissBanner,
+  } = usePWAInstall();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const location = useLocation();
@@ -319,17 +334,17 @@ export default function AppLayout() {
       </aside>
 
       {/* ================= MAIN CONTENT WRAPPER ================= */}
-      <div className="ml-0 md:ml-16 min-h-screen flex flex-col pb-24 md:pb-8 transition-all duration-200 overflow-x-hidden">
-        {/* Fixed Topbar */}
-        <header className="fixed top-0 left-0 md:left-16 right-0 h-14 sm:h-16 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#262626] z-40 flex items-center justify-between px-3 sm:px-6 shadow-xs transition-colors duration-200">
+      <div className="ml-0 md:ml-16 min-h-screen flex flex-col pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-8 transition-all duration-200 overflow-x-hidden">
+        {/* Fixed Topbar with iPhone Notch Safe Area Support */}
+        <header className="fixed top-0 left-0 md:left-16 right-0 h-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:h-16 pt-[env(safe-area-inset-top,0px)] bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#262626] z-40 flex items-center justify-between px-2.5 sm:px-6 shadow-xs transition-colors duration-200">
           {/* Left: Mobile Brand / Desktop Breadcrumb */}
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             {/* Mobile Brand Shield & Name */}
-            <Link to="/dashboard" className="flex items-center gap-2 min-w-0" title="GharVault">
-              <div className="w-8 h-8 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] flex items-center justify-center text-white dark:text-[#121212] font-bold shadow-xs shrink-0">
-                <Shield size={17} strokeWidth={2.2} />
+            <Link to="/dashboard" className="flex items-center gap-1.5 min-w-0" title="GharVault">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] flex items-center justify-center text-white dark:text-[#121212] font-bold shadow-xs shrink-0">
+                <Shield size={16} strokeWidth={2.2} />
               </div>
-              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white truncate block md:hidden">
+              <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900 dark:text-white truncate block md:hidden">
                 GharVault
               </span>
             </Link>
@@ -347,14 +362,14 @@ export default function AppLayout() {
           </div>
 
           {/* Search Trigger */}
-          <div className="flex-1 max-w-md mx-2 sm:mx-6 flex justify-end md:justify-center">
+          <div className="flex-1 max-w-md mx-1.5 sm:mx-6 flex justify-end md:justify-center">
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="md:hidden w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#1C1C1C] text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#262626] cursor-pointer"
+              className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 dark:bg-[#1C1C1C] text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#262626] cursor-pointer"
               title="Search Vault"
             >
-              <Search size={17} />
+              <Search size={15} />
             </button>
 
             {/* Desktop Search Bar */}
@@ -373,25 +388,25 @@ export default function AppLayout() {
           </div>
 
           {/* Topbar Actions */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Dark / Light Mode Toggle */}
             <button
               type="button"
               onClick={toggleTheme}
               title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
-              className="w-10 h-10 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-2xs"
             >
-              {isDark ? <Sun size={17} strokeWidth={2} /> : <Moon size={17} strokeWidth={2} />}
+              {isDark ? <Sun size={15} strokeWidth={2} /> : <Moon size={15} strokeWidth={2} />}
             </button>
 
             {/* Notification Bell */}
             <Link
               to="/notifications"
               title="Notifications"
-              className="relative w-10 h-10 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer shadow-xs"
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
             >
-              <Bell size={17} strokeWidth={1.8} />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#10B981] dark:bg-[#3ECF8E]" />
+              <Bell size={15} strokeWidth={1.8} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E]" />
             </Link>
 
             {/* Mobile User Avatar */}
@@ -402,19 +417,34 @@ export default function AppLayout() {
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3ECF8E&color=121212`
                 }
                 alt={user?.name || 'User'}
-                className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-700"
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-700"
               />
             </Link>
 
-            {/* Mobile Sign Out Button */}
-            <button
-              type="button"
-              onClick={openLogoutModal}
-              title="Sign Out of GharVault"
-              className="md:hidden w-10 h-10 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-600 dark:text-neutral-400 dark:hover:text-red-400 flex items-center justify-center transition-all cursor-pointer shadow-xs"
-            >
-              <LogOut size={17} strokeWidth={1.8} />
-            </button>
+            {/* Mobile Install App Button */}
+            {!isStandalone && (
+              <button
+                type="button"
+                onClick={triggerNativeInstall}
+                title="Install GharVault App on Phone"
+                className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-emerald-300 dark:border-[#3ECF8E]/30 bg-emerald-50/90 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
+              >
+                <Download size={15} strokeWidth={2.2} />
+              </button>
+            )}
+
+            {/* Desktop Install App Button */}
+            {!isStandalone && (
+              <button
+                type="button"
+                onClick={triggerNativeInstall}
+                title="Install GharVault App"
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-[#3ECF8E]/10 dark:hover:bg-[#3ECF8E]/20 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/30 text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-98"
+              >
+                <Smartphone size={15} />
+                <span>Install App</span>
+              </button>
+            )}
 
             {/* Desktop Quick Emergency Card Button */}
             <button
@@ -437,81 +467,114 @@ export default function AppLayout() {
           </div>
         </header>
 
+        {/* Mobile Floating Quick-Install Banner */}
+        {!isStandalone && !isBannerDismissed && (
+          <div className="md:hidden fixed top-[calc(3.85rem+env(safe-area-inset-top,0px))] inset-x-2 sm:inset-x-4 z-30 p-2 sm:p-2.5 rounded-2xl bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-md border border-emerald-300/80 dark:border-[#3ECF8E]/30 shadow-lg flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={triggerNativeInstall}>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shrink-0">
+                <Smartphone size={15} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white truncate">Install GharVault App</p>
+                <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-neutral-400 truncate">1-tap fast access on your phone</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={triggerNativeInstall}
+                className="px-2.5 py-1 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-[11px] shadow-xs cursor-pointer active:scale-95 transition-all"
+              >
+                Install
+              </button>
+              <button
+                type="button"
+                onClick={dismissBanner}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300 cursor-pointer"
+                title="Dismiss"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ================= PAGE OUTLET ================= */}
-        <main className="w-full pt-14 sm:pt-16 flex-1 min-w-0">
+        <main className="w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:pt-16 flex-1 min-w-0">
           <Outlet />
         </main>
       </div>
 
-      {/* ================= MOBILE BOTTOM NAVIGATION BAR (< 768px) ================= */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 h-16 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#262626] flex items-center justify-around px-2 shadow-lg select-none pb-[env(safe-area-inset-bottom,0px)]">
+      {/* ================= MOBILE BOTTOM NAVIGATION BAR (< 768px) with iPhone Safe Area ================= */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] pt-1 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#262626] flex items-center justify-between px-1.5 sm:px-4 shadow-lg select-none">
         {/* Home */}
         <Link
           to="/dashboard"
-          className={`flex flex-col items-center justify-center w-14 py-1 transition-colors ${
+          className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/dashboard'
               ? 'text-[#10B981] dark:text-[#3ECF8E]'
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
-          <LayoutDashboard size={20} strokeWidth={location.pathname === '/dashboard' ? 2.2 : 1.75} />
-          <span className="text-[10px] font-medium mt-1">Home</span>
+          <LayoutDashboard size={19} strokeWidth={location.pathname === '/dashboard' ? 2.2 : 1.75} />
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Home</span>
         </Link>
 
         {/* All Documents / Vault */}
         <Link
           to="/vault"
-          className={`flex flex-col items-center justify-center w-14 py-1 transition-colors ${
+          className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/vault'
               ? 'text-[#10B981] dark:text-[#3ECF8E]'
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
-          <Files size={20} strokeWidth={location.pathname === '/vault' ? 2.2 : 1.75} />
-          <span className="text-[10px] font-medium mt-1">Vault</span>
+          <Files size={19} strokeWidth={location.pathname === '/vault' ? 2.2 : 1.75} />
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Vault</span>
         </Link>
 
         {/* Central Floating Action Button (Supabase Green +) */}
-        <div className="relative -top-3.5 flex items-center justify-center">
+        <div className="relative -top-3 sm:-top-3.5 flex items-center justify-center shrink-0 px-1">
           <Link
             to="/vault/upload"
-            className="w-[52px] h-[52px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 active:scale-95 transition-all ring-4 ring-white dark:ring-[#141414]"
+            className="w-12 h-12 sm:w-[50px] sm:h-[50px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 active:scale-95 transition-all ring-4 ring-white dark:ring-[#141414]"
             title="Upload Document"
           >
-            <Plus size={26} strokeWidth={2.8} />
+            <Plus size={24} strokeWidth={2.8} />
           </Link>
         </div>
 
         {/* Family Directory */}
         <Link
           to="/family"
-          className={`flex flex-col items-center justify-center w-14 py-1 transition-colors ${
+          className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname.startsWith('/family')
               ? 'text-[#10B981] dark:text-[#3ECF8E]'
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
-          <Users size={20} strokeWidth={location.pathname.startsWith('/family') ? 2.2 : 1.75} />
-          <span className="text-[10px] font-medium mt-1">Family</span>
+          <Users size={19} strokeWidth={location.pathname.startsWith('/family') ? 2.2 : 1.75} />
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Family</span>
         </Link>
 
         {/* Settings */}
         <Link
           to="/settings"
-          className={`flex flex-col items-center justify-center w-14 py-1 transition-colors ${
+          className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/settings'
               ? 'text-[#10B981] dark:text-[#3ECF8E]'
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
-          <Settings size={20} strokeWidth={location.pathname === '/settings' ? 2.2 : 1.75} />
-          <span className="text-[10px] font-medium mt-1">Settings</span>
+          <Settings size={19} strokeWidth={location.pathname === '/settings' ? 2.2 : 1.75} />
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Settings</span>
         </Link>
       </nav>
 
       {/* Global Modals */}
       <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <EmergencyCardModal isOpen={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} />
+      <InstallAppModal isOpen={isInstallModalOpen} onClose={closeInstallModal} />
       <LogoutModal
         isOpen={isLogoutModalOpen}
         onClose={closeLogoutModal}

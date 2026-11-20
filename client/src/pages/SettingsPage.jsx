@@ -27,13 +27,16 @@ import {
   KeyRound,
   Database,
   LogOut,
+  Smartphone,
 } from 'lucide-react';
+import { usePWAInstall } from '../context/PWAInstallContext';
 import JoinFamilyModal from '../components/common/JoinFamilyModal';
 
 export default function SettingsPage() {
   const { user, family, updateUser, openLogoutModal } = useAuth();
   const { theme, isDark, setTheme } = useTheme();
   const { toast } = useToast();
+  const { isStandalone, isIOS, isAndroid, triggerNativeInstall } = usePWAInstall();
   const [copiedCode, setCopiedCode] = useState(false);
   const [downloadingBackup, setDownloadingBackup] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -343,6 +346,50 @@ export default function SettingsPage() {
                   )}
                 </form>
               </div>
+            </div>
+          </div>
+
+          {/* Install Mobile App Card */}
+          <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-4 transition-colors">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#262626]">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Smartphone size={18} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                <span>Install App on Your Phone</span>
+              </h2>
+              <span className="text-[11px] font-bold text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2.5 py-1 rounded-full border border-emerald-200/60 dark:border-[#3ECF8E]/20">
+                {isStandalone ? 'Installed' : 'PWA Ready'}
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-neutral-400">
+              Get 1-tap fast access to your family documents, health cards, and emergency info right from your phone's home screen.
+            </p>
+
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>{isIOS ? 'Apple iPhone' : isAndroid ? 'Android Device' : 'Desktop / Laptop'}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/15 text-emerald-800 dark:text-[#3ECF8E]">
+                    {isStandalone ? 'Running in Standalone App' : 'Browser Mode'}
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5">
+                  {isStandalone
+                    ? 'GharVault is currently running as an installed standalone app.'
+                    : 'Tap below to see installation steps or trigger instant install.'}
+                </div>
+              </div>
+
+              {!isStandalone && (
+                <button
+                  type="button"
+                  onClick={triggerNativeInstall}
+                  className="px-4 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-[#3ECF8E]/25 transition-all shrink-0 active:scale-95"
+                >
+                  <Download size={15} />
+                  <span>Install on This Phone</span>
+                </button>
+              )}
             </div>
           </div>
 

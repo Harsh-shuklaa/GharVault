@@ -270,29 +270,29 @@ export default function DocumentUploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/60 dark:bg-[#121212] pb-36 lg:pb-16 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+    <div className="min-h-screen bg-slate-50/60 dark:bg-[#121212] pb-[calc(8.5rem+env(safe-area-inset-bottom,0px))] lg:pb-16 transition-colors">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Navigation Breadcrumb / Header */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="mb-5 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
           <div>
             <button
               type="button"
               onClick={() => navigate('/vault')}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-[#3ECF8E] transition-colors mb-2 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-[#3ECF8E] transition-colors mb-1.5 cursor-pointer"
             >
               <ArrowLeft size={15} />
               <span>Back to Documents Vault</span>
             </button>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Upload New Document
               </h1>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100/80 dark:bg-[#3ECF8E]/15 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/30">
+              <span className="hidden min-[400px]:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-100/80 dark:bg-[#3ECF8E]/15 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/30">
                 <Shield size={12} />
                 256-Bit Encrypted
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1 max-w-2xl">
+            <p className="text-[11px] sm:text-sm text-slate-500 dark:text-neutral-400 mt-1 max-w-2xl">
               Add family papers, certificates, or cards. Everything is securely encrypted with bank-grade privacy and 1-tap copy access.
             </p>
           </div>
@@ -457,22 +457,22 @@ export default function DocumentUploadPage() {
               )}
 
               {/* Dual Selection Buttons (Camera vs File Browser) */}
-              <div className="grid grid-cols-2 gap-2.5 mt-4 pt-1">
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 mt-4 pt-1">
                 <button
                   type="button"
                   onClick={() => document.getElementById('camera-upload-input').click()}
-                  className="min-h-[44px] px-3 py-2.5 rounded-xl border border-emerald-300/80 dark:border-[#3ECF8E]/30 bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-[#3ECF8E]/10 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs active:scale-98"
+                  className="min-h-[42px] px-2.5 py-2 rounded-xl border border-emerald-300/80 dark:border-[#3ECF8E]/30 bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-[#3ECF8E]/10 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-98"
                 >
-                  <Camera size={16} />
-                  <span>Scan with Camera</span>
+                  <Camera size={15} />
+                  <span className="truncate">Scan with Camera</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => document.getElementById('file-upload-input').click()}
-                  className="min-h-[44px] px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 hover:bg-slate-100 dark:bg-[#141414] dark:hover:bg-[#202024] text-slate-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs active:scale-98"
+                  className="min-h-[42px] px-2.5 py-2 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 hover:bg-slate-100 dark:bg-[#141414] dark:hover:bg-[#202024] text-slate-700 dark:text-neutral-300 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-98"
                 >
-                  <FileText size={16} />
-                  <span>Browse Device</span>
+                  <FileText size={15} />
+                  <span className="truncate">Browse Device</span>
                 </button>
               </div>
             </div>
@@ -555,7 +555,7 @@ export default function DocumentUploadPage() {
                 <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-2">
                   Select Category *
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
                   {categories.map((cat) => {
                     const Icon = cat.icon;
                     const isSelected = formData.category === cat.id;
@@ -564,33 +564,33 @@ export default function DocumentUploadPage() {
                         key={cat.id}
                         type="button"
                         onClick={() => handleSelectCategory(cat.id)}
-                        className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[92px] ${
+                        className={`p-2.5 sm:p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[82px] sm:min-h-[92px] ${
                           isSelected
                             ? 'border-[#3ECF8E] bg-[#3ECF8E]/10 ring-2 ring-[#3ECF8E]/25 shadow-xs'
                             : 'border-slate-200 dark:border-[#262626] hover:border-slate-300 dark:hover:border-neutral-700 bg-white dark:bg-[#141414]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-2">
+                        <div className="flex items-center justify-between w-full mb-1 sm:mb-2">
                           <div
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                            className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center ${
                               isSelected
                                 ? 'bg-[#3ECF8E] text-[#121212]'
                                 : 'bg-slate-100 dark:bg-[#202024] text-slate-600 dark:text-neutral-400'
                             }`}
                           >
-                            <Icon size={15} />
+                            <Icon size={14} />
                           </div>
                           {isSelected && (
-                            <span className="w-5 h-5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center">
-                              <Check size={12} strokeWidth={3} />
+                            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center">
+                              <Check size={11} strokeWidth={3} />
                             </span>
                           )}
                         </div>
                         <div>
-                          <div className="font-bold text-xs text-slate-900 dark:text-white leading-tight">
+                          <div className="font-bold text-[11px] sm:text-xs text-slate-900 dark:text-white leading-tight truncate">
                             {cat.label}
                           </div>
-                          <div className="text-[10px] text-slate-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
+                          <div className="text-[9px] sm:text-[10px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
                             {cat.sub}
                           </div>
                         </div>
@@ -958,20 +958,20 @@ export default function DocumentUploadPage() {
           </div>
 
           {/* ================= MOBILE STICKY BOTTOM ACTION BAR (< lg) ================= */}
-          {/* Positioned right above mobile bottom nav (`bottom-16`), keeping quick 1-tap save accessible anywhere on screen */}
-          <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200/80 dark:border-[#262626] p-3 shadow-xl">
-            <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+          {/* Positioned right above mobile bottom nav with iPhone Safe Area support */}
+          <div className="lg:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] inset-x-0 z-30 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200/80 dark:border-[#262626] p-2 sm:p-3 shadow-xl">
+            <div className="max-w-md mx-auto flex items-center justify-between gap-2 sm:gap-3">
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
                   {file ? file.name : 'No file selected'}
                 </div>
-                <div className="text-[10px] text-slate-500 dark:text-neutral-400 flex items-center gap-1.5">
+                <div className="text-[9px] sm:text-[10px] text-slate-500 dark:text-neutral-400 flex items-center gap-1 truncate">
                   {file ? (
-                    <span className="text-emerald-700 dark:text-[#3ECF8E] font-semibold">
+                    <span className="text-emerald-700 dark:text-[#3ECF8E] font-semibold truncate">
                       Ready to encrypt
                     </span>
                   ) : (
-                    <span>Tap camera or select file above</span>
+                    <span className="truncate">Snap camera or pick file</span>
                   )}
                 </div>
               </div>
@@ -979,16 +979,16 @@ export default function DocumentUploadPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="min-h-[44px] px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 flex items-center justify-center gap-2 cursor-pointer shrink-0 disabled:opacity-50 active:scale-95 transition-all"
+                className="min-h-[40px] px-3.5 sm:px-5 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 flex items-center justify-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50 active:scale-95 transition-all"
               >
                 {loading ? (
                   <>
-                    <RefreshCw size={15} className="animate-spin" />
+                    <RefreshCw size={14} className="animate-spin" />
                     <span>Saving...</span>
                   </>
                 ) : (
                   <>
-                    <Upload size={15} />
+                    <Upload size={14} />
                     <span>Save to Vault</span>
                   </>
                 )}
