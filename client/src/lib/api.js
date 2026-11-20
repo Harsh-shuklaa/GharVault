@@ -132,6 +132,14 @@ export const api = {
     });
   },
 
+  async updateFamilyName(name) {
+    return request(`${API_BASE}/family/current`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ name }),
+    });
+  },
+
   async getEmergencyCard() {
     return request(`${API_BASE}/family/emergency-card`, {
       headers: getHeaders(),

@@ -236,6 +236,10 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => (prev ? { ...prev, ...updatedUser } : updatedUser));
   };
 
+  const updateFamily = (updatedFamily) => {
+    setFamily(prev => (prev ? { ...prev, ...updatedFamily } : updatedFamily));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -249,6 +253,7 @@ export const AuthProvider = ({ children }) => {
         openLogoutModal,
         closeLogoutModal,
         updateUser,
+        updateFamily,
         refreshSession: fetchSession,
         isEmergencyModalOpen,
         setIsEmergencyModalOpen,

@@ -10,7 +10,6 @@ import {
   Clock,
   Share2,
   History,
-  UserCog,
   Settings,
   LogOut,
   Shield,
@@ -262,28 +261,6 @@ export default function AppLayout() {
                 </span>
               </span>
             </button>
-
-            {/* Family Management */}
-            <Link
-              to="/family/setup"
-              title={!isHovered ? 'Family Settings' : undefined}
-              className={`group/item flex items-center h-9 px-2.5 rounded-md transition-colors select-none ${
-                location.pathname.includes('/setup')
-                  ? 'bg-emerald-50 text-emerald-700 font-medium dark:bg-[#262626] dark:text-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6] dark:hover:bg-white/[0.04] font-normal'
-              }`}
-            >
-              <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                <UserCog size={18} strokeWidth={1.75} />
-              </div>
-              <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-200 text-[13px] leading-tight ${
-                  isHovered ? 'opacity-100 max-w-[140px] ml-2.5' : 'opacity-0 max-w-0 ml-0 pointer-events-none'
-                }`}
-              >
-                Family Settings
-              </span>
-            </Link>
 
             {/* Settings */}
             <Link

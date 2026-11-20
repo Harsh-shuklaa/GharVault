@@ -28,12 +28,14 @@ import {
   Database,
   LogOut,
   Smartphone,
+  Edit3,
+  X,
 } from 'lucide-react';
 import { usePWAInstall } from '../context/PWAInstallContext';
 import JoinFamilyModal from '../components/common/JoinFamilyModal';
 
 export default function SettingsPage() {
-  const { user, family, updateUser, openLogoutModal } = useAuth();
+  const { user, family, updateUser, updateFamily, openLogoutModal } = useAuth();
   const { theme, isDark, setTheme } = useTheme();
   const { toast } = useToast();
   const { isStandalone, isIOS, isAndroid, triggerNativeInstall } = usePWAInstall();
@@ -44,6 +46,44 @@ export default function SettingsPage() {
   const [isSavingMpin, setIsSavingMpin] = useState(false);
   const [mpinSuccess, setMpinSuccess] = useState('');
   const [mpinError, setMpinError] = useState('');
+
+  // Family Vault Name Edit State
+  const [isEditingFamilyName, setIsEditingFamilyName] = useState(false);
+  const [familyNameInput, setFamilyNameInput] = useState('');
+  const [isSavingFamilyName, setIsSavingFamilyName] = useState(false);
+  const [familyNameError, setFamilyNameError] = useState('');
+
+  useEffect(() => {
+    if (family?.name) {
+      setFamilyNameInput(family.name);
+    }
+  }, [family?.name]);
+
+  const handleSaveFamilyName = async (e) => {
+    e?.preventDefault();
+    if (!familyNameInput.trim()) {
+      setFamilyNameError('Family Vault name cannot be empty.');
+      return;
+    }
+    try {
+      setIsSavingFamilyName(true);
+      setFamilyNameError('');
+      const res = await api.updateFamilyName(familyNameInput.trim());
+      if (res?.success && res?.family) {
+        if (updateFamily) {
+          updateFamily(res.family);
+        }
+        setIsEditingFamilyName(false);
+        toast.success(`Family Vault name updated to "${res.family.name}"!`);
+      } else {
+        setFamilyNameError(res?.error || 'Failed to update family vault name');
+      }
+    } catch (err) {
+      setFamilyNameError(err.message || 'Failed to update family vault name');
+    } finally {
+      setIsSavingFamilyName(false);
+    }
+  };
 
   const handleUpdateMpin = async (e) => {
     e.preventDefault();
@@ -272,12 +312,83 @@ export default function SettingsPage() {
 
             <div className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-400 dark:text-neutral-500 font-bold uppercase tracking-wider mb-1">
-                  Family Vault Name
-                </label>
-                <div className="font-bold text-slate-900 dark:text-white text-base">
-                  {family?.name || 'Your Family Vault'}
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-slate-400 dark:text-neutral-500 font-bold uppercase tracking-wider">
+                    Family Vault Name
+                  </label>
+                  {!isEditingFamilyName && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFamilyNameInput(family?.name || '');
+                        setIsEditingFamilyName(true);
+                        setFamilyNameError('');
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-600 dark:text-[#3ECF8E] hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 transition-colors cursor-pointer"
+                    >
+                      <Edit3 size={13} />
+                      <span>Edit Name</span>
+                    </button>
+                  )}
                 </div>
+
+                {isEditingFamilyName ? (
+                  <form onSubmit={handleSaveFamilyName} className="space-y-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <input
+                        type="text"
+                        value={familyNameInput}
+                        onChange={(e) => setFamilyNameInput(e.target.value)}
+                        placeholder="Enter family vault name"
+                        disabled={isSavingFamilyName}
+                        maxLength={50}
+                        autoFocus
+                        className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-emerald-500/50 dark:border-[#3ECF8E]/50 focus:border-[#3ECF8E] focus:ring-2 focus:ring-[#3ECF8E]/20 text-slate-900 dark:text-white font-semibold text-sm outline-none transition-all"
+                      />
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="submit"
+                          disabled={isSavingFamilyName || !familyNameInput.trim()}
+                          className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-[#3ECF8E]/25 disabled:opacity-50"
+                        >
+                          {isSavingFamilyName ? (
+                            <>
+                              <Loader2 size={13} className="animate-spin" />
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check size={13} strokeWidth={2.5} />
+                              <span>Save</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isSavingFamilyName}
+                          onClick={() => {
+                            setIsEditingFamilyName(false);
+                            setFamilyNameInput(family?.name || '');
+                            setFamilyNameError('');
+                          }}
+                          className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#262626] text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-slate-100 dark:hover:bg-[#202020] font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <X size={14} />
+                          <span>Cancel</span>
+                        </button>
+                      </div>
+                    </div>
+                    {familyNameError && (
+                      <p className="text-xs text-red-600 dark:text-red-400 font-medium">
+                        {familyNameError}
+                      </p>
+                    )}
+                  </form>
+                ) : (
+                  <div className="font-bold text-slate-900 dark:text-white text-base">
+                    {family?.name || 'Your Family Vault'}
+                  </div>
+                )}
               </div>
 
               <div>

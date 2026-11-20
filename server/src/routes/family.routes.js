@@ -98,6 +98,82 @@ router.get('/current', async (req, res) => {
   }
 });
 
+// PUT /api/family/current — Update Family Vault Name
+router.put('/current', async (req, res) => {
+  try {
+    let targetFamilyId = req.headers['x-family-id'] || req.familyId || req.user?.familyId;
+    const currentUserId = (req.userId || req.user?._id || req.user?.id)?.toString();
+
+    if (!targetFamilyId && currentUserId) {
+      if (isConnected) {
+        const f = await Family.findOne({ adminId: currentUserId });
+        if (f) targetFamilyId = f._id;
+      } else {
+        const f = memoryStore.families.find(fam => fam.adminId?.toString() === currentUserId);
+        if (f) targetFamilyId = f._id;
+      }
+    }
+
+    if (!targetFamilyId) {
+      return res.status(400).json({ error: 'No active family vault found to update.' });
+    }
+
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Family vault name cannot be empty.' });
+    }
+
+    const trimmedName = name.trim();
+    let family = null;
+    let useMongo = isConnected && mongoose.connection.readyState === 1;
+
+    if (useMongo) {
+      try {
+        family = await Family.findByIdAndUpdate(
+          targetFamilyId,
+          { name: trimmedName },
+          { new: true }
+        );
+      } catch (dbErr) {
+        useMongo = false;
+        family = null;
+      }
+    }
+
+    if (!useMongo || !family) {
+      const memFamily = memoryStore.families.find(
+        f => f._id.toString() === targetFamilyId.toString()
+      );
+      if (memFamily) {
+        memFamily.name = trimmedName;
+        family = memFamily;
+      }
+    }
+
+    if (!family) {
+      return res.status(404).json({ error: 'Family vault not found.' });
+    }
+
+    try {
+      if (typeof recordAuditLog === 'function') {
+        await recordAuditLog({
+          familyId: targetFamilyId,
+          action: 'FAMILY_RENAMED',
+          performedBy: currentUserId,
+          targetName: trimmedName,
+          details: `Family Vault name updated to "${trimmedName}"`,
+        });
+      }
+    } catch (auditErr) {
+      // non-blocking
+    }
+
+    res.json({ success: true, family });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/family/emergency-card (Quick Emergency Medical Hospital Card for the entire family)
 router.get('/emergency-card', async (req, res) => {
   try {
