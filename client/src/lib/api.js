@@ -316,4 +316,25 @@ export const api = {
       headers: getHeaders(),
     });
   },
+
+  // Notifications
+  async getNotifications() {
+    return request(`${API_BASE}/notifications`, {
+      headers: getHeaders(),
+    });
+  },
+
+  async markNotificationRead(id) {
+    return request(`${API_BASE}/notifications/${id}/read`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+  },
+
+  async markAllNotificationsRead() {
+    return request(`${API_BASE}/notifications/read-all`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+  },
 };

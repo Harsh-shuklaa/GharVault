@@ -29,6 +29,8 @@ import GlobalSearchModal from '../common/GlobalSearchModal';
 import EmergencyCardModal from '../common/EmergencyCardModal';
 import LogoutModal from '../common/LogoutModal';
 import InstallAppModal from '../common/InstallAppModal';
+import NotificationsDropdown from '../common/NotificationsDropdown';
+import { api } from '../../lib/api';
 
 export default function AppLayout() {
   const {
@@ -56,6 +58,55 @@ export default function AppLayout() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const location = useLocation();
+
+  // Notification states
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [loadingNotifs, setLoadingNotifs] = useState(false);
+
+  const fetchNotifications = async () => {
+    try {
+      setLoadingNotifs(true);
+      const res = await api.getNotifications();
+      if (res?.notifications) {
+        setNotifications(res.notifications);
+        setUnreadNotifCount(res.unreadCount || res.notifications.filter((n) => !n.isRead).length);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch notifications:', err);
+    } finally {
+      setLoadingNotifs(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user, location.pathname]);
+
+  const handleMarkAllNotifsRead = async () => {
+    try {
+      await api.markAllNotificationsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadNotifCount(0);
+    } catch (err) {
+      console.warn('Failed to mark all notifications read:', err);
+    }
+  };
+
+  const handleMarkItemNotifRead = async (id) => {
+    try {
+      await api.markNotificationRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+      );
+      setUnreadNotifCount((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      console.warn('Failed to mark notification read:', err);
+    }
+  };
 
   // Global Ctrl + K / Cmd + K shortcut to open search
   useEffect(() => {
@@ -388,15 +439,39 @@ export default function AppLayout() {
               {isDark ? <Sun size={15} strokeWidth={2} /> : <Moon size={15} strokeWidth={2} />}
             </button>
 
-            {/* Notification Bell */}
-            <Link
-              to="/notifications"
-              title="Notifications"
-              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-            >
-              <Bell size={15} strokeWidth={1.8} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E]" />
-            </Link>
+            {/* Notification Bell with Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsNotificationsOpen((prev) => !prev);
+                  if (!isNotificationsOpen) {
+                    fetchNotifications();
+                  }
+                }}
+                title={unreadNotifCount > 0 ? `${unreadNotifCount} unread notifications` : 'Notifications'}
+                className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+              >
+                <Bell size={15} strokeWidth={1.8} />
+                {unreadNotifCount > 0 ? (
+                  <span className="absolute -top-1 -right-1 px-1.5 py-0.2 min-w-[17px] h-[17px] rounded-full bg-emerald-500 text-white font-bold text-[9px] flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#141414] animate-pulse">
+                    {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+                  </span>
+                ) : (
+                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-neutral-600" />
+                )}
+              </button>
+
+              <NotificationsDropdown
+                isOpen={isNotificationsOpen}
+                onClose={() => setIsNotificationsOpen(false)}
+                notifications={notifications}
+                unreadCount={unreadNotifCount}
+                onMarkAllRead={handleMarkAllNotifsRead}
+                onMarkItemRead={handleMarkItemNotifRead}
+                loading={loadingNotifs}
+              />
+            </div>
 
             {/* Mobile User Avatar */}
             <Link to="/settings" className="md:hidden block shrink-0" title="Profile Settings">
