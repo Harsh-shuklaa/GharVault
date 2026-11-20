@@ -321,6 +321,8 @@ export default function DeleteMemberModal({ isOpen, onClose, member, onDeleted }
             </div>
           </div>
         )}
+
+          </div>
         </div>
 
         {/* Footer Actions */}
