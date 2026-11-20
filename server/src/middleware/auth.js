@@ -55,7 +55,9 @@ export const authenticate = async (req, res, next) => {
     if (user) {
       req.user = user;
       req.userId = user._id;
-      req.familyId = user.familyId || decoded.familyId;
+      req.familyId = user.familyId || decoded.familyId || req.headers['x-family-id'];
+    } else if (req.headers['x-family-id']) {
+      req.familyId = req.headers['x-family-id'];
     }
 
     next();

@@ -111,6 +111,7 @@ export default function DocumentPreviewPage() {
       }
     } catch (err) {
       console.error('Failed to load document details:', err);
+      toast.error('Could not load document: ' + (err.message || 'Error'));
     } finally {
       setLoading(false);
     }

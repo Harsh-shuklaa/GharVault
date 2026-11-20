@@ -211,21 +211,27 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const targetFamilyId = req.familyId || req.user?.familyId;
+    const currentUserId = (req.userId || req.user?._id)?.toString();
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
     let doc = null;
     let member = null;
 
     if (isConnected) {
       doc = await Document.findById(req.params.id).lean();
       if (doc) {
-        if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+        const isUploader = doc.uploaderId && doc.uploaderId.toString() === currentUserId;
+        if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString() && !isUploader) {
           return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
         }
-        member = await User.findById(doc.assignedMemberId).lean();
+        if (doc.assignedMemberId && mongoose.Types.ObjectId.isValid(doc.assignedMemberId)) {
+          member = await User.findById(doc.assignedMemberId).lean();
+        }
       }
     } else {
       doc = memoryStore.documents.find(d => d._id.toString() === req.params.id);
       if (doc) {
-        if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString()) {
+        const isUploader = doc.uploaderId && doc.uploaderId.toString() === currentUserId;
+        if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId.toString() && !isUploader) {
           return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
         }
         member = memoryStore.users.find(u => u._id.toString() === doc.assignedMemberId?.toString());
@@ -237,7 +243,6 @@ router.get('/:id', async (req, res) => {
     }
 
     // Strict Permission Verification based on whoCanView
-    const currentUserId = (req.userId || req.user?._id)?.toString();
     const who = doc.whoCanView;
     const isPublic = !who || !Array.isArray(who) || who.length === 0 || who.includes('ALL');
     const isUploader = doc.uploaderId && doc.uploaderId.toString() === currentUserId;
@@ -279,17 +284,17 @@ router.get('/:id', async (req, res) => {
       };
     }
 
-    // Immutable SHA-256 Chained Audit Log for Safe Share Link Creation
+    // Immutable SHA-256 Chained Audit Log for Document View
     recordAuditLog({
       familyId: doc.familyId || targetFamilyId,
-      action: 'SHARE_LINK_GENERATED',
+      action: 'DOCUMENT_VIEW',
       performedBy: req.user?._id || null,
       performerName: req.user?.name || 'Family Member',
       documentId: doc._id,
       documentTitle: doc.title,
-      details: { finalMinutes, expiresAt },
+      details: { category: doc.category, isSensitive: doc.isSensitive },
       req,
-    }).catch(e => console.warn('[Audit Warning] Share link log error:', e.message));
+    }).catch(e => console.warn('[Audit Warning] View log error:', e.message));
 
     res.json({
       document: {
@@ -308,6 +313,7 @@ router.get('/:id', async (req, res) => {
       },
     });
   } catch (err) {
+    console.error('[Document Details Error]', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -444,7 +450,12 @@ router.post('/upload', (req, res, next) => {
           });
         }
         familyId = fam._id;
-        if (req.user) req.user.familyId = fam._id;
+        if (req.user) {
+          req.user.familyId = fam._id;
+          if (useMongo && req.user._id) {
+            await User.findByIdAndUpdate(req.user._id, { familyId: fam._id });
+          }
+        }
       } else {
         let fam = memoryStore.families.find(f => f.adminId?.toString() === uId.toString());
         if (!fam) {
@@ -620,17 +631,17 @@ router.get('/shared/:token', async (req, res) => {
       signedUrl = `/api/documents/raw/${encodeURIComponent(doc.storagePath)}`;
     }
 
-    // Immutable SHA-256 Chained Audit Log for Safe Share Link Creation
+    // Immutable SHA-256 Chained Audit Log for Shared Document View
     recordAuditLog({
-      familyId: doc.familyId || targetFamilyId,
-      action: 'SHARE_LINK_GENERATED',
+      familyId: doc.familyId,
+      action: 'DOCUMENT_VIEW',
       performedBy: req.user?._id || null,
-      performerName: req.user?.name || 'Family Member',
+      performerName: req.user?.name || 'External Recipient (Safe Share Link)',
       documentId: doc._id,
       documentTitle: doc.title,
-      details: { finalMinutes, expiresAt },
+      details: { category: doc.category, viaShareLink: true },
       req,
-    }).catch(e => console.warn('[Audit Warning] Share link log error:', e.message));
+    }).catch(e => console.warn('[Audit Warning] Shared view log error:', e.message));
 
     res.json({
       success: true,
@@ -692,17 +703,17 @@ router.post('/:id/share-link', async (req, res) => {
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
     const directShareUrl = `${origin}/share/${token}`;
 
-    // Immutable SHA-256 Chained Audit Log for Safe Share Link Creation
+    // Immutable SHA-256 Chained Audit Log for Shared Document View
     recordAuditLog({
-      familyId: doc.familyId || targetFamilyId,
-      action: 'SHARE_LINK_GENERATED',
+      familyId: doc.familyId,
+      action: 'DOCUMENT_VIEW',
       performedBy: req.user?._id || null,
-      performerName: req.user?.name || 'Family Member',
+      performerName: req.user?.name || 'External Recipient (Safe Share Link)',
       documentId: doc._id,
       documentTitle: doc.title,
-      details: { finalMinutes, expiresAt },
+      details: { category: doc.category, viaShareLink: true },
       req,
-    }).catch(e => console.warn('[Audit Warning] Share link log error:', e.message));
+    }).catch(e => console.warn('[Audit Warning] Shared view log error:', e.message));
 
     res.json({
       success: true,
