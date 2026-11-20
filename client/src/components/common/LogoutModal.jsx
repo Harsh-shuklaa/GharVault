@@ -78,7 +78,7 @@ export default function LogoutModal({ isOpen, onClose, onConfirm, loading = fals
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="px-5 sm:px-6 py-4 border-t border-slate-100 dark:border-[#262626] bg-slate-50/50 dark:bg-[#141414]/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5">
+        <div className="px-4 sm:px-6 py-4 border-t border-slate-100 dark:border-[#262626] bg-slate-50/50 dark:bg-[#141414]/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={onClose}

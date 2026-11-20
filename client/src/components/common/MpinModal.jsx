@@ -188,7 +188,7 @@ export default function MpinModal({ isOpen, onClose, onSuccess, title = 'Sensiti
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] text-center shrink-0">
+        <div className="px-4 sm:px-5 py-3 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] text-center shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <p className="text-[11px] text-slate-500 dark:text-neutral-400">
             Initial default PIN is <span className="font-mono font-bold text-slate-700 dark:text-neutral-300">1234</span>. Modify in Settings.
           </p>

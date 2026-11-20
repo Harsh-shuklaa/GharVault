@@ -55,20 +55,25 @@ export default function TransferOwnershipModal({ isOpen, onClose, members = [], 
       onClick={onClose}
     >
       <div
-        className="fixed inset-x-0 bottom-0 rounded-t-2xl max-h-[90vh] overflow-y-auto sm:static sm:inset-auto sm:rounded-2xl sm:max-w-md w-full bg-white dark:bg-[#1C1C1C] p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-[#262626] space-y-5 transition-colors"
+        className="fixed inset-x-0 bottom-0 sm:static sm:inset-auto w-full max-w-md bg-white dark:bg-[#1C1C1C] border-t sm:border border-slate-200 dark:border-[#262626] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] sm:max-h-[85vh] overflow-hidden transition-all text-slate-900 dark:text-white"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile Drag Handle Pill */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-neutral-600" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-[#262626]">
+        <div className="flex items-start justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-[#262626] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center ring-1 ring-amber-500/20 shrink-0">
-              <Crown size={22} />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center ring-1 ring-amber-500/20 shrink-0">
+              <Crown size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
                 Transfer Vault Ownership
               </h3>
-              <p className="text-xs text-slate-500 dark:text-neutral-400">
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-neutral-400">
                 Designate a new Primary Head of Family
               </p>
             </div>
@@ -81,6 +86,9 @@ export default function TransferOwnershipModal({ isOpen, onClose, members = [], 
             <X size={18} />
           </button>
         </div>
+
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
 
         {/* Error Alert */}
         {error && (
@@ -178,9 +186,10 @@ export default function TransferOwnershipModal({ isOpen, onClose, members = [], 
             </span>
           </div>
         )}
+        </div>
 
         {/* Footer Actions */}
-        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-[#262626]">
+        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#262626] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={onClose}

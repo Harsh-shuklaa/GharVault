@@ -417,9 +417,9 @@ export default function ActivityAuditPage() {
             </div>
 
             {/* Fixed Footer */}
-            <div className="px-5 sm:px-6 py-3.5 border-t border-slate-200 dark:border-[#27272A] bg-slate-50 dark:bg-[#141414] flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5 text-xs shrink-0">
+            <div className="px-4 sm:px-6 py-3.5 border-t border-slate-200 dark:border-[#27272A] bg-slate-50 dark:bg-[#141414] flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5 text-xs shrink-0 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
               <span className="text-slate-500 dark:text-neutral-400 hidden sm:inline">100% Mathematically Verifiable</span>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex flex-col-reverse sm:flex-row items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => setIsManifestOpen(false)}
                   className="w-full sm:w-auto px-4 py-2 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"

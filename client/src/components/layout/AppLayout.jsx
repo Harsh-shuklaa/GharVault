@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -57,6 +57,18 @@ export default function AppLayout() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const location = useLocation();
+
+  // Global Ctrl + K / Cmd + K shortcut to open search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Navigation Groups matching exact Supabase & GharVault specifications
   const group1 = [
@@ -366,8 +378,8 @@ export default function AppLayout() {
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 dark:bg-[#1C1C1C] text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#262626] cursor-pointer"
-              title="Search Vault"
+              className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-emerald-50 dark:bg-[#1C1C1C] dark:hover:bg-[#3ECF8E]/10 text-slate-500 hover:text-emerald-700 dark:text-neutral-400 dark:hover:text-[#3ECF8E] flex items-center justify-center border border-slate-200 dark:border-[#262626] transition-all cursor-pointer active:scale-95 shadow-2xs"
+              title="Search Vault (Aadhaar, PAN, policies)"
             >
               <Search size={15} />
             </button>
@@ -375,13 +387,13 @@ export default function AppLayout() {
             {/* Desktop Search Bar */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="hidden md:flex w-full h-10 px-3 bg-slate-100 dark:bg-[#1C1C1C] hover:bg-slate-200/70 dark:hover:bg-[#262626] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200 dark:border-[#262626] transition-all cursor-pointer"
+              className="hidden md:flex w-full h-10 px-3.5 bg-slate-100/90 hover:bg-slate-100 dark:bg-[#18181B] dark:hover:bg-[#202024] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200/90 dark:border-[#262626] hover:border-emerald-500/50 dark:hover:border-[#3ECF8E]/40 transition-all cursor-pointer shadow-2xs group"
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <Search size={15} className="text-slate-400 dark:text-neutral-500 shrink-0" />
-                <span className="truncate text-xs">Search IDs, insurance, deed...</span>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Search size={15} className="text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-[#3ECF8E] shrink-0 transition-colors" />
+                <span className="truncate text-xs font-medium">Search Aadhaar, PAN, insurance, flat deed...</span>
               </div>
-              <kbd className="hidden lg:inline-block px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#262626] text-slate-600 dark:text-neutral-400 font-mono text-[10px]">
+              <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-[#262626] text-slate-600 dark:text-neutral-400 font-mono text-[10px] border border-slate-200 dark:border-[#333338] shadow-2xs">
                 Ctrl + K
               </kbd>
             </button>
