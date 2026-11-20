@@ -24,9 +24,20 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import GlobalSearchModal from '../common/GlobalSearchModal';
 import EmergencyCardModal from '../common/EmergencyCardModal';
+import LogoutModal from '../common/LogoutModal';
 
 export default function AppLayout() {
-  const { user, family, isEmergencyModalOpen, setIsEmergencyModalOpen, logout } = useAuth();
+  const {
+    user,
+    family,
+    isEmergencyModalOpen,
+    setIsEmergencyModalOpen,
+    logout,
+    isLogoutModalOpen,
+    openLogoutModal,
+    closeLogoutModal,
+    isLoggingOut,
+  } = useAuth();
   const { theme, isDark, toggleTheme } = useTheme();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -293,7 +304,7 @@ export default function AppLayout() {
 
                 <button
                   type="button"
-                  onClick={logout}
+                  onClick={openLogoutModal}
                   title="Sign Out"
                   className={`p-1 text-slate-500 hover:text-red-600 dark:text-[#9CA3AF] dark:hover:text-red-400 transition-colors cursor-pointer ${
                     isHovered ? 'opacity-100' : 'opacity-0 max-w-0 pointer-events-none'
@@ -395,6 +406,16 @@ export default function AppLayout() {
               />
             </Link>
 
+            {/* Mobile Sign Out Button */}
+            <button
+              type="button"
+              onClick={openLogoutModal}
+              title="Sign Out of GharVault"
+              className="md:hidden w-10 h-10 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-600 dark:text-neutral-400 dark:hover:text-red-400 flex items-center justify-center transition-all cursor-pointer shadow-xs"
+            >
+              <LogOut size={17} strokeWidth={1.8} />
+            </button>
+
             {/* Desktop Quick Emergency Card Button */}
             <button
               type="button"
@@ -423,7 +444,7 @@ export default function AppLayout() {
       </div>
 
       {/* ================= MOBILE BOTTOM NAVIGATION BAR (< 768px) ================= */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 h-16 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#262626] flex items-center justify-around px-2 shadow-lg select-none">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 h-16 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#262626] flex items-center justify-around px-2 shadow-lg select-none pb-[env(safe-area-inset-bottom,0px)]">
         {/* Home */}
         <Link
           to="/dashboard"
@@ -454,10 +475,10 @@ export default function AppLayout() {
         <div className="relative -top-3.5 flex items-center justify-center">
           <Link
             to="/vault/upload"
-            className="w-[50px] h-[50px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 active:scale-95 transition-all"
+            className="w-[52px] h-[52px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 active:scale-95 transition-all ring-4 ring-white dark:ring-[#141414]"
             title="Upload Document"
           >
-            <Plus size={24} strokeWidth={2.8} />
+            <Plus size={26} strokeWidth={2.8} />
           </Link>
         </div>
 
@@ -491,6 +512,12 @@ export default function AppLayout() {
       {/* Global Modals */}
       <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <EmergencyCardModal isOpen={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} />
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={closeLogoutModal}
+        onConfirm={logout}
+        loading={isLoggingOut}
+      />
     </div>
   );
 }

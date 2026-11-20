@@ -6,6 +6,7 @@ import { memoryStore } from '../config/seed.js';
 import User from '../models/User.js';
 import Family from '../models/Family.js';
 import { isConnected } from '../config/db.js';
+import { recordAuditLog } from '../services/auditService.js';
 
 import { getJwtSecret } from '../middleware/auth.js';
 
@@ -647,6 +648,26 @@ router.post('/set-mpin', async (req, res) => {
   } catch (err) {
     console.error('Set MPIN error:', err);
     res.status(500).json({ error: 'Failed to update MPIN: ' + err.message });
+  }
+});
+
+// POST /api/auth/logout
+router.post('/logout', async (req, res) => {
+  try {
+    const targetFamilyId = req.familyId || req.user?.familyId;
+    if (targetFamilyId) {
+      recordAuditLog({
+        familyId: targetFamilyId,
+        action: 'USER_LOGOUT',
+        performedBy: req.user?._id || null,
+        performerName: req.user?.name || 'Family Member',
+        details: { method: 'USER_INITIATED_LOGOUT' },
+        req,
+      }).catch(e => console.warn('[Audit Warning] Logout log error:', e.message));
+    }
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (err) {
+    res.json({ success: true });
   }
 });
 

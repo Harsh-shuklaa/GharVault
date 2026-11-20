@@ -91,6 +91,17 @@ export const api = {
     });
   },
 
+  async logout() {
+    try {
+      return await request(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        headers: getHeaders(),
+      });
+    } catch (e) {
+      return { success: true };
+    }
+  },
+
   // User Profile
   async getProfile() {
     return request(`${API_BASE}/users/profile`, {

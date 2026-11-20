@@ -9,6 +9,11 @@ export const AuthProvider = ({ children }) => {
   const [family, setFamily] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const openLogoutModal = () => setIsLogoutModalOpen(true);
+  const closeLogoutModal = () => setIsLogoutModalOpen(false);
 
   const syncBackendUser = async (profileData) => {
     try {
@@ -184,14 +189,46 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      setIsLoggingOut(true);
+      // 1. Notify backend audit service (best effort)
+      await api.logout().catch(() => {});
+    } catch (e) {
+      // Ignore
+    }
+
+    try {
+      // 2. Sign out of Supabase OAuth
       await supabaseSignOut();
     } catch (e) {
       console.warn('SignOut warning:', e);
     }
+
+    // 3. Clear user & family in React state
     setUser(null);
     setFamily(null);
+
+    // 4. Wipe credentials while preserving theme preference
+    const savedTheme = localStorage.getItem('gharvault_theme');
     localStorage.removeItem('gharvault_token');
+    localStorage.removeItem('gharvault_user');
+    localStorage.removeItem('pending_invite_code');
+    localStorage.removeItem('pending_invite_relation');
+    localStorage.removeItem('pending_invite_name');
+
+    // Wipe all session caches (including unlocked MPIN sessions)
     sessionStorage.clear();
+
+    // Set flag for friendly confirmation on login page
+    sessionStorage.setItem('gharvault_logged_out', 'true');
+
+    if (savedTheme) {
+      localStorage.setItem('gharvault_theme', savedTheme);
+    }
+
+    setIsLogoutModalOpen(false);
+    setIsLoggingOut(false);
+
+    // 5. Hard redirect to /auth/login
     window.location.href = '/auth/login';
   };
 
@@ -207,6 +244,10 @@ export const AuthProvider = ({ children }) => {
         loading,
         loginWithGoogle,
         logout,
+        isLoggingOut,
+        isLogoutModalOpen,
+        openLogoutModal,
+        closeLogoutModal,
         updateUser,
         refreshSession: fetchSession,
         isEmergencyModalOpen,

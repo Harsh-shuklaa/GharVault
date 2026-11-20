@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Shield,
@@ -41,6 +41,16 @@ export default function LoginPage() {
   const [successMsg, setSuccessMsg] = useState('');
 
   const from = location.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    try {
+      const wasLoggedOut = sessionStorage.getItem('gharvault_logged_out');
+      if (wasLoggedOut) {
+        sessionStorage.removeItem('gharvault_logged_out');
+        setSuccessMsg('You have been securely logged out. Your family vault is locked.');
+      }
+    } catch (e) {}
+  }, []);
 
   // --- TAB 1: Normal Sign In / Create New Vault Handlers ---
   const handleGoogleLogin = async () => {

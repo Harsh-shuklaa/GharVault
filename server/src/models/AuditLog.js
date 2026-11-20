@@ -26,6 +26,7 @@ const auditLogSchema = new mongoose.Schema({
       'MPIN_PROTECTION_TOGGLED',
       'VAULT_BACKUP_EXPORTED',
       'INTEGRITY_CHECK_PASSED',
+      'USER_LOGOUT',
     ],
   },
   familyId: {

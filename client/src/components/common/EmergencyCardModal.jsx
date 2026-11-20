@@ -155,21 +155,31 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                               {member.relationship || member.relation || 'Member'}
                             </span>
                           </div>
-                          <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 flex items-center gap-2 truncate">
+                          <div className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 flex items-center justify-between gap-2">
                             <span className="truncate">Phone: {member.phone || 'Not set'}</span>
                             {member.phone && member.phone !== 'Not set' && (
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(
-                                    member.phone,
-                                    memberKey + '-phone',
-                                    `${member.name}'s phone number copied!`
-                                  )
-                                }
-                                className="text-[11px] text-[#10B981] dark:text-[#3ECF8E] hover:underline font-semibold cursor-pointer shrink-0"
-                              >
-                                {copiedKey === memberKey + '-phone' ? 'Copied' : 'Copy'}
-                              </button>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <a
+                                  href={`tel:${member.phone}`}
+                                  className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 px-2 py-0.5 rounded font-bold transition-colors"
+                                  title="Call phone number"
+                                >
+                                  <Phone size={10} />
+                                  <span>Call</span>
+                                </a>
+                                <button
+                                  onClick={() =>
+                                    copyToClipboard(
+                                      member.phone,
+                                      memberKey + '-phone',
+                                      `${member.name}'s phone number copied!`
+                                    )
+                                  }
+                                  className="text-[11px] text-[#10B981] dark:text-[#3ECF8E] hover:underline font-semibold cursor-pointer"
+                                >
+                                  {copiedKey === memberKey + '-phone' ? 'Copied' : 'Copy'}
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>

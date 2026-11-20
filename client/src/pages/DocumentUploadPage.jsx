@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
-import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, Lock, Shield } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, Lock, Shield, Camera } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
 export default function DocumentUploadPage() {
@@ -213,6 +213,34 @@ export default function DocumentUploadPage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Quick Mobile Action Buttons: Camera vs File Browser */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <input
+              id="camera-upload-input"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => handleFileChange(e.target.files[0])}
+            />
+            <button
+              type="button"
+              onClick={() => document.getElementById('camera-upload-input').click()}
+              className="min-h-[44px] px-4 py-2.5 rounded-xl border border-emerald-300 dark:border-[#3ECF8E]/30 bg-emerald-50/70 hover:bg-emerald-100 dark:bg-[#3ECF8E]/10 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98"
+            >
+              <Camera size={16} />
+              <span>Snap Photo with Camera</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => document.getElementById('file-upload-input').click()}
+              className="min-h-[44px] px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 hover:bg-slate-100 dark:bg-[#141414] dark:hover:bg-[#202020] text-slate-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs active:scale-98"
+            >
+              <FileText size={16} />
+              <span>Browse Files / PDF</span>
+            </button>
           </div>
         </div>
 

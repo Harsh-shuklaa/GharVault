@@ -26,11 +26,12 @@ import {
   ShieldAlert,
   KeyRound,
   Database,
+  LogOut,
 } from 'lucide-react';
 import JoinFamilyModal from '../components/common/JoinFamilyModal';
 
 export default function SettingsPage() {
-  const { user, family, updateUser } = useAuth();
+  const { user, family, updateUser, openLogoutModal } = useAuth();
   const { theme, isDark, setTheme } = useTheme();
   const { toast } = useToast();
   const [copiedCode, setCopiedCode] = useState(false);
@@ -637,6 +638,26 @@ export default function SettingsPage() {
             >
               <Download size={16} />
               <span>{downloadingBackup ? 'Exporting...' : 'Download Vault Backup (JSON)'}</span>
+            </button>
+          </div>
+
+          {/* Account Session & Sign Out */}
+          <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-3 transition-colors">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <LogOut size={18} className="text-red-500" />
+              <span>Account & Security Session</span>
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
+              Signed in as <strong className="text-slate-800 dark:text-neutral-200">{user?.name || 'User'}</strong> ({user?.email || 'Google Account'}).
+              Logging out wipes local document caches and terminates active encryption sessions on this device.
+            </p>
+            <button
+              type="button"
+              onClick={openLogoutModal}
+              className="w-full py-3 rounded-xl border border-red-200 dark:border-red-500/25 bg-red-50/60 hover:bg-red-100/80 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-700 dark:text-red-400 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <LogOut size={16} />
+              <span>Log Out of GharVault</span>
             </button>
           </div>
         </div>
