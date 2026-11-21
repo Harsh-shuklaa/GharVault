@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Smartphone,
@@ -29,6 +30,15 @@ export default function InstallAppModal({ isOpen, onClose }) {
   const [activeIosTab, setActiveIosTab] = useState(isIOSChrome ? 'chrome' : 'safari');
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const currentUrl = typeof window !== 'undefined' ? window.location.origin : 'https://gharvault.vercel.app';
@@ -44,8 +54,8 @@ export default function InstallAppModal({ isOpen, onClose }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
       <div
         className="w-full max-w-[calc(100vw-1.25rem)] sm:max-w-md bg-white dark:bg-[#18181B] rounded-3xl border border-slate-200 dark:border-[#262626] shadow-2xl overflow-hidden transition-all text-slate-900 dark:text-white"
         onClick={(e) => e.stopPropagation()}
@@ -347,7 +357,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-[#262626] bg-slate-50/70 dark:bg-[#141414]/70 flex items-center justify-end">
+        <div className="p-4 border-t border-slate-100 dark:border-[#262626] bg-slate-50/70 dark:bg-[#141414]/70 flex items-center justify-end pb-[max(1rem,env(safe-area-inset-bottom,16px))]">
           <button
             type="button"
             onClick={onClose}
@@ -357,6 +367,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

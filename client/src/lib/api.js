@@ -309,6 +309,18 @@ export const api = {
     });
   },
 
+  async notifyDownload(id) {
+    try {
+      return await request(`${API_BASE}/documents/${id}/download-notify`, {
+        method: 'POST',
+        headers: getHeaders(),
+      });
+    } catch (e) {
+      // Non-blocking notification
+      return { success: false, error: e.message };
+    }
+  },
+
   // Categories
   async getCategories() {
     return request(`${API_BASE}/categories`, {

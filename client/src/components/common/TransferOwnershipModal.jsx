@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Crown,
@@ -14,6 +15,15 @@ export default function TransferOwnershipModal({ isOpen, onClose, members = [], 
   const [selectedMemberId, setSelectedMemberId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -49,13 +59,13 @@ export default function TransferOwnershipModal({ isOpen, onClose, members = [], 
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="fixed inset-x-0 bottom-0 sm:static sm:inset-auto w-full max-w-md bg-white dark:bg-[#1C1C1C] border-t sm:border border-slate-200 dark:border-[#262626] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] sm:max-h-[85vh] overflow-hidden transition-all text-slate-900 dark:text-white"
+        className="relative w-full max-w-md bg-white dark:bg-[#1C1C1C] border-t sm:border border-slate-200 dark:border-[#262626] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[85vh] overflow-hidden transition-all text-slate-900 dark:text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Handle Pill */}
@@ -189,7 +199,7 @@ export default function TransferOwnershipModal({ isOpen, onClose, members = [], 
         </div>
 
         {/* Footer Actions */}
-        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#262626] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#262626] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
           <button
             type="button"
             onClick={onClose}
@@ -219,6 +229,7 @@ export default function TransferOwnershipModal({ isOpen, onClose, members = [], 
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

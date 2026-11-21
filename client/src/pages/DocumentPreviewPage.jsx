@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -42,6 +43,7 @@ import {
   Sparkles,
   Calendar,
   Hash,
+  Box,
 } from 'lucide-react';
 import MpinModal from '../components/common/MpinModal';
 import { useToast } from '../context/ToastContext';
@@ -53,6 +55,7 @@ export default function DocumentPreviewPage() {
   const { family, user } = useAuth();
   const { toast } = useToast();
 
+  const [mobileTab, setMobileTab] = useState('PREVIEW'); // 'PREVIEW' or 'DETAILS'
   const [doc, setDoc] = useState(null);
   const [members, setMembers] = useState([]);
   const [auditTrail, setAuditTrail] = useState([]);
@@ -117,6 +120,16 @@ export default function DocumentPreviewPage() {
       })
       .catch((e) => console.warn('Could not load siblings:', e));
   }, [id]);
+
+  // Lock body scroll when any modal is open
+  useEffect(() => {
+    if (shareModalOpen || isDeleteModalOpen || isEditModalOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [shareModalOpen, isDeleteModalOpen, isEditModalOpen]);
 
   // Realistic Indian Document Visual Theming
   const getDocVisual = (d) => {
@@ -635,6 +648,13 @@ export default function DocumentPreviewPage() {
     };
   };
 
+  const handleDownloadClick = () => {
+    const docId = doc?._id || id;
+    if (docId) {
+      api.notifyDownload(docId).catch(() => {});
+    }
+  };
+
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true);
   };
@@ -734,173 +754,210 @@ export default function DocumentPreviewPage() {
       className={`max-w-[1600px] mx-auto p-2.5 sm:p-4 lg:p-4 transition-all ${
         isFullscreen
           ? 'fixed inset-0 z-50 bg-[#F8FAFC] dark:bg-[#121212] overflow-y-auto max-w-none p-3 sm:p-6'
-          : 'pb-24 lg:pb-2 lg:h-[calc(100vh-4.25rem)] lg:max-h-[calc(100vh-4.25rem)] lg:overflow-hidden flex flex-col space-y-2.5'
+          : 'pb-6 lg:pb-2 lg:h-[calc(100vh-4.25rem)] lg:max-h-[calc(100vh-4.25rem)] lg:overflow-hidden flex flex-col space-y-2 sm:space-y-2.5'
       }`}
     >
-      {/* Top Header Card: Ultra-Compact Single-Bar on Desktop & Adaptive on Mobile */}
+      {/* Top Header Card: Ultra-Compact & Responsive */}
       <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] shadow-xs overflow-hidden transition-colors shrink-0">
         {/* Top Visual Accent Strip */}
         <div className={`h-1.5 w-full bg-gradient-to-r ${visual.strip}`} />
 
-        <div className="px-3.5 py-2.5 sm:px-4 sm:py-3 flex flex-wrap lg:flex-nowrap items-center justify-between gap-2.5">
-          {/* Left: Back Arrow + Title + Indian Badge + Member + ID */}
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <Link
-              to="/vault"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-colors shrink-0"
-              title="Back to Family Vault"
-            >
-              <ArrowLeft size={16} />
-            </Link>
+        <div className="p-2.5 sm:px-4 sm:py-3 space-y-2">
+          {/* Main Top Bar */}
+          <div className="flex items-center justify-between gap-2">
+            {/* Left: Back + Title + Indian Badge */}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <Link
+                to="/vault"
+                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-colors shrink-0"
+                title="Back to Family Vault"
+              >
+                <ArrowLeft size={16} />
+              </Link>
 
-            <div className="min-w-0 flex items-center gap-2 flex-wrap sm:flex-nowrap">
-              <h1 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate max-w-[200px] sm:max-w-[320px]">
-                {doc.title}
-              </h1>
+              <div className="min-w-0 flex items-center gap-1.5 truncate">
+                <h1 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+                  {doc.title}
+                </h1>
 
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border shrink-0 ${visual.tagStyle}`}>
-                <span>{visual.badgeEmoji}</span>
-                <span>{visual.label}</span>
-              </span>
+                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${visual.tagStyle}`}>
+                  <span>{visual.badgeEmoji}</span>
+                  <span className="hidden xs:inline">{visual.label}</span>
+                </span>
+              </div>
+            </div>
 
-              <span className="hidden xl:inline text-xs text-slate-400 dark:text-neutral-500 font-medium truncate max-w-[120px]">
-                • {doc.assignedMember?.name || 'Whole Family'}
-              </span>
+            {/* Right: Sibling Switcher + Quick Actions */}
+            <div className="flex items-center gap-1 shrink-0">
+              {/* Previous / Next Sibling Switcher */}
+              {(siblingDocs.prev || siblingDocs.next) && (
+                <div className="flex items-center gap-0.5 shrink-0">
+                  {siblingDocs.prev ? (
+                    <Link
+                      to={`/vault/documents/${siblingDocs.prev._id || siblingDocs.prev.id}`}
+                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 transition-colors border border-slate-200 dark:border-[#262626]"
+                      title={`Previous: ${siblingDocs.prev.title}`}
+                    >
+                      <ChevronLeft size={13} />
+                    </Link>
+                  ) : (
+                    <span className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#18181B] text-slate-300 dark:text-neutral-600 cursor-not-allowed">
+                      <ChevronLeft size={13} />
+                    </span>
+                  )}
+                  {siblingDocs.next ? (
+                    <Link
+                      to={`/vault/documents/${siblingDocs.next._id || siblingDocs.next.id}`}
+                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 transition-colors border border-slate-200 dark:border-[#262626]"
+                      title={`Next: ${siblingDocs.next.title}`}
+                    >
+                      <ChevronRight size={13} />
+                    </Link>
+                  ) : (
+                    <span className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#18181B] text-slate-300 dark:text-neutral-600 cursor-not-allowed">
+                      <ChevronRight size={13} />
+                    </span>
+                  )}
+                </div>
+              )}
 
-              {/* Privacy Masked Document ID Pill */}
+              {/* Edit Details */}
+              <button
+                type="button"
+                onClick={handleOpenEdit}
+                className="px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-bold flex items-center gap-1 border border-slate-200 dark:border-[#262626] transition-colors cursor-pointer"
+                title="Edit title, ID number, expiry, notes or file"
+              >
+                <Edit3 size={12} />
+                <span className="hidden sm:inline">Edit</span>
+              </button>
+
+              {/* MPIN Lock Toggle */}
+              <button
+                type="button"
+                disabled={isTogglingMpin}
+                onClick={handleToggleMpinProtection}
+                className={`px-2 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer border ${
+                  (doc.isMpinProtected || doc.isSensitive)
+                    ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-400'
+                    : 'bg-slate-100 dark:bg-[#141414] border-slate-200 dark:border-[#262626] text-slate-600 dark:text-neutral-400'
+                }`}
+                title={(doc.isMpinProtected || doc.isSensitive) ? 'MPIN Protected' : 'Lock with MPIN'}
+              >
+                <Lock size={12} className={(doc.isMpinProtected || doc.isSensitive) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
+                <span className="hidden md:inline">{(doc.isMpinProtected || doc.isSensitive) ? 'MPIN' : 'Lock'}</span>
+              </button>
+
+              {/* Desktop-Only Direct Download & 24h Link */}
+              <div className="hidden lg:flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleShareSafely()}
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#262626] hover:bg-slate-50 dark:hover:bg-[#141414] text-slate-700 dark:text-neutral-300 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <Share2 size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                  <span>24h Link</span>
+                </button>
+
+                <a
+                  href={fileUrl}
+                  download={doc.originalFileName || `${doc.title}`}
+                  onClick={handleDownloadClick}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+                >
+                  <Download size={13} />
+                  <span>Download</span>
+                </a>
+              </div>
+
+              {/* Delete */}
+              <button
+                onClick={handleDeleteClick}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                title="Delete Document"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Sub Row: Document ID with Reveal & Copy + Member Name + WhatsApp Pill */}
+          <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap pt-1 border-t border-slate-100 dark:border-[#27272A] text-xs">
+            <div className="flex items-center gap-2 min-w-0">
               {doc.documentNumber && (
-                <div className="flex items-center gap-1 bg-slate-50 dark:bg-[#141414] px-1.5 py-0.5 rounded-lg border border-slate-200 dark:border-[#262626] shrink-0">
-                  <span className="text-[10px] font-medium text-slate-400">ID:</span>
-                  <code className="font-mono font-bold text-[11px] text-slate-900 dark:text-white truncate max-w-[110px] sm:max-w-none">
+                <div className="flex items-center gap-1 bg-slate-50 dark:bg-[#141414] px-2 py-0.5 rounded-lg border border-slate-200 dark:border-[#262626]">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">ID:</span>
+                  <code className="font-mono font-bold text-xs text-slate-900 dark:text-white">
                     {formatDocNumber(doc.documentNumber, isNumberUnmasked, visual.type === 'aadhaar')}
                   </code>
                   <button
                     type="button"
                     onClick={() => setIsNumberUnmasked(!isNumberUnmasked)}
-                    className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
-                    title={isNumberUnmasked ? 'Mask number' : 'Reveal full number'}
+                    className="p-0.5 rounded text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+                    title={isNumberUnmasked ? 'Mask' : 'Reveal'}
                   >
                     {isNumberUnmasked ? <EyeOff size={11} /> : <Eye size={11} />}
                   </button>
                   <button
                     type="button"
                     onClick={handleCopyNumber}
-                    className="p-0.5 px-1 rounded bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 text-white dark:text-[#121212] font-bold text-[10px] transition-colors cursor-pointer inline-flex items-center gap-0.5"
-                    title="Copy Document ID"
+                    className="p-0.5 px-1 rounded bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-[10px] cursor-pointer inline-flex items-center gap-0.5"
+                    title="Copy ID"
                   >
                     {copiedNumber ? <Check size={10} /> : <Copy size={10} />}
                   </button>
                 </div>
               )}
+
+              <span className="text-[11px] text-slate-500 dark:text-neutral-400 font-medium truncate">
+                {doc.assignedMember?.name || 'Family Document'}
+              </span>
             </div>
-          </div>
 
-          {/* Right: Sibling Switcher + Quick Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Previous / Next Sibling Switcher */}
-            {(siblingDocs.prev || siblingDocs.next) && (
-              <div className="flex items-center gap-1 shrink-0">
-                {siblingDocs.prev ? (
-                  <Link
-                    to={`/vault/documents/${siblingDocs.prev._id || siblingDocs.prev.id}`}
-                    className="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-semibold transition-colors border border-slate-200 dark:border-[#262626]"
-                    title={`Previous: ${siblingDocs.prev.title}`}
-                  >
-                    <ChevronLeft size={13} />
-                    <span className="hidden xl:inline truncate max-w-[80px]">{siblingDocs.prev.title}</span>
-                  </Link>
-                ) : (
-                  <span className="p-1.5 rounded-xl bg-slate-100 dark:bg-[#18181B] text-slate-300 dark:text-neutral-600 cursor-not-allowed">
-                    <ChevronLeft size={13} />
-                  </span>
-                )}
-                {siblingDocs.next ? (
-                  <Link
-                    to={`/vault/documents/${siblingDocs.next._id || siblingDocs.next.id}`}
-                    className="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-semibold transition-colors border border-slate-200 dark:border-[#262626]"
-                    title={`Next: ${siblingDocs.next.title}`}
-                  >
-                    <span className="hidden xl:inline truncate max-w-[80px]">{siblingDocs.next.title}</span>
-                    <ChevronRight size={13} />
-                  </Link>
-                ) : (
-                  <span className="p-1.5 rounded-xl bg-slate-100 dark:bg-[#18181B] text-slate-300 dark:text-neutral-600 cursor-not-allowed">
-                    <ChevronRight size={13} />
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Quick 1-Tap WhatsApp Safe Share */}
             <button
               type="button"
               onClick={handleWhatsAppShare}
               disabled={sharingLoading}
-              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-[#3ECF8E] border border-emerald-200 dark:border-emerald-500/30 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+              className="px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 text-emerald-700 dark:text-[#3ECF8E] border border-emerald-200 dark:border-emerald-500/30 text-[11px] font-bold flex items-center gap-1 shrink-0 cursor-pointer"
               title="Share 24-hr link via WhatsApp"
             >
-              <MessageCircle size={13} className="text-emerald-600 dark:text-[#3ECF8E]" />
-              <span className="hidden sm:inline">WhatsApp</span>
-            </button>
-
-            {/* Quick Edit Details */}
-            <button
-              type="button"
-              onClick={handleOpenEdit}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-bold flex items-center gap-1 border border-slate-200 dark:border-[#262626] transition-colors cursor-pointer"
-              title="Edit title, ID number, expiry, notes or file"
-            >
-              <Edit3 size={13} />
-              <span className="hidden sm:inline">Edit</span>
-            </button>
-
-            {/* Quick MPIN Toggle / Lock Status Pill */}
-            <button
-              type="button"
-              disabled={isTogglingMpin}
-              onClick={handleToggleMpinProtection}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer border ${
-                (doc.isMpinProtected || doc.isSensitive)
-                  ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-400 hover:bg-amber-100'
-                  : 'bg-slate-100 dark:bg-[#141414] border-slate-200 dark:border-[#262626] text-slate-600 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-[#262626]'
-              }`}
-              title={(doc.isMpinProtected || doc.isSensitive) ? 'MPIN Protected (Click to turn off)' : 'Standard Access (Click to lock with MPIN)'}
-            >
-              <Lock size={12} className={(doc.isMpinProtected || doc.isSensitive) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
-              <span className="hidden md:inline">{(doc.isMpinProtected || doc.isSensitive) ? 'MPIN' : 'Lock'}</span>
-            </button>
-
-            <div className="hidden lg:flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => handleShareSafely()}
-                className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#262626] hover:bg-slate-50 dark:hover:bg-[#141414] text-slate-700 dark:text-neutral-300 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <Share2 size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
-                <span>24h Link</span>
-              </button>
-
-              <a
-                href={fileUrl}
-                download={doc.originalFileName || `${doc.title}`}
-                target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
-              >
-                <Download size={13} />
-                <span>Download</span>
-              </a>
-            </div>
-
-            <button
-              onClick={handleDeleteClick}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
-              title="Delete Document"
-            >
-              <Trash2 size={15} />
+              <MessageCircle size={12} className="text-emerald-600 dark:text-[#3ECF8E]" />
+              <span>WhatsApp Share</span>
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Mobile Segmented Control: [ 📄 Document Preview ] vs [ 🗄️ Details & Almari ] */}
+      <div className="lg:hidden flex items-center bg-white dark:bg-[#1C1C1C] p-1 rounded-xl border border-slate-200 dark:border-[#27272A] shadow-xs shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobileTab('PREVIEW')}
+          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'PREVIEW'
+              ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
+              : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <FileText size={13} />
+          <span>Document Preview</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileTab('DETAILS')}
+          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'DETAILS'
+              ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
+              : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <Box size={13} />
+          <span>Details & Almari</span>
+          {doc.notes && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />}
+        </button>
       </div>
 
       {/* Active Share Link Notification Banner (Compact) */}
@@ -954,12 +1011,14 @@ export default function DocumentPreviewPage() {
 
       {/* Main Grid: Left Stage (Col-7 / Col-8) & Right Controls (Col-5 / Col-4) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 flex-1 min-h-0 lg:overflow-hidden">
-        {/* Left Column: Document Canvas & Stage (7 Cols) */}
-        <div className="lg:col-span-7 xl:col-span-7 bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] shadow-xs overflow-hidden flex flex-col h-full min-h-[380px] lg:min-h-0 transition-colors">
+        {/* Left Column: Document Canvas & Stage (7 Cols on desktop, full on mobile when PREVIEW) */}
+        <div className={`lg:col-span-7 xl:col-span-7 bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] shadow-xs overflow-hidden h-full min-h-[380px] lg:min-h-0 transition-colors ${
+          mobileTab === 'PREVIEW' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
+        }`}>
           {/* Floating Glass Toolbar */}
-          <div className="px-3 py-2 border-b border-slate-100 dark:border-[#262626] flex flex-wrap items-center justify-between gap-2 bg-slate-50/80 dark:bg-[#141414] text-xs text-slate-600 dark:text-neutral-400 shrink-0">
+          <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 border-b border-slate-100 dark:border-[#262626] flex items-center justify-between gap-1.5 sm:gap-2 bg-slate-50/80 dark:bg-[#141414] text-xs text-slate-600 dark:text-neutral-400 shrink-0 overflow-x-auto no-scrollbar">
             {/* View Mode Switcher */}
-            <div className="flex items-center gap-1 bg-white dark:bg-[#1C1C1C] p-0.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E]">
+            <div className="flex items-center gap-1 bg-white dark:bg-[#1C1C1C] p-0.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] shrink-0">
               {isImage && (
                 <button
                   type="button"
@@ -989,7 +1048,7 @@ export default function DocumentPreviewPage() {
             </div>
 
             {/* Zoom & Controls */}
-            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
               {/* Dynamic Watermark Toggle */}
               <button
                 type="button"
@@ -1076,8 +1135,8 @@ export default function DocumentPreviewPage() {
             </div>
           </div>
 
-          {/* Document Canvas Stage (flex-1 min-h-0 with internal scroll) */}
-          <div className="p-2 sm:p-4 bg-[#F1F5F9]/70 dark:bg-[#121212] flex items-center justify-center flex-1 min-h-0 overflow-auto relative">
+          {/* Document Canvas Stage (Generous mobile height & responsive centering) */}
+          <div className="p-2 sm:p-4 bg-[#F1F5F9]/70 dark:bg-[#121212] flex items-center justify-center flex-1 min-h-[50vh] sm:min-h-[58vh] lg:min-h-0 overflow-auto relative">
             {isMpinLocked ? (
               <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-[#262626] shadow-xl max-w-sm w-full text-center space-y-3 sm:space-y-4 animate-fadeIn">
                 <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 shadow-sm">
@@ -1113,7 +1172,7 @@ export default function DocumentPreviewPage() {
                     <img
                       src={fileUrl}
                       alt={doc.title}
-                      className="max-h-[320px] sm:max-h-[440px] lg:max-h-[calc(100vh-250px)] w-auto max-w-full object-contain mx-auto block bg-slate-900/5 dark:bg-black/30"
+                      className="max-h-[46vh] sm:max-h-[54vh] lg:max-h-[calc(100vh-250px)] w-auto max-w-full object-contain mx-auto block bg-slate-900/5 dark:bg-black/30"
                       onError={() => {
                         console.warn('Image failed to load, falling back to digital layout');
                         setImageError(true);
@@ -1139,7 +1198,7 @@ export default function DocumentPreviewPage() {
                         <ExternalLink size={10} />
                       </a>
                     </div>
-                    <div className="w-full h-[320px] sm:h-[440px] lg:h-[calc(100vh-270px)] relative">
+                    <div className="w-full h-[46vh] sm:h-[54vh] lg:h-[calc(100vh-270px)] relative">
                       <iframe
                         src={fileUrl}
                         title={doc.title}
@@ -1150,7 +1209,7 @@ export default function DocumentPreviewPage() {
                   </div>
                 ) : (
                   /* VIEW 3: Digital Sovereign Smart Card */
-                  <div className="relative w-full max-w-[520px] max-h-[calc(100vh-240px)] overflow-y-auto bg-white dark:bg-[#1C1C1C] rounded-2xl shadow-xl flex flex-col border border-slate-200 dark:border-[#2E2E2E]">
+                  <div className="relative w-full max-w-[520px] max-h-[46vh] sm:max-h-[54vh] lg:max-h-[calc(100vh-240px)] overflow-y-auto bg-white dark:bg-[#1C1C1C] rounded-2xl shadow-xl flex flex-col border border-slate-200 dark:border-[#2E2E2E]">
                     {renderWatermarkOverlay()}
 
                     {/* Authentic Header Bar */}
@@ -1279,6 +1338,7 @@ export default function DocumentPreviewPage() {
             <a
               href={fileUrl}
               download={doc.originalFileName || `${doc.title}`}
+              onClick={handleDownloadClick}
               target="_blank"
               rel="noreferrer"
               className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors"
@@ -1304,23 +1364,24 @@ export default function DocumentPreviewPage() {
               className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors cursor-pointer"
             >
               <Share2 size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
-              <span className="hidden sm:inline">24h Link</span>
-              <span className="sm:hidden">Share</span>
+              <span className="hidden sm:inline">24h Safe Link</span>
+              <span className="sm:hidden">24h Link</span>
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors cursor-pointer"
+              className="hidden sm:inline-flex flex-1 items-center justify-center gap-1 px-2 py-2 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors cursor-pointer"
             >
               <Printer size={13} className="text-slate-500 dark:text-neutral-400" />
-              <span className="hidden sm:inline">Print</span>
-              <span className="sm:hidden">Print</span>
+              <span>Print</span>
             </button>
           </div>
         </div>
 
-        {/* Right Column: High-Density Bento Cards (Zero outer-scroll on Desktop, smooth internal scroll) */}
-        <div className="lg:col-span-5 xl:col-span-5 flex flex-col h-full min-h-0 space-y-2.5 lg:overflow-y-auto lg:pr-1 custom-scrollbar">
+        {/* Right Column: High-Density Bento Cards (Visible on desktop or when mobileTab === 'DETAILS') */}
+        <div className={`lg:col-span-5 xl:col-span-5 h-full min-h-0 space-y-2.5 lg:overflow-y-auto lg:pr-1 custom-scrollbar ${
+          mobileTab === 'DETAILS' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
+        }`}>
           {/* Bento 1: Physical Paper Locator Card (Almirah / Locker Tag) */}
           <div className="bg-amber-50/70 dark:bg-amber-500/10 rounded-2xl p-3 sm:p-3.5 border border-amber-200/80 dark:border-amber-500/25 shadow-xs space-y-1.5 transition-colors shrink-0">
             <div className="flex items-center justify-between">
@@ -1621,13 +1682,13 @@ export default function DocumentPreviewPage() {
       </div>
 
       {/* Share Safely Modal (24h Expiring Link) - Bottom-Sheet on Mobile, Card on Desktop */}
-      {shareModalOpen && (
+      {shareModalOpen && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+          className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
           onClick={() => setShareModalOpen(false)}
         >
           <div
-            className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all"
+            className="relative w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile Drag Handle Pill */}
@@ -1752,17 +1813,18 @@ export default function DocumentPreviewPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete Document Confirmation Modal */}
-      {isDeleteModalOpen && (
+      {isDeleteModalOpen && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+          className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
           onClick={() => setIsDeleteModalOpen(false)}
         >
           <div
-            className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all"
+            className="relative w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile Drag Handle Pill */}
@@ -1803,7 +1865,7 @@ export default function DocumentPreviewPage() {
             </div>
 
             {/* Fixed Footer */}
-            <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+            <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(false)}
@@ -1822,7 +1884,8 @@ export default function DocumentPreviewPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MPIN Unlock Modal */}
@@ -1837,13 +1900,13 @@ export default function DocumentPreviewPage() {
       />
 
       {/* Quick Edit Document Metadata Modal */}
-      {isEditModalOpen && (
+      {isEditModalOpen && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+          className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
           onClick={() => setIsEditModalOpen(false)}
         >
           <div
-            className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-lg bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transition-all"
+            className="relative w-full max-w-lg bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="md:hidden flex justify-center pt-2.5 pb-1 shrink-0">
@@ -1983,7 +2046,7 @@ export default function DocumentPreviewPage() {
                 </p>
               </div>
 
-              <div className="px-1 pt-2 pb-1 flex justify-end gap-2 border-t border-slate-100 dark:border-[#27272A]">
+              <div className="px-1 pt-2 pb-1 flex justify-end gap-2 border-t border-slate-100 dark:border-[#27272A] pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
@@ -2002,7 +2065,8 @@ export default function DocumentPreviewPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Mobile Sticky Bottom Action Bar with iPhone 11 & Mobile S (320px) Safe Area Support */}
@@ -2039,6 +2103,7 @@ export default function DocumentPreviewPage() {
           <a
             href={fileUrl}
             download={doc.originalFileName || `${doc.title}`}
+            onClick={handleDownloadClick}
             target="_blank"
             rel="noreferrer"
             className="flex-1 py-2.5 px-1 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer"

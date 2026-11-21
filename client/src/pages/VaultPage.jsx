@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import {
@@ -56,6 +57,16 @@ export default function VaultPage() {
   const [mpinTargetDocId, setMpinTargetDocId] = useState(null);
   const [docToDelete, setDocToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Lock body scroll when delete modal is open
+  useEffect(() => {
+    if (docToDelete) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [docToDelete]);
 
   // Smart Quick-Tabs state: 'all' | 'expiring' | 'confidential' | 'kyc' | 'vehicle' | 'property' | 'shared'
   const [quickTab, setQuickTab] = useState(() => {
@@ -1379,13 +1390,13 @@ export default function VaultPage() {
       />
 
       {/* Delete Document Confirmation Modal */}
-      {docToDelete && (
+      {docToDelete && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
           onClick={() => setDocToDelete(null)}
         >
           <div
-            className="w-full max-w-md bg-white dark:bg-[#18181B] border-t sm:border border-slate-200 dark:border-[#27272A] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] overflow-hidden transition-all text-slate-900 dark:text-white"
+            className="relative w-full max-w-md bg-white dark:bg-[#18181B] border-t sm:border border-slate-200 dark:border-[#27272A] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden transition-all text-slate-900 dark:text-white"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile Drag Handle Pill */}
@@ -1416,7 +1427,7 @@ export default function VaultPage() {
             </div>
 
             {/* Body */}
-            <div className="p-4 sm:p-6 space-y-3 overflow-y-auto">
+            <div className="p-4 sm:px-6 py-4 space-y-3 overflow-y-auto">
               <p className="text-xs text-slate-700 dark:text-neutral-300 leading-relaxed">
                 Are you sure you want to permanently delete <strong className="text-slate-900 dark:text-white">"{docToDelete.title}"</strong> from your family vault?
               </p>
@@ -1429,7 +1440,7 @@ export default function VaultPage() {
             </div>
 
             {/* Footer */}
-            <div className="px-4 sm:px-6 py-3.5 bg-slate-50/70 dark:bg-[#141414] border-t border-slate-100 dark:border-[#262626] flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 shrink-0 pb-[calc(0.875rem+env(safe-area-inset-bottom,0px))]">
+            <div className="px-4 sm:px-6 py-3.5 bg-slate-50/70 dark:bg-[#141414] border-t border-slate-100 dark:border-[#262626] flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
               <button
                 type="button"
                 onClick={() => setDocToDelete(null)}
@@ -1448,7 +1459,8 @@ export default function VaultPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

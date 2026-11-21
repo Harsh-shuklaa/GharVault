@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { UserPlus, Copy, Check, X, AlertCircle, MailCheck } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
@@ -19,15 +20,23 @@ export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) 
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Close on Escape key
+  // Close on Escape key & Lock Body Scroll
   useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
     };
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   // Reset state on open
@@ -81,13 +90,13 @@ export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) 
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-lg bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all"
+        className="relative w-full max-w-lg bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Handle Pill */}
@@ -256,7 +265,7 @@ export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) 
         </div>
 
         {/* Fixed Footer */}
-        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
           <button
             type="button"
             onClick={onClose}
@@ -277,6 +286,7 @@ export default function InviteMemberModal({ isOpen, onClose, onInviteSuccess }) 
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

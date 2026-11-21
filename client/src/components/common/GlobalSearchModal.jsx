@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import {
@@ -51,6 +52,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = 'hidden';
       api.getDocuments().then((data) => setDocuments(data.documents || []));
       api.getMembers().then((data) => setMembers(data.members || []));
       setQuery('');
@@ -58,6 +60,9 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
+      return () => {
+        document.body.style.overflow = '';
+      };
     }
   }, [isOpen]);
 
@@ -173,9 +178,9 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-start justify-center sm:pt-14 p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex items-end sm:items-start justify-center sm:pt-14 p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
@@ -480,6 +485,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
           </span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

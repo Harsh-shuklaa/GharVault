@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { KeyRound, X, AlertCircle } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
@@ -10,15 +11,23 @@ export default function MpinModal({ isOpen, onClose, onSuccess, title = 'Sensiti
   const [error, setError] = useState('');
   const [isShaking, setIsShaking] = useState(false);
 
-  // Close on Escape key
+  // Close on Escape key & Lock Body Scroll
   useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
     };
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   // Reset state when opened
@@ -80,13 +89,13 @@ export default function MpinModal({ isOpen, onClose, onSuccess, title = 'Sensiti
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className={`fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-sm bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all ${
+        className={`relative w-full max-w-sm bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all ${
           isShaking ? 'animate-bounce' : ''
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -188,12 +197,13 @@ export default function MpinModal({ isOpen, onClose, onSuccess, title = 'Sensiti
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-5 py-3 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] text-center shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="px-4 sm:px-5 py-3 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] text-center shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
           <p className="text-[11px] text-slate-500 dark:text-neutral-400">
             Initial default PIN is <span className="font-mono font-bold text-slate-700 dark:text-neutral-300">1234</span>. Modify in Settings.
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

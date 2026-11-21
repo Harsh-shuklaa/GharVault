@@ -1,29 +1,38 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { LogOut, X, Shield, Lock, Trash2, CheckCircle2 } from 'lucide-react';
 
 export default function LogoutModal({ isOpen, onClose, onConfirm, loading = false }) {
-  // Close on Escape key
+  // Close on Escape key & Lock Body Scroll
   useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen && !loading) {
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, loading, onClose]);
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
       onClick={() => {
         if (!loading) onClose();
       }}
     >
       <div
-        className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden transition-all text-slate-900 dark:text-slate-100"
+        className="relative w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden transition-all text-slate-900 dark:text-slate-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Handle Pill */}
@@ -78,7 +87,7 @@ export default function LogoutModal({ isOpen, onClose, onConfirm, loading = fals
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="px-4 sm:px-6 py-4 border-t border-slate-100 dark:border-[#262626] bg-slate-50/50 dark:bg-[#141414]/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="px-4 sm:px-6 py-4 border-t border-slate-100 dark:border-[#262626] bg-slate-50/50 dark:bg-[#141414]/50 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
           <button
             type="button"
             onClick={onClose}
@@ -107,6 +116,7 @@ export default function LogoutModal({ isOpen, onClose, onConfirm, loading = fals
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

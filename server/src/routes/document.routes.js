@@ -8,9 +8,41 @@ import { memoryStore } from '../config/seed.js';
 import Document from '../models/Document.js';
 import User from '../models/User.js';
 import Family from '../models/Family.js';
+import Notification from '../models/Notification.js';
 import { isConnected } from '../config/db.js';
 import { uploadDocument, createSignedUrl, deleteDocument } from '../services/supabaseStorage.js';
 import { recordAuditLog } from '../services/auditService.js';
+
+// Helper to reliably dispatch family in-app notification
+async function createVaultNotification({ familyId, userId = null, title, message, type = 'INFO', link = '/vault' }) {
+  if (!familyId) return null;
+  const notifObj = {
+    familyId,
+    userId: userId && mongoose.Types.ObjectId.isValid(userId) ? userId : null,
+    title,
+    message,
+    type,
+    link,
+    isRead: false,
+    createdAt: new Date(),
+  };
+
+  if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
+    try {
+      await Notification.create(notifObj);
+    } catch (e) {
+      console.warn('[Notification] Failed to persist in Mongo:', e.message);
+    }
+  }
+
+  if (!Array.isArray(memoryStore.notifications)) {
+    memoryStore.notifications = [];
+  }
+  memoryStore.notifications.unshift({
+    _id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+    ...notifObj,
+  });
+}
 
 const router = express.Router();
 
@@ -648,6 +680,15 @@ router.get('/shared/:token', async (req, res) => {
       req,
     }).catch(e => console.warn('[Audit Warning] Shared view log error:', e.message));
 
+    // Instant Security Notification for Family: Someone accessed/downloaded via Safe Share Link
+    createVaultNotification({
+      familyId: doc.familyId,
+      title: '⚠️ External Download via Safe Link',
+      message: `An external recipient accessed and downloaded "${doc.title}" via your 24-hour Safe Share Link.`,
+      type: 'WARNING',
+      link: `/vault/documents/${doc._id}`,
+    }).catch(e => console.warn('[Notification Warning] External access notif error:', e.message));
+
     res.json({
       success: true,
       document: {
@@ -668,6 +709,64 @@ router.get('/shared/:token', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to access shared document: ' + err.message });
+  }
+});
+
+// POST /api/documents/:id/download-notify (Logs download event and dispatches family notification)
+router.post('/:id/download-notify', async (req, res) => {
+  try {
+    let doc = null;
+    if (isConnected && mongoose.Types.ObjectId.isValid(req.params.id)) {
+      try {
+        doc = await Document.findById(req.params.id);
+      } catch (e) {
+        doc = null;
+      }
+    }
+    if (!doc && Array.isArray(memoryStore.documents)) {
+      doc = memoryStore.documents.find(d => d._id?.toString() === req.params.id);
+    }
+
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    const performerName = req.user?.name || 'A family member';
+    const now = new Date();
+    const timeFormatted = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateFormatted = now.toLocaleDateString();
+
+    // 1. Immutable Audit Ledger Log (DOCUMENT_DOWNLOAD)
+    recordAuditLog({
+      familyId: doc.familyId,
+      action: 'DOCUMENT_DOWNLOAD',
+      performedBy: req.user?._id || null,
+      performerName,
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: {
+        category: doc.category,
+        originalFileName: doc.originalFileName,
+        fileSize: doc.fileSize,
+      },
+      req,
+    }).catch(e => console.warn('[Audit Warning] Download log error:', e.message));
+
+    // 2. Family In-App Notification (Alert all family members & admin that document was downloaded)
+    await createVaultNotification({
+      familyId: doc.familyId,
+      userId: req.user?._id,
+      title: '📥 Document Downloaded',
+      message: `${performerName} downloaded "${doc.title}" (${doc.documentNumber || doc.category}) on ${dateFormatted} at ${timeFormatted}.`,
+      type: 'INFO',
+      link: `/vault/documents/${doc._id}`,
+    });
+
+    res.json({
+      success: true,
+      message: `Download logged: notification sent to family vault.`,
+    });
+  } catch (err) {
+    console.error('Download notify error:', err);
+    res.status(500).json({ error: err.message || 'Failed to dispatch download notification' });
   }
 });
 

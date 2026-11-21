@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, User, Camera, AlertCircle, Check, ShieldAlert } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
@@ -24,6 +25,15 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
 
   // Close on Escape key
   useEffect(() => {
@@ -135,13 +145,13 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="fixed inset-x-0 bottom-0 md:static md:inset-auto w-full max-w-xl bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[88vh] md:max-h-[85vh] overflow-hidden transition-all"
+        className="relative w-full max-w-xl bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Handle Pill */}
@@ -397,7 +407,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
         </form>
 
         {/* Fixed Footer */}
-        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
           <button
             type="button"
             onClick={onClose}
@@ -416,6 +426,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
