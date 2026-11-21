@@ -94,9 +94,11 @@ export default function ActivityAuditPage() {
   const actionTypes = [
     { key: 'ALL', label: 'All Activities' },
     { key: 'DOCUMENT_UPLOAD', label: 'Uploads' },
+    { key: 'DOCUMENT_UPDATED', label: 'Updates & Edits' },
     { key: 'DOCUMENT_VIEW', label: 'Views' },
     { key: 'DOCUMENT_DELETE', label: 'Deletions' },
     { key: 'PERMISSION_CHANGED', label: 'Permissions' },
+    { key: 'FAMILY_RENAMED', label: 'Vault Renamed' },
     { key: 'MPIN_PROTECTION_TOGGLED', label: 'MPIN Locks' },
     { key: 'SHARE_LINK_GENERATED', label: 'Links Shared' },
     { key: 'SHARE_LINK_REVOKED', label: 'Links Revoked' },
@@ -110,6 +112,10 @@ export default function ActivityAuditPage() {
     switch (action) {
       case 'DOCUMENT_UPLOAD':
         return { label: 'UPLOADED', bg: 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/20' };
+      case 'DOCUMENT_UPDATED':
+        return { label: 'UPDATED', bg: 'bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20' };
+      case 'FAMILY_RENAMED':
+        return { label: 'VAULT RENAMED', bg: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-800 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20' };
       case 'DOCUMENT_VIEW':
         return { label: 'VIEWED', bg: 'bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20' };
       case 'DOCUMENT_DELETE':

@@ -66,6 +66,11 @@ const documentSchema = new mongoose.Schema({
     type: String,
     trim: true,
   }],
+  notes: {
+    type: String,
+    trim: true,
+    default: '',
+  },
   storagePath: {
     type: String,
     required: true,

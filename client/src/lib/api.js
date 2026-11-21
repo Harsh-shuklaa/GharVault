@@ -233,11 +233,45 @@ export const api = {
     });
   },
 
+  async updateDocument(id, data) {
+    const isFormData = data instanceof FormData;
+    try {
+      return await request(`${API_BASE}/documents/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(isFormData),
+        body: isFormData ? data : JSON.stringify(data),
+      });
+    } catch (err) {
+      if (err.status === 404) {
+        return await request(`${API_BASE}/documents/${id}/update`, {
+          method: 'POST',
+          headers: getHeaders(isFormData),
+          body: isFormData ? data : JSON.stringify(data),
+        });
+      }
+      throw err;
+    }
+  },
+
   async createShareLink(id, options = {}) {
+    const payload = {};
+    if (typeof options.durationMinutes === 'number' && !isNaN(options.durationMinutes)) {
+      payload.durationMinutes = options.durationMinutes;
+    }
+    if (typeof options.expiresInHours === 'number' && !isNaN(options.expiresInHours)) {
+      payload.expiresInHours = options.expiresInHours;
+    }
+    if (options.password) {
+      payload.password = options.password;
+    }
+
     return request(`${API_BASE}/documents/${id}/share-link`, {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(options),
+      headers: {
+        ...getHeaders(),
+        'x-client-origin': typeof window !== 'undefined' ? window.location.origin : '',
+      },
+      body: JSON.stringify(payload),
     });
   },
 
@@ -335,6 +369,58 @@ export const api = {
     return request(`${API_BASE}/notifications/read-all`, {
       method: 'PUT',
       headers: getHeaders(),
+    });
+  },
+
+  // Break-Glass Protocol
+  async getBreakGlass() {
+    return request(`${API_BASE}/break-glass`, {
+      headers: getHeaders(),
+    });
+  },
+
+  async armBreakGlass(data = {}) {
+    return request(`${API_BASE}/break-glass/arm`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+  },
+
+  async cancelBreakGlass() {
+    return request(`${API_BASE}/break-glass/cancel`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+  },
+
+  async triggerBreakGlass() {
+    return request(`${API_BASE}/break-glass/trigger`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+  },
+
+  // Quorum Multi-Signature Requests
+  async getQuorumRequests() {
+    return request(`${API_BASE}/quorum`, {
+      headers: getHeaders(),
+    });
+  },
+
+  async createQuorumRequest(data = {}) {
+    return request(`${API_BASE}/quorum/request`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+  },
+
+  async signQuorumRequest(id, data = {}) {
+    return request(`${API_BASE}/quorum/${id}/sign`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
     });
   },
 };

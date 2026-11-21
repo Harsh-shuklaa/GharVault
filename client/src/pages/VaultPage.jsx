@@ -22,10 +22,16 @@ import {
   Layers,
   Users,
   Eye,
+  EyeOff,
   Shield,
   Clock,
   Sparkles,
   FileText,
+  Car,
+  Home,
+  Briefcase,
+  Plane,
+  Edit3,
 } from 'lucide-react';
 import MpinModal from '../components/common/MpinModal';
 import { useToast } from '../context/ToastContext';
@@ -50,6 +56,122 @@ export default function VaultPage() {
   const [mpinTargetDocId, setMpinTargetDocId] = useState(null);
   const [docToDelete, setDocToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Smart Quick-Tabs state: 'all' | 'expiring' | 'confidential' | 'kyc' | 'vehicle' | 'property' | 'shared'
+  const [quickTab, setQuickTab] = useState(() => {
+    if (filterParam === 'expiring') return 'expiring';
+    if (filterParam === 'shared') return 'shared';
+    return 'all';
+  });
+
+  // Track unmasked document ID numbers (privacy-first default)
+  const [unmaskedDocIds, setUnmaskedDocIds] = useState(new Set());
+
+  const toggleMask = (docId, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setUnmaskedDocIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(docId)) next.delete(docId);
+      else next.add(docId);
+      return next;
+    });
+  };
+
+  const formatDocNumber = (num, isUnmasked, isAadhaar) => {
+    if (!num) return '';
+    const clean = num.replace(/\s+/g, '');
+    if (!isUnmasked) {
+      if (clean.length === 12) {
+        return `•••• •••• ${clean.slice(-4)}`;
+      }
+      if (clean.length === 10 && /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(clean)) {
+        return `${clean.slice(0, 5)}••••${clean.slice(-1).toUpperCase()}`;
+      }
+      if (clean.length > 4) {
+        return `•••• ${clean.slice(-4)}`;
+      }
+    }
+    if (clean.length === 12) {
+      return `${clean.slice(0, 4)} ${clean.slice(4, 8)} ${clean.slice(8, 12)}`;
+    }
+    return clean.toUpperCase();
+  };
+
+  // Realistic Indian Document Visual Theming
+  const getDocVisual = (doc) => {
+    const text = `${doc.title || ''} ${doc.category || ''} ${doc.tags?.join(' ') || ''}`.toLowerCase();
+    if (text.includes('aadhaar') || text.includes('adhar') || text.includes('uid')) {
+      return {
+        type: 'aadhaar',
+        label: 'Aadhaar',
+        strip: 'from-orange-500 via-white to-emerald-600',
+        tagBg: 'bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200/80 dark:border-orange-500/30',
+        iconBoxBg: 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200/80 dark:border-orange-500/30',
+        badgeEmoji: '🇮🇳',
+      };
+    }
+    if (text.includes('pan') || text.includes('nsdl') || text.includes('uti')) {
+      return {
+        type: 'pan',
+        label: 'PAN Card',
+        strip: 'from-blue-700 via-sky-600 to-indigo-900',
+        tagBg: 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200/80 dark:border-blue-500/30',
+        iconBoxBg: 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200/80 dark:border-blue-500/30',
+        badgeEmoji: '💳',
+      };
+    }
+    if (text.includes('passport')) {
+      return {
+        type: 'passport',
+        label: 'Passport',
+        strip: 'from-indigo-950 via-blue-900 to-slate-900',
+        tagBg: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-200/80 dark:border-indigo-500/30',
+        iconBoxBg: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200/80 dark:border-indigo-500/30',
+        badgeEmoji: '✈️',
+      };
+    }
+    if (text.includes('rc') || text.includes('vehicle') || text.includes('car') || text.includes('bike') || text.includes('driving') || text.includes('license')) {
+      return {
+        type: 'vehicle',
+        label: text.includes('driving') || text.includes('license') ? 'Driving License' : 'Vehicle RC',
+        strip: 'from-emerald-600 via-teal-600 to-emerald-700',
+        tagBg: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-[#3ECF8E] border-emerald-200/80 dark:border-[#3ECF8E]/30',
+        iconBoxBg: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-[#3ECF8E] border-emerald-200/80 dark:border-[#3ECF8E]/30',
+        badgeEmoji: '🚗',
+      };
+    }
+    if (text.includes('health') || text.includes('medical') || text.includes('insurance') || text.includes('mediclaim') || text.includes('hospital')) {
+      return {
+        type: 'medical',
+        label: 'Mediclaim',
+        strip: 'from-rose-600 via-red-600 to-rose-700',
+        tagBg: 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200/80 dark:border-red-500/30',
+        iconBoxBg: 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200/80 dark:border-red-500/30',
+        badgeEmoji: '🏥',
+      };
+    }
+    if (text.includes('property') || text.includes('registry') || text.includes('flat') || text.includes('deed') || text.includes('will') || text.includes('tax')) {
+      return {
+        type: 'property',
+        label: 'Property Deed',
+        strip: 'from-amber-600 via-yellow-600 to-amber-700',
+        tagBg: 'bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-500/30',
+        iconBoxBg: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/80 dark:border-amber-500/30',
+        badgeEmoji: '📜',
+      };
+    }
+    return {
+      type: 'general',
+      label: doc.category || 'Document',
+      strip: 'from-[#10B981] to-[#3ECF8E]',
+      tagBg: 'bg-slate-100 dark:bg-[#202024] text-slate-700 dark:text-neutral-300 border-slate-200 dark:border-[#2E2E32]',
+      iconBoxBg: 'bg-emerald-100/70 dark:bg-[#3ECF8E]/15 text-emerald-700 dark:text-[#3ECF8E] border-emerald-200/60 dark:border-[#3ECF8E]/25',
+      badgeEmoji: '📑',
+    };
+  };
 
   // Close delete modal on Escape
   useEffect(() => {
@@ -84,6 +206,22 @@ export default function VaultPage() {
   }, [categoryParam]);
 
   useEffect(() => {
+    if (filterParam === 'expiring') setQuickTab('expiring');
+    else if (filterParam === 'shared') setQuickTab('shared');
+  }, [filterParam]);
+
+  const handleQuickTabChange = (tabId) => {
+    setQuickTab(tabId);
+    if (tabId === 'expiring') {
+      navigate('/vault?filter=expiring');
+    } else if (tabId === 'shared') {
+      navigate('/vault?filter=shared');
+    } else {
+      navigate('/vault');
+    }
+  };
+
+  useEffect(() => {
     loadVault();
   }, []);
 
@@ -113,12 +251,28 @@ export default function VaultPage() {
   };
 
   const handleShareSafely = async (docId, e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     try {
       const res = await api.createShareLink(docId, { expiresInHours: 24 });
-      if (res.shareLink) {
-        navigator.clipboard.writeText(res.shareLink);
+      const link = res.shareUrl || res.shareLink || (res.token ? `${window.location.origin}/share/${res.token}` : '');
+      if (link) {
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(link);
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = link;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+        } catch (clipErr) {
+          console.warn('Clipboard write error:', clipErr);
+        }
         setShareFeedback({ id: docId, text: '24h Safe Link Copied!' });
         toast.success('24h safe view-only share link copied to clipboard!');
         setTimeout(() => setShareFeedback(null), 2500);
@@ -128,11 +282,25 @@ export default function VaultPage() {
     }
   };
 
-  const handleCopyExistingShareLink = (doc, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!doc.shareLink?.shareUrl) return;
-    navigator.clipboard.writeText(doc.shareLink.shareUrl);
+  const handleCopyExistingShareLink = async (doc, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const link = doc.shareLink?.shareUrl || (doc.shareLink?.token ? `${window.location.origin}/share/${doc.shareLink.token}` : '');
+    if (!link) return;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = link;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    } catch (clipErr) {}
     setShareFeedback({ id: doc._id, text: 'Link Copied!' });
     toast.success('Safe view-only share link copied to clipboard!');
     setTimeout(() => setShareFeedback(null), 2500);
@@ -199,31 +367,69 @@ export default function VaultPage() {
     return false;
   };
 
+  // Live dynamic count badges for quick-tabs
+  const quickTabCounts = {
+    all: documents.length,
+    expiring: documents.filter((d) => {
+      if (!d.expiryDate) return false;
+      const diff = Math.ceil((new Date(d.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+      return diff <= 60;
+    }).length,
+    confidential: documents.filter(
+      (d) => d.isSensitive || d.isMpinProtected || ['Property & Legal', 'Financial', 'Legal'].includes(d.category)
+    ).length,
+    kyc: documents.filter((d) => {
+      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+      return text.includes('aadhaar') || text.includes('pan') || text.includes('passport') || text.includes('voter') || d.category === 'ID Cards';
+    }).length,
+    vehicle: documents.filter((d) => {
+      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+      return text.includes('rc') || text.includes('vehicle') || text.includes('car') || text.includes('bike') || text.includes('driving') || text.includes('license');
+    }).length,
+    property: documents.filter((d) => {
+      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+      return text.includes('property') || text.includes('registry') || text.includes('flat') || text.includes('deed') || text.includes('land') || d.category === 'Bank & Property';
+    }).length,
+    shared: documents.filter((d) => d.shareLink && d.shareLink.token).length,
+  };
+
   const filteredDocs = documents.filter((doc) => {
     const matchesCat = isCategoryMatch(doc.category, selectedCategory);
     const matchesMember = selectedMember === 'All' || doc.assignedMemberId?.toString() === selectedMember;
 
-    let matchesFilter = true;
-    if (filterParam === 'expiring') {
+    let matchesTab = true;
+    if (quickTab === 'expiring') {
       if (!doc.expiryDate) {
-        matchesFilter = false;
+        matchesTab = false;
       } else {
         const diffDays = Math.ceil((new Date(doc.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-        matchesFilter = diffDays <= 60;
+        matchesTab = diffDays <= 60;
       }
-    } else if (filterParam === 'shared') {
-      matchesFilter = !!(doc.shareLink && doc.shareLink.token);
+    } else if (quickTab === 'confidential') {
+      matchesTab = Boolean(doc.isSensitive || doc.isMpinProtected || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category));
+    } else if (quickTab === 'shared') {
+      matchesTab = Boolean(doc.shareLink && doc.shareLink.token);
+    } else if (quickTab === 'kyc') {
+      const text = `${doc.title || ''} ${doc.category || ''} ${doc.tags?.join(' ') || ''}`.toLowerCase();
+      matchesTab = text.includes('aadhaar') || text.includes('pan') || text.includes('passport') || text.includes('voter') || doc.category === 'ID Cards';
+    } else if (quickTab === 'vehicle') {
+      const text = `${doc.title || ''} ${doc.category || ''} ${doc.tags?.join(' ') || ''}`.toLowerCase();
+      matchesTab = text.includes('rc') || text.includes('vehicle') || text.includes('car') || text.includes('bike') || text.includes('driving') || text.includes('license');
+    } else if (quickTab === 'property') {
+      const text = `${doc.title || ''} ${doc.category || ''} ${doc.tags?.join(' ') || ''}`.toLowerCase();
+      matchesTab = text.includes('property') || text.includes('registry') || text.includes('flat') || text.includes('deed') || text.includes('land') || doc.category === 'Bank & Property';
     }
 
     const q = searchQuery.toLowerCase().trim();
-    const matchesSearch = !q || (
+    const matchesSearch =
+      !q ||
       (doc.title || '').toLowerCase().includes(q) ||
       (doc.category || '').toLowerCase().includes(q) ||
       (doc.documentNumber && doc.documentNumber.toLowerCase().includes(q)) ||
       (doc.assignedMember?.name && doc.assignedMember.name.toLowerCase().includes(q)) ||
-      (doc.tags && doc.tags.some((t) => t.toLowerCase().includes(q)))
-    );
-    return matchesCat && matchesMember && matchesFilter && matchesSearch;
+      (doc.tags && doc.tags.some((t) => t.toLowerCase().includes(q)));
+
+    return matchesCat && matchesMember && matchesTab && matchesSearch;
   });
 
   const getExpiryBadge = (expiryDate) => {
@@ -234,19 +440,33 @@ export default function VaultPage() {
 
     if (diffDays < 0) {
       return (
-        <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-[10px] font-bold">
-          Expired
+        <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 text-[10px] font-bold border border-red-200 dark:border-red-500/30 flex items-center gap-1 shadow-2xs">
+          <AlertTriangle size={10} className="animate-pulse" />
+          <span>Expired</span>
         </span>
       );
     }
     if (diffDays <= 30) {
       return (
-        <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 text-[10px] font-bold">
-          Expires in {diffDays}d
+        <span className="px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300 text-[10px] font-bold border border-red-300/80 dark:border-red-500/30 flex items-center gap-1 shadow-2xs">
+          <Clock size={10} className="text-red-500 animate-pulse" />
+          <span>Expires in {diffDays}d</span>
         </span>
       );
     }
-    return null;
+    if (diffDays <= 60) {
+      return (
+        <span className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 text-[10px] font-bold border border-amber-300/70 dark:border-amber-500/30 flex items-center gap-1">
+          <Clock size={10} className="text-amber-500" />
+          <span>Expires in {diffDays}d</span>
+        </span>
+      );
+    }
+    return (
+      <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] text-[10px] font-medium border border-emerald-200/60 dark:border-[#3ECF8E]/20">
+        Valid till {exp.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+      </span>
+    );
   };
 
   const getShareLinkInfo = (shareLink) => {
@@ -366,7 +586,58 @@ export default function VaultPage() {
       </div>
 
       {/* ================= FILTER & CONTROLS CONTAINER ================= */}
-      <div className="bg-white dark:bg-[#18181B] rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-[#262626] shadow-sm space-y-4 transition-colors">
+      <div className="bg-white dark:bg-[#18181B] rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-[#262626] shadow-sm space-y-3.5 transition-colors">
+        {/* Row 0: Smart Quick-Tabs & Binders Switcher */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+          {[
+            { id: 'all', label: 'All Documents', icon: Layers, count: quickTabCounts.all },
+            { id: 'expiring', label: 'Expiring Soon', icon: AlertTriangle, count: quickTabCounts.expiring, alert: true },
+            { id: 'confidential', label: 'MPIN Locked', icon: Lock, count: quickTabCounts.confidential },
+            { id: 'kyc', label: 'KYC Packet', icon: CreditCard, count: quickTabCounts.kyc },
+            { id: 'vehicle', label: 'Vehicle Packet', icon: Car, count: quickTabCounts.vehicle },
+            { id: 'property', label: 'Property Packet', icon: Home, count: quickTabCounts.property },
+            { id: 'shared', label: 'Shared Links', icon: Share2, count: quickTabCounts.shared },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = quickTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleQuickTabChange(tab.id)}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-slate-900 text-white dark:bg-white dark:text-black shadow-md'
+                    : 'bg-slate-50 dark:bg-[#141414] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#202024] border border-slate-200/80 dark:border-[#262626]'
+                }`}
+              >
+                <Icon
+                  size={14}
+                  className={
+                    isActive
+                      ? ''
+                      : tab.alert && tab.count > 0
+                      ? 'text-amber-500 animate-pulse'
+                      : 'text-slate-500 dark:text-neutral-400'
+                  }
+                />
+                <span>{tab.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    isActive
+                      ? 'bg-white/20 dark:bg-black/20 text-white dark:text-black font-extrabold'
+                      : tab.alert && tab.count > 0
+                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400 font-bold'
+                      : 'bg-slate-200/80 dark:bg-[#262626] text-slate-600 dark:text-neutral-400'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Row 1: Search Box + View Mode Toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Real-Time Search Box */}
@@ -591,7 +862,7 @@ export default function VaultPage() {
         </div>
       ) : viewMode === 'grid' ? (
         /* ================= GRID CARDS VIEW (Desktop 3-Col / Mobile 1-Col) ================= */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filteredDocs.map((doc) => {
             const hasNumber = doc.documentNumber && doc.documentNumber.trim() !== '';
             const isSensitive =
@@ -600,17 +871,24 @@ export default function VaultPage() {
               ['Property & Legal', 'Financial', 'Legal'].includes(doc.category);
             const isRestricted =
               doc.whoCanView && Array.isArray(doc.whoCanView) && !doc.whoCanView.includes('ALL');
+            const visual = getDocVisual(doc);
+            const isUnmasked = unmaskedDocIds.has(doc._id);
 
             return (
               <div
                 key={doc._id}
-                className="bg-white dark:bg-[#18181B] rounded-3xl border border-slate-200/80 dark:border-[#262626] p-5 sm:p-6 shadow-sm hover:border-[#3ECF8E] dark:hover:border-[#3ECF8E] hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col justify-between group"
+                className="relative bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200/80 dark:border-[#262626] p-4 sm:p-5 shadow-2xs hover:border-[#10B981] dark:hover:border-[#3ECF8E] hover:shadow-md transition-all flex flex-col justify-between group overflow-hidden"
               >
+                {/* Realistic Colored Indian Accent Top Strip */}
+                <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r ${visual.strip}`} />
+
                 <div>
-                  {/* Card Header: Icon + Title + Status Badges */}
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-100/70 dark:bg-[#3ECF8E]/15 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center shrink-0 border border-emerald-200/60 dark:border-[#3ECF8E]/25">
+                  {/* Card Header: Themed Icon + Title + Status Badges */}
+                  <div className="flex items-start justify-between gap-2.5 mb-2.5 pt-0.5">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${visual.iconBoxBg}`}
+                      >
                         {renderDocCategoryIcon(doc.category)}
                       </div>
 
@@ -628,58 +906,76 @@ export default function VaultPage() {
                               className="p-1 rounded-md bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0"
                               title="Protected by 4-digit security MPIN"
                             >
-                              <Lock size={12} />
+                              <Lock size={11} />
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-neutral-400 font-medium truncate mt-0.5">
-                          {doc.category} • For {doc.assignedMember?.name || 'Whole Family'}
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <span
+                            className={`text-[10px] font-bold px-1.5 py-0.2 rounded-md border flex items-center gap-1 shrink-0 ${visual.tagBg}`}
+                          >
+                            <span>{visual.badgeEmoji}</span>
+                            <span>{visual.label}</span>
+                          </span>
+                          <span className="text-[11px] text-slate-500 dark:text-neutral-400 font-medium truncate">
+                            For {doc.assignedMember?.name || 'Whole Family'}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Expiry & Permission Badges */}
+                    {/* Expiry Badge */}
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       {getExpiryBadge(doc.expiryDate)}
                       {isRestricted ? (
-                        <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-[#141414] text-[10px] font-semibold text-slate-600 dark:text-neutral-400">
+                        <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-[#141414] text-[9px] font-semibold text-slate-600 dark:text-neutral-400">
                           🔒 Restricted
                         </span>
                       ) : (
-                        <span className="px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-[#3ECF8E]/10 text-[10px] font-semibold text-emerald-800 dark:text-[#3ECF8E]">
+                        <span className="px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-[#3ECF8E]/10 text-[9px] font-semibold text-emerald-800 dark:text-[#3ECF8E]">
                           👥 Family
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* 1-TAP COPY DOCUMENT ID NUMBER BAR */}
+                  {/* 1-TAP COPY DOCUMENT ID NUMBER BAR WITH MASK TOGGLE */}
                   {hasNumber ? (
-                    <div className="my-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-2 min-w-0">
+                    <div className="my-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-2 min-w-0">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-neutral-500 tracking-wider shrink-0">
+                        <span className="text-[9px] font-bold uppercase text-slate-400 dark:text-neutral-500 tracking-wider shrink-0">
                           ID:
                         </span>
                         <code className="text-xs font-mono font-bold text-slate-900 dark:text-neutral-200 truncate">
-                          {doc.documentNumber}
+                          {formatDocNumber(doc.documentNumber, isUnmasked, visual.type === 'aadhaar')}
                         </code>
+                        {doc.documentNumber.replace(/\s+/g, '').length >= 6 && (
+                          <button
+                            type="button"
+                            onClick={(e) => toggleMask(doc._id, e)}
+                            className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 cursor-pointer"
+                            title={isUnmasked ? 'Hide full number' : 'Show full number'}
+                          >
+                            {isUnmasked ? <EyeOff size={12} /> : <Eye size={12} />}
+                          </button>
+                        )}
                       </div>
                       <button
                         type="button"
                         onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
-                        className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shrink-0 cursor-pointer shadow-2xs active:scale-95"
+                        className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] text-[11px] font-bold flex items-center justify-center gap-1 transition-colors shrink-0 cursor-pointer shadow-2xs active:scale-95"
                         title="Copy document number in one tap"
                       >
                         {copiedNumber === doc.documentNumber ? (
-                          <Check size={14} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                          <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" />
                         ) : (
-                          <Copy size={14} />
+                          <Copy size={12} />
                         )}
                         <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
                       </button>
                     </div>
                   ) : (
-                    <div className="my-3 py-1.5 px-3 rounded-xl bg-slate-50/50 dark:bg-[#141414]/50 border border-dashed border-slate-200/60 dark:border-[#262626] text-[11px] text-slate-400 dark:text-neutral-500 italic">
+                    <div className="my-2.5 py-1 px-2.5 rounded-lg bg-slate-50/50 dark:bg-[#141414]/50 border border-dashed border-slate-200/60 dark:border-[#262626] text-[10px] text-slate-400 dark:text-neutral-500 italic">
                       No document number saved
                     </div>
                   )}
@@ -690,7 +986,7 @@ export default function VaultPage() {
                     if (!shareInfo) return null;
                     return (
                       <div
-                        className={`mb-3 p-2.5 rounded-2xl border flex items-center justify-between gap-2 transition-colors ${
+                        className={`mb-2.5 p-2 rounded-xl border flex items-center justify-between gap-2 transition-colors ${
                           shareInfo.isExpired
                             ? 'bg-slate-50 dark:bg-[#141414] border-slate-200 dark:border-[#262626]'
                             : 'bg-emerald-50/70 dark:bg-[#3ECF8E]/10 border-emerald-200/80 dark:border-[#3ECF8E]/25'
@@ -698,13 +994,13 @@ export default function VaultPage() {
                       >
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           <div
-                            className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
                               shareInfo.isExpired
                                 ? 'bg-slate-200 dark:bg-[#262626] text-slate-500 dark:text-neutral-400'
                                 : 'bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]'
                             }`}
                           >
-                            <Share2 size={13} />
+                            <Share2 size={12} />
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -715,16 +1011,13 @@ export default function VaultPage() {
                                     : 'text-emerald-800 dark:text-[#3ECF8E]'
                                 }`}
                               >
-                                {shareInfo.isExpired ? 'Link Expired' : 'Safe Share Link'}
+                                {shareInfo.isExpired ? 'Link Expired' : 'Safe Share'}
                               </span>
                               {!shareInfo.isExpired && (
                                 <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100/80 dark:bg-[#3ECF8E]/20 px-1.5 py-0.2 rounded-md">
                                   {shareInfo.timeLeft}
                                 </span>
                               )}
-                            </div>
-                            <div className="text-[10px] text-slate-500 dark:text-neutral-400 truncate" title={shareInfo.desc}>
-                              {shareInfo.desc}
                             </div>
                           </div>
                         </div>
@@ -733,7 +1026,7 @@ export default function VaultPage() {
                             <button
                               type="button"
                               onClick={(e) => handleCopyExistingShareLink(doc, e)}
-                              className="px-2.5 py-1 rounded-xl bg-emerald-100 hover:bg-emerald-200 dark:bg-[#3ECF8E]/20 dark:hover:bg-[#3ECF8E]/30 text-emerald-800 dark:text-[#3ECF8E] text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                              className="px-2 py-0.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-[#3ECF8E]/20 dark:hover:bg-[#3ECF8E]/30 text-emerald-800 dark:text-[#3ECF8E] text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
                               title="Copy active share link"
                             >
                               <Copy size={11} />
@@ -743,7 +1036,7 @@ export default function VaultPage() {
                           <button
                             type="button"
                             onClick={(e) => handleRevokeShareLink(doc._id, e)}
-                            className="px-2 py-1 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 text-[11px] font-semibold transition-colors cursor-pointer"
+                            className="px-1.5 py-0.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 text-[10px] font-semibold transition-colors cursor-pointer"
                             title="Revoke and disable this share link"
                           >
                             Revoke
@@ -754,42 +1047,48 @@ export default function VaultPage() {
                   })()}
 
                   {/* Document Meta Details */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-neutral-500 font-medium pt-1">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-neutral-500 font-medium pt-0.5">
                     <span>Size: {(doc.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
-                    {doc.expiryDate && (
-                      <span>Valid to: {new Date(doc.expiryDate).toLocaleDateString()}</span>
-                    )}
+                    {doc.expiryDate && <span>Valid to: {new Date(doc.expiryDate).toLocaleDateString()}</span>}
                   </div>
                 </div>
 
                 {/* Card Footer Actions */}
-                <div className="pt-3.5 mt-4 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between">
+                <div className="pt-2.5 mt-2.5 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between">
                   <button
                     type="button"
                     onClick={(e) => handleShareSafely(doc._id, e)}
-                    className="p-2 rounded-xl text-slate-600 dark:text-neutral-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 transition-colors text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                    className="p-1 rounded-lg text-slate-600 dark:text-neutral-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 transition-colors text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
                     title="Share Safely (24-hour expiring link)"
                   >
-                    <Share2 size={14} />
+                    <Share2 size={13} />
                     <span>{shareFeedback?.id === doc._id ? 'Copied!' : 'Share Safely'}</span>
                   </button>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <Link
                       to={`/vault/documents/${doc._id}`}
                       onClick={(e) => handleDocumentClick(e, doc)}
-                      className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/15 text-slate-700 dark:text-neutral-200 hover:text-emerald-700 dark:hover:text-[#3ECF8E] text-xs font-bold transition-colors inline-flex items-center gap-1"
+                      className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] text-[11px] font-bold transition-colors inline-flex items-center gap-1"
                     >
-                      <Eye size={13} />
+                      <Eye size={12} />
                       <span>View</span>
+                    </Link>
+                    <Link
+                      to={`/vault/documents/${doc._id}?edit=true`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 rounded-lg text-slate-400 dark:text-neutral-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 transition-colors"
+                      title="Edit document"
+                    >
+                      <Edit3 size={13} />
                     </Link>
                     <button
                       type="button"
                       onClick={(e) => handleDelete(doc._id, doc.title, e)}
-                      className="p-1.5 rounded-xl text-slate-400 dark:text-neutral-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                      className="p-1 rounded-lg text-slate-400 dark:text-neutral-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
                       title="Delete document"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
@@ -802,88 +1101,120 @@ export default function VaultPage() {
         <div className="bg-white dark:bg-[#18181B] rounded-3xl border border-slate-200/80 dark:border-[#262626] overflow-hidden shadow-sm transition-colors">
           {/* Mobile Table Cards (Hidden on >= 768px) */}
           <div className="block md:hidden divide-y divide-slate-100 dark:divide-[#262626]">
-            {filteredDocs.map((doc) => (
-              <div key={doc._id} className="p-4 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <Link
-                    to={`/vault/documents/${doc._id}`}
-                    onClick={(e) => handleDocumentClick(e, doc)}
-                    className="flex items-center gap-3 min-w-0 flex-1"
-                  >
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-100/70 dark:bg-[#3ECF8E]/15 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center font-bold shrink-0">
-                      {renderDocCategoryIcon(doc.category)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
-                          {doc.title}
-                        </span>
-                        {(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)) && (
-                          <span className="p-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0">
-                            <Lock size={11} />
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-neutral-400 truncate">
-                        {doc.category} • For {doc.assignedMember?.name || 'Whole Family'}
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    {getExpiryBadge(doc.expiryDate)}
-                  </div>
-                </div>
+            {filteredDocs.map((doc) => {
+              const visual = getDocVisual(doc);
+              const isUnmasked = unmaskedDocIds.has(doc._id);
+              const isAadhaar = doc.category === 'Identity' && doc.title.toLowerCase().includes('aadhaar');
 
-                {doc.documentNumber && (
-                  <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1 truncate">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block">
-                        ID Number
-                      </span>
-                      <code className="text-xs font-mono font-bold text-slate-900 dark:text-neutral-200 truncate block">
-                        {doc.documentNumber}
-                      </code>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
-                      className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-2xs"
-                    >
-                      {copiedNumber === doc.documentNumber ? <Check size={14} /> : <Copy size={14} />}
-                      <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
-                    </button>
-                  </div>
-                )}
+              return (
+                <div key={doc._id} className="p-4 space-y-3 relative overflow-hidden">
+                  {/* Visual accent bar */}
+                  <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r ${visual.strip}`} />
 
-                <div className="flex items-center justify-between pt-1 text-xs">
-                  <button
-                    type="button"
-                    onClick={(e) => handleShareSafely(doc._id, e)}
-                    className="text-slate-500 dark:text-neutral-400 hover:text-emerald-600 font-semibold flex items-center gap-1.5 py-1.5 cursor-pointer"
-                  >
-                    <Share2 size={14} />
-                    <span>{shareFeedback?.id === doc._id ? 'Copied!' : 'Share Safely'}</span>
-                  </button>
-
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-start justify-between gap-2 pt-0.5">
                     <Link
                       to={`/vault/documents/${doc._id}`}
                       onClick={(e) => handleDocumentClick(e, doc)}
-                      className="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs"
+                      className="flex items-center gap-3 min-w-0 flex-1"
                     >
-                      View
+                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold shrink-0 ${visual.iconBoxBg}`}>
+                        {renderDocCategoryIcon(doc.category)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                            {doc.title}
+                          </span>
+                          {visual.badgeEmoji && (
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${visual.tagStyle} shrink-0`}>
+                              {visual.badgeEmoji} {visual.label}
+                            </span>
+                          )}
+                          {(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)) && (
+                            <span className="p-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 shrink-0" title="Protected by MPIN">
+                              <Lock size={11} />
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-neutral-400 truncate">
+                          {doc.category} • For {doc.assignedMember?.name || 'Whole Family'}
+                        </div>
+                      </div>
                     </Link>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      {getExpiryBadge(doc.expiryDate)}
+                    </div>
+                  </div>
+
+                  {doc.documentNumber && (
+                    <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1 truncate">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block">
+                            ID Number
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => toggleMask(doc._id, e)}
+                            className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 cursor-pointer"
+                            title={isUnmasked ? "Mask number" : "Reveal number"}
+                          >
+                            {isUnmasked ? <EyeOff size={11} /> : <Eye size={11} />}
+                          </button>
+                        </div>
+                        <code className="text-xs font-mono font-bold text-slate-900 dark:text-neutral-200 truncate block">
+                          {formatDocNumber(doc.documentNumber, isUnmasked, isAadhaar)}
+                        </code>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
+                        className="min-h-[36px] px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
+                      >
+                        {copiedNumber === doc.documentNumber ? <Check size={13} /> : <Copy size={13} />}
+                        <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-1 text-xs">
                     <button
                       type="button"
-                      onClick={(e) => handleDelete(doc._id, doc.title, e)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 cursor-pointer"
+                      onClick={(e) => handleShareSafely(doc._id, e)}
+                      className="text-slate-500 dark:text-neutral-400 hover:text-emerald-600 font-semibold flex items-center gap-1.5 py-1.5 cursor-pointer"
                     >
-                      <Trash2 size={15} />
+                      <Share2 size={14} />
+                      <span>{shareFeedback?.id === doc._id ? 'Copied!' : 'Share Safely'}</span>
                     </button>
+
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to={`/vault/documents/${doc._id}`}
+                        onClick={(e) => handleDocumentClick(e, doc)}
+                        className="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs"
+                      >
+                        View
+                      </Link>
+                      <Link
+                        to={`/vault/documents/${doc._id}?edit=true`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-xl text-slate-400 dark:text-neutral-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 transition-colors"
+                        title="Edit document"
+                      >
+                        <Edit3 size={15} />
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDelete(doc._id, doc.title, e)}
+                        className="p-1.5 text-slate-400 hover:text-red-600 cursor-pointer"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Desktop Full Data Table */}
@@ -900,105 +1231,134 @@ export default function VaultPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-[#262626] font-medium text-slate-700 dark:text-neutral-300">
-                {filteredDocs.map((doc) => (
-                  <tr key={doc._id} className="hover:bg-emerald-50/30 dark:hover:bg-[#202024] transition-colors">
-                    <td className="px-5 py-4">
-                      <Link
-                        to={`/vault/documents/${doc._id}`}
-                        onClick={(e) => handleDocumentClick(e, doc)}
-                        className="flex items-center gap-3"
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-emerald-100/70 dark:bg-[#3ECF8E]/15 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center font-bold shrink-0">
-                          {renderDocCategoryIcon(doc.category)}
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-900 dark:text-white hover:text-emerald-600 dark:hover:text-[#3ECF8E] transition-colors flex items-center gap-1.5">
-                            <span>{doc.title}</span>
-                            {(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)) && (
-                              <span className="p-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300" title="Protected by 4-digit MPIN">
-                                <Lock size={11} />
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-[10px] text-slate-400 dark:text-neutral-500 flex items-center gap-2 flex-wrap">
-                            <span>{(doc.fileSize / (1024 * 1024)).toFixed(1)} MB</span>
-                            {doc.shareLink?.token && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E]">
-                                <Share2 size={9} />
-                                <span>Active Link</span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </Link>
-                    </td>
+                {filteredDocs.map((doc) => {
+                  const visual = getDocVisual(doc);
+                  const isUnmasked = unmaskedDocIds.has(doc._id);
+                  const isAadhaar = doc.category === 'Identity' && doc.title.toLowerCase().includes('aadhaar');
 
-                    <td className="px-4 py-4">
-                      <span className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-[#141414] text-slate-700 dark:text-neutral-300 font-semibold text-[11px] border border-transparent dark:border-[#262626]">
-                        {doc.category}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-4 font-semibold text-slate-900 dark:text-white">
-                      {doc.assignedMember?.name || 'Whole Family'}
-                    </td>
-
-                    <td className="px-4 py-4">
-                      {doc.documentNumber ? (
-                        <div className="flex items-center gap-2">
-                          <code className="font-mono font-bold text-slate-900 dark:text-neutral-200 bg-slate-100 dark:bg-[#141414] px-2.5 py-1 rounded-xl text-[11px] border border-slate-200/80 dark:border-[#262626]">
-                            {doc.documentNumber}
-                          </code>
-                          <button
-                            type="button"
-                            onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
-                            className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
-                            title="Copy ID number"
-                          >
-                            {copiedNumber === doc.documentNumber ? <Check size={11} /> : <Copy size={11} />}
-                            <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 dark:text-neutral-500 text-[11px]">—</span>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-4">
-                      {doc.expiryDate ? (
-                        <div className="space-y-0.5">
-                          <div className="text-[11px] font-semibold text-slate-800 dark:text-neutral-200">
-                            {new Date(doc.expiryDate).toLocaleDateString()}
-                          </div>
-                          <div>{getExpiryBadge(doc.expiryDate)}</div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 dark:text-neutral-500 text-[11px]">No Expiry</span>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                  return (
+                    <tr key={doc._id} className="hover:bg-emerald-50/30 dark:hover:bg-[#202024] transition-colors">
+                      <td className="px-5 py-3.5">
                         <Link
                           to={`/vault/documents/${doc._id}`}
                           onClick={(e) => handleDocumentClick(e, doc)}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-[11px] font-bold inline-flex items-center gap-1"
+                          className="flex items-center gap-3"
                         >
-                          <Eye size={12} />
-                          <span>View</span>
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold shrink-0 ${visual.iconBoxBg}`}>
+                            {renderDocCategoryIcon(doc.category)}
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-900 dark:text-white hover:text-emerald-600 dark:hover:text-[#3ECF8E] transition-colors flex items-center gap-1.5 flex-wrap">
+                              <span>{doc.title}</span>
+                              {visual.badgeEmoji && (
+                                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${visual.tagStyle}`}>
+                                  {visual.badgeEmoji} {visual.label}
+                                </span>
+                              )}
+                              {(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)) && (
+                                <span className="p-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300" title="Protected by 4-digit MPIN">
+                                  <Lock size={11} />
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-slate-400 dark:text-neutral-500 flex items-center gap-2 flex-wrap">
+                              <span>{(doc.fileSize / (1024 * 1024)).toFixed(1)} MB</span>
+                              {doc.shareLink?.token && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E]">
+                                  <Share2 size={9} />
+                                  <span>Active Link</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </Link>
-                        <button
-                          type="button"
-                          onClick={(e) => handleDelete(doc._id, doc.title, e)}
-                          className="p-1.5 rounded-xl text-slate-300 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer transition-colors"
-                          title="Delete document"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        <span className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-[#141414] text-slate-700 dark:text-neutral-300 font-semibold text-[11px] border border-transparent dark:border-[#262626]">
+                          {doc.category}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white">
+                        {doc.assignedMember?.name || 'Whole Family'}
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        {doc.documentNumber ? (
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#141414] px-2.5 py-1 rounded-xl border border-slate-200/80 dark:border-[#262626]">
+                              <code className="font-mono font-bold text-slate-900 dark:text-neutral-200 text-[11px]">
+                                {formatDocNumber(doc.documentNumber, isUnmasked, isAadhaar)}
+                              </code>
+                              <button
+                                type="button"
+                                onClick={(e) => toggleMask(doc._id, e)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 p-0.5 rounded cursor-pointer"
+                                title={isUnmasked ? "Mask number" : "Reveal number"}
+                              >
+                                {isUnmasked ? <EyeOff size={11} /> : <Eye size={11} />}
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => handleCopyNumber(doc.documentNumber, e)}
+                              className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer active:scale-95"
+                              title="Copy ID number"
+                            >
+                              {copiedNumber === doc.documentNumber ? <Check size={11} /> : <Copy size={11} />}
+                              <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 dark:text-neutral-500 text-[11px]">—</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        {doc.expiryDate ? (
+                          <div className="space-y-0.5">
+                            <div className="text-[11px] font-semibold text-slate-800 dark:text-neutral-200">
+                              {new Date(doc.expiryDate).toLocaleDateString()}
+                            </div>
+                            <div>{getExpiryBadge(doc.expiryDate)}</div>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 dark:text-neutral-500 text-[11px]">No Expiry</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            to={`/vault/documents/${doc._id}`}
+                            onClick={(e) => handleDocumentClick(e, doc)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-[11px] font-bold inline-flex items-center gap-1"
+                          >
+                            <Eye size={12} />
+                            <span>View</span>
+                          </Link>
+                          <Link
+                            to={`/vault/documents/${doc._id}?edit=true`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-1.5 rounded-xl text-slate-400 dark:text-neutral-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 cursor-pointer transition-colors"
+                            title="Edit document"
+                          >
+                            <Edit3 size={13} />
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDelete(doc._id, doc.title, e)}
+                            className="p-1.5 rounded-xl text-slate-300 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer transition-colors"
+                            title="Delete document"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

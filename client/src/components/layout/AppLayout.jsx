@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   Shield,
+  ShieldAlert,
   Search,
   Sun,
   Moon,
@@ -123,7 +124,8 @@ export default function AppLayout() {
   // Navigation Groups matching exact Supabase & GharVault specifications
   const group1 = [
     { name: 'Home', path: '/dashboard', icon: LayoutDashboard, exact: true },
-    { name: 'Family Members', path: '/family', icon: Users },
+    { name: 'Family Directory', path: '/family', icon: Users },
+    { name: 'Break-Glass SOS', path: '/break-glass', icon: ShieldAlert, badge: 'SOS' },
   ];
 
   const group2 = [
@@ -146,16 +148,16 @@ export default function AppLayout() {
     if (item.exactPath) {
       return location.pathname === item.path && !location.search;
     }
-    if (item.search) {
-      const decoded = decodeURIComponent(location.search);
-      return location.pathname === '/vault' && decoded.includes(item.search);
-    }
     if (item.path === '/family') {
       return (
         location.pathname.startsWith('/family') &&
         !location.pathname.includes('/setup') &&
         !location.pathname.includes('/manage')
       );
+    }
+    if (item.search) {
+      const decoded = decodeURIComponent(location.search);
+      return location.pathname === '/vault' && decoded.includes(item.search);
     }
     return location.pathname === item.path;
   };
@@ -342,7 +344,11 @@ export default function AppLayout() {
                   isHovered ? 'justify-between' : 'justify-center'
                 }`}
               >
-                <div className="flex items-center gap-2 min-w-0">
+                <Link
+                  to={user?._id || user?.id ? `/family/${user._id || user.id}` : '/settings'}
+                  title="View My Profile"
+                  className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity cursor-pointer flex-1"
+                >
                   <img
                     src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3ECF8E&color=121212`}
                     alt={user?.name || 'User'}
@@ -350,12 +356,12 @@ export default function AppLayout() {
                   />
                   <span
                     className={`whitespace-nowrap overflow-hidden transition-all duration-200 text-[12px] font-medium text-slate-900 dark:text-white truncate ${
-                      isHovered ? 'opacity-100 max-w-[120px]' : 'opacity-0 max-w-0 pointer-events-none'
+                      isHovered ? 'opacity-100 max-w-[110px]' : 'opacity-0 max-w-0 pointer-events-none'
                     }`}
                   >
                     {user?.name || 'Family Admin'}
                   </span>
-                </div>
+                </Link>
 
                 <button
                   type="button"
@@ -474,7 +480,11 @@ export default function AppLayout() {
             </div>
 
             {/* Mobile User Avatar */}
-            <Link to="/settings" className="md:hidden block shrink-0" title="Profile Settings">
+            <Link
+              to={user?._id || user?.id ? `/family/${user._id || user.id}` : '/settings'}
+              className="md:hidden block shrink-0"
+              title="My Profile"
+            >
               <img
                 src={
                   user?.avatar ||
