@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { api } from '../lib/api';
 import { supabase, isSupabaseConfigured, signInWithGoogle, signOut as supabaseSignOut } from '../lib/supabaseClient';
 
@@ -11,12 +11,15 @@ export const AuthProvider = ({ children }) => {
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isSyncingRef = useRef(false);
 
   const openLogoutModal = () => setIsLogoutModalOpen(true);
   const closeLogoutModal = () => setIsLogoutModalOpen(false);
 
   const syncBackendUser = async (profileData) => {
+    if (isSyncingRef.current) return null;
     try {
+      isSyncingRef.current = true;
       const pendingCode = localStorage.getItem('pending_invite_code') || sessionStorage.getItem('pending_invite_code');
       const pendingRelation = localStorage.getItem('pending_invite_relation') || sessionStorage.getItem('pending_invite_relation');
       const pendingName = localStorage.getItem('pending_invite_name') || sessionStorage.getItem('pending_invite_name');
@@ -46,6 +49,8 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error('[AuthContext] Sync backend user failed:', err);
+    } finally {
+      isSyncingRef.current = false;
     }
     return null;
   };
@@ -54,7 +59,22 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      // 1. Check if Supabase has an active OAuth session
+      // 1. Check local JWT token from GharVault backend first
+      const token = localStorage.getItem('gharvault_token');
+      if (token && token !== 'null' && token !== 'undefined') {
+        const data = await api.getMe();
+        if (data?.user) {
+          setUser(data.user);
+          setFamily(data.family);
+          setLoading(false);
+          return;
+        } else {
+          // Token is invalid/expired
+          localStorage.removeItem('gharvault_token');
+        }
+      }
+
+      // 2. Only if no valid token exists, check if Supabase has an active OAuth session
       if (isSupabaseConfigured && supabase) {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
@@ -72,21 +92,6 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
             return;
           }
-        }
-      }
-
-      // 2. Check local JWT token from GharVault backend
-      const token = localStorage.getItem('gharvault_token');
-      if (token && token !== 'null' && token !== 'undefined') {
-        const data = await api.getMe();
-        if (data?.user) {
-          setUser(data.user);
-          setFamily(data.family);
-          setLoading(false);
-          return;
-        } else {
-          // Token is invalid/expired
-          localStorage.removeItem('gharvault_token');
         }
       }
 

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { seedInitialData } from './seed.js';
+import User from '../models/User.js';
 
 let isConnected = false;
 
@@ -37,6 +38,12 @@ export const connectDB = async () => {
     });
     isConnected = true;
     console.log(`[Database] MongoDB Atlas Connected: ${conn.connection.host}`);
+    try {
+      await User.syncIndexes();
+      console.log('[Database] User unique indexes synchronized.');
+    } catch (idxErr) {
+      console.warn('[Database] User index sync warning:', idxErr.message);
+    }
     await seedInitialData(true);
   } catch (err) {
     isConnected = false;

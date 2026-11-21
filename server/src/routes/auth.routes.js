@@ -25,6 +25,43 @@ export const generateToken = (user) => {
   );
 };
 
+// In-flight mutex locks to prevent race-condition duplicate user creation
+const authSyncLocks = new Map();
+
+async function handleInFlightAuth(cleanEmail, res) {
+  if (authSyncLocks.has(cleanEmail)) {
+    try {
+      await authSyncLocks.get(cleanEmail);
+    } catch (e) {}
+
+    let user = null;
+    let family = null;
+    if (isConnected && mongoose.connection.readyState === 1) {
+      user = await User.findOne({ email: cleanEmail });
+      if (user?.familyId) {
+        family = await Family.findById(user.familyId);
+      }
+    } else {
+      user = memoryStore.users.find(u => u.email?.toLowerCase() === cleanEmail);
+      if (user?.familyId) {
+        family = memoryStore.families.find(f => f._id?.toString() === user.familyId?.toString());
+      }
+    }
+
+    if (user) {
+      const token = generateToken(user);
+      return res.json({
+        success: true,
+        token,
+        user,
+        family,
+        isNewUser: false,
+      });
+    }
+  }
+  return null;
+}
+
 // POST /api/auth/sync — Sync user authenticated via Supabase OAuth with MongoDB
 router.post('/sync', async (req, res) => {
   try {
@@ -34,7 +71,15 @@ router.post('/sync', async (req, res) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const cleanName = name?.trim() || cleanEmail.split('@')[0] || 'Family Member';
+
+    if (await handleInFlightAuth(cleanEmail, res)) return;
+
+    let unlock;
+    const lockPromise = new Promise(resolve => { unlock = resolve; });
+    authSyncLocks.set(cleanEmail, lockPromise);
+
+    try {
+      const cleanName = name?.trim() || cleanEmail.split('@')[0] || 'Family Member';
     const cleanInviteCode = inviteCode ? inviteCode.trim().toUpperCase() : null;
     const userAvatar =
       avatar ||
@@ -241,6 +286,10 @@ router.post('/sync', async (req, res) => {
       family,
       isNewUser,
     });
+    } finally {
+      authSyncLocks.delete(cleanEmail);
+      if (typeof unlock === 'function') unlock();
+    }
   } catch (err) {
     console.error('[Auth Sync Error]', err);
     res.status(500).json({ error: 'Auth sync failed: ' + err.message });
@@ -253,7 +302,15 @@ router.post('/google', async (req, res) => {
     const { email, name, avatar, googleId, inviteCode, relationship } = req.body;
 
     const cleanEmail = (email || 'family.admin@gmail.com').toLowerCase().trim();
-    const cleanName = name?.trim() || cleanEmail.split('@')[0] || 'Family Admin';
+
+    if (await handleInFlightAuth(cleanEmail, res)) return;
+
+    let unlock;
+    const lockPromise = new Promise(resolve => { unlock = resolve; });
+    authSyncLocks.set(cleanEmail, lockPromise);
+
+    try {
+      const cleanName = name?.trim() || cleanEmail.split('@')[0] || 'Family Admin';
     const cleanInviteCode = inviteCode ? inviteCode.trim().toUpperCase() : null;
     const userAvatar =
       avatar ||
@@ -464,6 +521,10 @@ router.post('/google', async (req, res) => {
       user,
       family,
     });
+    } finally {
+      authSyncLocks.delete(cleanEmail);
+      if (typeof unlock === 'function') unlock();
+    }
   } catch (err) {
     console.error('Google Auth Error:', err);
     res.status(500).json({ error: 'Authentication failed: ' + err.message });

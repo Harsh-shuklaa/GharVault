@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Shield, AlertCircle, ArrowRight, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
@@ -12,8 +12,11 @@ export default function AuthCallbackPage() {
   const [status, setStatus] = useState('Connecting to Secure Vault...');
   const [error, setError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  const hasProcessedRef = useRef(false);
 
   useEffect(() => {
+    if (hasProcessedRef.current) return;
+    hasProcessedRef.current = true;
     let isMounted = true;
 
     const processAuthCallback = async () => {
