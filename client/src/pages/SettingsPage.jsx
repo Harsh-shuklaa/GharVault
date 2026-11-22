@@ -42,7 +42,7 @@ import SendPushModal from '../components/common/SendPushModal';
 
 export default function SettingsPage() {
   const { user, family, updateUser, updateFamily, openLogoutModal } = useAuth();
-  const { theme, isDark, setTheme } = useTheme();
+  const { theme, isDark, setTheme, darkStyle, setDarkStyle, accentColor, isBlue, setAccentColor } = useTheme();
   const { toast } = useToast();
   const { isStandalone, isIOS, isAndroid, triggerNativeInstall } = usePWAInstall();
   const {
@@ -919,62 +919,181 @@ export default function SettingsPage() {
                     <span>Appearance & Visual Theme</span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
-                    Choose between high-contrast Obsidian Dark or Clean Light mode.
+                    Choose between pitch-black Obsidian Dark, Stitch Midnight Slate, or Clean Light mode.
                   </p>
                 </div>
                 <span className="text-xs font-mono font-bold text-[#10B981] dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-3 py-1 rounded-full border border-emerald-200 dark:border-[#3ECF8E]/20">
-                  {isDark ? 'Obsidian Dark' : 'Clean Light'}
+                  {isDark ? (darkStyle === 'obsidian' ? 'Obsidian Dark' : 'Midnight Slate Dark') : 'Clean Light'}
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                {/* Dark Mode Option */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+                {/* 1. Obsidian Dark (Pure Pitch-Black OLED) */}
                 <button
                   type="button"
-                  onClick={() => setTheme('dark')}
-                  className={`p-5 rounded-2xl border text-left transition-all cursor-pointer ${
-                    isDark
-                      ? 'border-[#3ECF8E] bg-[#141414] ring-2 ring-[#3ECF8E]/20 shadow-md'
-                      : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] hover:border-slate-300'
+                  onClick={() => {
+                    setTheme('dark');
+                    setDarkStyle('obsidian');
+                    toast.success('Switched to Obsidian Dark (OLED Black)!');
+                  }}
+                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    isDark && darkStyle === 'obsidian'
+                      ? (isBlue ? 'border-[#2563EB] bg-blue-50/10 dark:bg-[#18181B] ring-2 ring-blue-500/25 shadow-md' : 'border-[#10B981] dark:border-[#3ECF8E] bg-emerald-50/10 dark:bg-[#18181B] ring-2 ring-[#3ECF8E]/25 shadow-md')
+                      : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] hover:border-slate-300 dark:hover:border-neutral-700'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#1C1C1C] border border-[#262626] text-[#3ECF8E] flex items-center justify-center">
-                      <Moon size={18} strokeWidth={2} />
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#121212] border border-[#27272A] text-slate-200 flex items-center justify-center shadow-xs">
+                      <Moon size={17} strokeWidth={2} />
                     </div>
-                    {isDark && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#3ECF8E] ring-4 ring-[#3ECF8E]/20"></span>
+                    {isDark && darkStyle === 'obsidian' && (
+                      <span className={`w-2.5 h-2.5 rounded-full ${isBlue ? 'bg-blue-500 ring-4 ring-blue-500/25' : 'bg-[#10B981] dark:bg-[#3ECF8E] ring-4 ring-[#3ECF8E]/20'}`}></span>
                     )}
                   </div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-white">Obsidian Dark</div>
-                  <div className="text-xs text-slate-500 dark:text-neutral-400 mt-1 leading-relaxed">
-                    Ultra-deep obsidian canvas with high-contrast emerald green accents. Easy on the eyes.
+                  <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Obsidian Dark</div>
+                  <div className="text-[10px] font-mono font-semibold text-slate-400 dark:text-neutral-500 mt-0.5">Pitch-Black OLED (#121212)</div>
+                  <div className="text-[11px] text-slate-500 dark:text-neutral-400 mt-1 leading-relaxed">
+                    Pure obsidian canvas with maximum contrast. Perfect for OLED battery life & deep focus.
                   </div>
                 </button>
 
-                {/* Light Mode Option */}
+                {/* 2. Midnight Slate Dark (Stitch Banking Navy) */}
                 <button
                   type="button"
-                  onClick={() => setTheme('light')}
-                  className={`p-5 rounded-2xl border text-left transition-all cursor-pointer ${
-                    !isDark
-                      ? 'border-[#10B981] bg-white ring-2 ring-emerald-500/20 shadow-md'
-                      : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] hover:border-slate-300'
+                  onClick={() => {
+                    setTheme('dark');
+                    setDarkStyle('midnight');
+                    toast.success('Switched to Midnight Slate Dark (Stitch Navy)!');
+                  }}
+                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    isDark && darkStyle === 'midnight'
+                      ? (isBlue ? 'border-[#2563EB] bg-blue-50/10 dark:bg-[#131E36] ring-2 ring-blue-500/25 shadow-md' : 'border-[#10B981] dark:border-[#3ECF8E] bg-emerald-50/10 dark:bg-[#131E36] ring-2 ring-[#3ECF8E]/25 shadow-md')
+                      : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] hover:border-slate-300 dark:hover:border-neutral-700'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200">
-                      <Sun size={18} strokeWidth={2} />
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#0F172A] border border-[#1E2E4E] text-blue-400 flex items-center justify-center shadow-xs">
+                      <Sparkles size={17} strokeWidth={2} />
                     </div>
-                    {!isDark && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] ring-4 ring-[#10B981]/20"></span>
+                    {isDark && darkStyle === 'midnight' && (
+                      <span className={`w-2.5 h-2.5 rounded-full ${isBlue ? 'bg-blue-500 ring-4 ring-blue-500/25' : 'bg-[#10B981] dark:bg-[#3ECF8E] ring-4 ring-[#3ECF8E]/20'}`}></span>
                     )}
                   </div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-white">Clean Light</div>
-                  <div className="text-xs text-slate-500 dark:text-neutral-400 mt-1 leading-relaxed">
-                    Soft off-white background with high-contrast emerald green buttons and readable typography.
+                  <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Midnight Slate</div>
+                  <div className="text-[10px] font-mono font-semibold text-blue-600 dark:text-blue-400 mt-0.5">Stitch Banking Navy (#0A0F1D)</div>
+                  <div className="text-[11px] text-slate-500 dark:text-neutral-400 mt-1 leading-relaxed">
+                    Stitch signature midnight navy canvas with rich slate cards & refined depth.
                   </div>
                 </button>
+
+                {/* 3. Clean Light */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTheme('light');
+                    toast.success('Switched to Clean Light Mode!');
+                  }}
+                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    !isDark
+                      ? (isBlue ? 'border-[#2563EB] bg-white ring-2 ring-blue-500/20 shadow-md' : 'border-[#10B981] bg-white ring-2 ring-emerald-500/20 shadow-md')
+                      : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] hover:border-slate-300 dark:hover:border-neutral-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200 shadow-xs">
+                      <Sun size={17} strokeWidth={2} />
+                    </div>
+                    {!isDark && (
+                      <span className={`w-2.5 h-2.5 rounded-full ${isBlue ? 'bg-blue-600 ring-4 ring-blue-500/20' : 'bg-[#10B981] ring-4 ring-[#10B981]/20'}`}></span>
+                    )}
+                  </div>
+                  <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Clean Light</div>
+                  <div className="text-[10px] font-mono font-semibold text-amber-600 mt-0.5">Daylight Crisp (#F8FAFC)</div>
+                  <div className="text-[11px] text-slate-500 dark:text-neutral-400 mt-1 leading-relaxed">
+                    Soft off-white background with high-contrast buttons and readable typography.
+                  </div>
+                </button>
+              </div>
+
+              {/* Theme Palette / Accent Color Selection */}
+              <div className="pt-4 border-t border-slate-100 dark:border-[#262626] space-y-3">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Sparkles size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                    <span>Brand Theme & Accent Color</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
+                    Choose between GharVault's Emerald Green or Stitch's Royal Blue theme.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Theme 1: Emerald Green */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccentColor('emerald');
+                      toast.success('Switched to Emerald Green Theme!');
+                    }}
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                      accentColor === 'emerald'
+                        ? 'border-[#10B981] bg-emerald-50/50 dark:bg-[#141414] ring-2 ring-emerald-500/30 shadow-md'
+                        : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className="w-6 h-6 rounded-full swatch-emerald ring-2 ring-emerald-500/30 shadow-xs flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                        >
+                          {accentColor === 'emerald' ? '✓' : ''}
+                        </span>
+                        <span className="font-bold text-xs text-slate-900 dark:text-white">Emerald Green</span>
+                      </div>
+                      <span
+                        className="text-[10px] font-mono px-2 py-0.5 rounded-full border swatch-emerald-badge font-bold"
+                      >
+                        GharVault Classic
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed">
+                      Sleek Supabase-inspired modern green styling with dark obsidian or clean light backdrop.
+                    </p>
+                  </button>
+
+                  {/* Theme 2: Stitch Royal Blue */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccentColor('blue');
+                      toast.success('Switched to Stitch Royal Blue Theme!');
+                    }}
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                      accentColor === 'blue'
+                        ? 'border-[#2563EB] bg-blue-50/50 dark:bg-[#141414] ring-2 ring-blue-500/30 shadow-md'
+                        : 'border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#141414] hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className="w-6 h-6 rounded-full swatch-blue ring-2 ring-blue-500/30 shadow-xs flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                        >
+                          {accentColor === 'blue' ? '✓' : ''}
+                        </span>
+                        <span className="font-bold text-xs text-slate-900 dark:text-white">Royal Blue</span>
+                      </div>
+                      <span
+                        className="text-[10px] font-mono px-2 py-0.5 rounded-full border swatch-blue-badge font-bold"
+                      >
+                        Stitch Vault
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed">
+                      Authoritative, banking-grade royal blue theme inspired by Stitch, DigiLocker & Family Office portals.
+                    </p>
+                  </button>
+                </div>
               </div>
             </div>
           )}

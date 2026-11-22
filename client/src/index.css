@@ -152,3 +152,795 @@
 .animate-fadeIn {
   animation: fadeIn 0.35s ease-out forwards;
 }
+
+/* ================= THEME ACCENT: ROYAL BLUE (STITCH VAULT) ================= */
+html[data-accent="blue"],
+html.theme-blue {
+  --primary-accent: #2563eb;
+  --primary-accent-dark: #1d4ed8;
+  --primary-accent-light: #eff6ff;
+  --primary-accent-ring: rgba(37, 99, 235, 0.35);
+}
+
+/* Primary Backgrounds */
+html[data-accent="blue"] .bg-\[\#10B981\],
+html.theme-blue .bg-\[\#10B981\],
+html[data-accent="blue"] .bg-emerald-600,
+html.theme-blue .bg-emerald-600,
+html[data-accent="blue"] .bg-emerald-500,
+html.theme-blue .bg-emerald-500,
+html[data-accent="blue"] .bg-emerald-400,
+html.theme-blue .bg-emerald-400 {
+  background-color: #2563eb !important;
+}
+
+/* Primary Background Hovers */
+html[data-accent="blue"] .hover\:bg-\[\#059669\]:hover,
+html.theme-blue .hover\:bg-\[\#059669\]:hover,
+html[data-accent="blue"] .hover\:bg-emerald-600:hover,
+html.theme-blue .hover\:bg-emerald-600:hover,
+html[data-accent="blue"] .hover\:bg-emerald-700:hover,
+html.theme-blue .hover\:bg-emerald-700:hover,
+html[data-accent="blue"] .active\:bg-emerald-600:active,
+html.theme-blue .active\:bg-emerald-600:active,
+html[data-accent="blue"] .active\:bg-emerald-700:active,
+html.theme-blue .active\:bg-emerald-700:active {
+  background-color: #1d4ed8 !important;
+}
+
+html[data-accent="blue"].dark .dark\:bg-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .dark\:bg-\[\#3ECF8E\],
+html.theme-blue.dark .dark\:bg-\[\#3ECF8E\],
+html.theme-blue .dark .dark\:bg-\[\#3ECF8E\] {
+  background-color: #3b82f6 !important;
+}
+
+html[data-accent="blue"].dark .dark\:hover\:bg-\[\#34B27B\]:hover,
+html[data-accent="blue"].dark .dark\:hover\:bg-\[\#34b27b\]:hover,
+html[data-accent="blue"] .dark .dark\:hover\:bg-\[\#34B27B\]:hover,
+html[data-accent="blue"] .dark .dark\:hover\:bg-\[\#34b27b\]:hover,
+html.theme-blue.dark .dark\:hover\:bg-\[\#34B27B\]:hover,
+html.theme-blue.dark .dark\:hover\:bg-\[\#34b27b\]:hover,
+html.theme-blue .dark .dark\:hover\:bg-\[\#34B27B\]:hover,
+html.theme-blue .dark .dark\:hover\:bg-\[\#34b27b\]:hover {
+  background-color: #2563eb !important;
+}
+
+/* Primary Text Accents (Light Mode) */
+html[data-accent="blue"]:not(.dark) .text-\[\#10B981\],
+html.theme-blue:not(.dark) .text-\[\#10B981\],
+html[data-accent="blue"]:not(.dark) .text-\[\#3ECF8E\],
+html.theme-blue:not(.dark) .text-\[\#3ECF8E\],
+html[data-accent="blue"]:not(.dark) .text-emerald-500,
+html.theme-blue:not(.dark) .text-emerald-500,
+html[data-accent="blue"]:not(.dark) .text-emerald-600,
+html.theme-blue:not(.dark) .text-emerald-600,
+html[data-accent="blue"]:not(.dark) .text-emerald-700,
+html.theme-blue:not(.dark) .text-emerald-700,
+html[data-accent="blue"]:not(.dark) .text-emerald-800,
+html.theme-blue:not(.dark) .text-emerald-800,
+html[data-accent="blue"]:not(.dark) .text-emerald-800\/80,
+html.theme-blue:not(.dark) .text-emerald-800\/80,
+html[data-accent="blue"]:not(.dark) .text-emerald-900,
+html.theme-blue:not(.dark) .text-emerald-900,
+html[data-accent="blue"]:not(.dark) .text-emerald-950,
+html.theme-blue:not(.dark) .text-emerald-950 {
+  color: #2563eb !important;
+}
+
+/* Interactive Text Hover & Group-Hover (Light Mode) */
+html[data-accent="blue"]:not(.dark) .hover\:text-\[\#10B981\]:hover,
+html.theme-blue:not(.dark) .hover\:text-\[\#10B981\]:hover,
+html[data-accent="blue"]:not(.dark) .hover\:text-emerald-600:hover,
+html.theme-blue:not(.dark) .hover\:text-emerald-600:hover,
+html[data-accent="blue"]:not(.dark) .hover\:text-emerald-700:hover,
+html.theme-blue:not(.dark) .hover\:text-emerald-700:hover,
+html[data-accent="blue"]:not(.dark) .hover\:text-emerald-800:hover,
+html.theme-blue:not(.dark) .hover\:text-emerald-800:hover,
+html[data-accent="blue"]:not(.dark) .group:hover .group-hover\:text-\[\#10B981\],
+html.theme-blue:not(.dark) .group:hover .group-hover\:text-\[\#10B981\],
+html[data-accent="blue"]:not(.dark) .group:hover .group-hover\:text-emerald-600,
+html.theme-blue:not(.dark) .group:hover .group-hover\:text-emerald-600,
+html[data-accent="blue"]:not(.dark) .group:hover .group-hover\:text-emerald-700,
+html.theme-blue:not(.dark) .group:hover .group-hover\:text-emerald-700,
+html[data-accent="blue"]:not(.dark) .group\/item:hover .group-hover\/item\:text-\[\#10B981\],
+html.theme-blue:not(.dark) .group\/item:hover .group-hover\/item\:text-\[\#10B981\],
+html[data-accent="blue"]:not(.dark) .group\/item:hover .group-hover\/item\:text-emerald-600,
+html.theme-blue:not(.dark) .group\/item:hover .group-hover\/item\:text-emerald-600 {
+  color: #1d4ed8 !important;
+}
+
+/* Dark Mode Text Accents */
+html[data-accent="blue"].dark .dark\:text-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .dark\:text-\[\#3ECF8E\],
+html.theme-blue.dark .dark\:text-\[\#3ECF8E\],
+html.theme-blue .dark .dark\:text-\[\#3ECF8E\],
+html[data-accent="blue"].dark .dark\:text-emerald-300,
+html[data-accent="blue"] .dark .dark\:text-emerald-300,
+html.theme-blue.dark .dark\:text-emerald-300,
+html.theme-blue .dark .dark\:text-emerald-300,
+html[data-accent="blue"].dark .dark\:text-emerald-300\/80,
+html[data-accent="blue"] .dark .dark\:text-emerald-300\/80,
+html.theme-blue.dark .dark\:text-emerald-300\/80,
+html.theme-blue .dark .dark\:text-emerald-300\/80,
+html[data-accent="blue"].dark .dark\:text-emerald-400,
+html[data-accent="blue"] .dark .dark\:text-emerald-400,
+html.theme-blue.dark .dark\:text-emerald-400,
+html.theme-blue .dark .dark\:text-emerald-400 {
+  color: #60a5fa !important;
+}
+
+/* Dark Mode Hover & Group-Hover Text */
+html[data-accent="blue"].dark .dark\:hover\:text-\[\#3ECF8E\]:hover,
+html[data-accent="blue"] .dark .dark\:hover\:text-\[\#3ECF8E\]:hover,
+html.theme-blue.dark .dark\:hover\:text-\[\#3ECF8E\]:hover,
+html.theme-blue .dark .dark\:hover\:text-\[\#3ECF8E\]:hover,
+html[data-accent="blue"].dark .group:hover .dark\:group-hover\:text-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .group:hover .dark\:group-hover\:text-\[\#3ECF8E\],
+html.theme-blue.dark .group:hover .dark\:group-hover\:text-\[\#3ECF8E\],
+html.theme-blue .dark .group:hover .dark\:group-hover\:text-\[\#3ECF8E\],
+html[data-accent="blue"].dark .group\/item:hover .dark\:group-hover\/item\:text-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .group\/item:hover .dark\:group-hover\/item\:text-\[\#3ECF8E\],
+html.theme-blue.dark .group\/item:hover .dark\:group-hover\/item\:text-\[\#3ECF8E\],
+html.theme-blue .dark .group\/item:hover .dark\:group-hover\/item\:text-\[\#3ECF8E\] {
+  color: #93c5fd !important;
+}
+
+/* Primary Borders */
+html[data-accent="blue"] .border-\[\#10B981\],
+html.theme-blue .border-\[\#10B981\],
+html[data-accent="blue"] .border-emerald-500,
+html.theme-blue .border-emerald-500,
+html[data-accent="blue"] .border-emerald-600,
+html.theme-blue .border-emerald-600 {
+  border-color: #2563eb !important;
+}
+
+/* Subtle Borders (Cards, Dividers, Badges - Light Mode) */
+html[data-accent="blue"]:not(.dark) .border-emerald-100,
+html.theme-blue:not(.dark) .border-emerald-100,
+html[data-accent="blue"]:not(.dark) .border-emerald-200,
+html.theme-blue:not(.dark) .border-emerald-200,
+html[data-accent="blue"]:not(.dark) .border-emerald-200\/60,
+html.theme-blue:not(.dark) .border-emerald-200\/60,
+html[data-accent="blue"]:not(.dark) .border-emerald-200\/70,
+html.theme-blue:not(.dark) .border-emerald-200\/70,
+html[data-accent="blue"]:not(.dark) .border-emerald-200\/80,
+html.theme-blue:not(.dark) .border-emerald-200\/80,
+html[data-accent="blue"]:not(.dark) .border-emerald-300,
+html.theme-blue:not(.dark) .border-emerald-300,
+html[data-accent="blue"]:not(.dark) .border-emerald-300\/80,
+html.theme-blue:not(.dark) .border-emerald-300\/80,
+html[data-accent="blue"]:not(.dark) .border-emerald-500\/20,
+html.theme-blue:not(.dark) .border-emerald-500\/20,
+html[data-accent="blue"]:not(.dark) .border-emerald-500\/30,
+html.theme-blue:not(.dark) .border-emerald-500\/30,
+html[data-accent="blue"]:not(.dark) .border-emerald-500\/50,
+html.theme-blue:not(.dark) .border-emerald-500\/50,
+html[data-accent="blue"]:not(.dark) .border-\[\#10B981\]\/20,
+html.theme-blue:not(.dark) .border-\[\#10B981\]\/20 {
+  border-color: #bfdbfe !important;
+}
+
+/* Interactive Border Hover & Focus (Cards, Inputs, Buttons - Light Mode) */
+html[data-accent="blue"]:not(.dark) .hover\:border-\[\#10B981\]:hover,
+html.theme-blue:not(.dark) .hover\:border-\[\#10B981\]:hover,
+html[data-accent="blue"]:not(.dark) .hover\:border-\[\#10B981\]\/50:hover,
+html.theme-blue:not(.dark) .hover\:border-\[\#10B981\]\/50:hover,
+html[data-accent="blue"]:not(.dark) .hover\:border-emerald-300:hover,
+html.theme-blue:not(.dark) .hover\:border-emerald-300:hover,
+html[data-accent="blue"]:not(.dark) .hover\:border-emerald-500:hover,
+html.theme-blue:not(.dark) .hover\:border-emerald-500:hover,
+html[data-accent="blue"]:not(.dark) .hover\:border-emerald-500\/50:hover,
+html.theme-blue:not(.dark) .hover\:border-emerald-500\/50:hover,
+html[data-accent="blue"]:not(.dark) .hover\:border-emerald-500\/60:hover,
+html.theme-blue:not(.dark) .hover\:border-emerald-500\/60:hover,
+html[data-accent="blue"]:not(.dark) .hover\:border-emerald-600:hover,
+html.theme-blue:not(.dark) .hover\:border-emerald-600:hover,
+html[data-accent="blue"]:not(.dark) .hover\:border-\[\#3ECF8E\]\/60:hover,
+html.theme-blue:not(.dark) .hover\:border-\[\#3ECF8E\]\/60:hover,
+html[data-accent="blue"]:not(.dark) .group:hover .group-hover\:border-\[\#10B981\],
+html.theme-blue:not(.dark) .group:hover .group-hover\:border-\[\#10B981\],
+html[data-accent="blue"]:not(.dark) .group:hover .group-hover\:border-emerald-500,
+html.theme-blue:not(.dark) .group:hover .group-hover\:border-emerald-500,
+html[data-accent="blue"]:not(.dark) .focus\:border-\[\#10B981\]:focus,
+html.theme-blue:not(.dark) .focus\:border-\[\#10B981\]:focus,
+html[data-accent="blue"]:not(.dark) .focus\:border-\[\#3ECF8E\]:focus,
+html.theme-blue:not(.dark) .focus\:border-\[\#3ECF8E\]:focus,
+html[data-accent="blue"]:not(.dark) .focus\:border-emerald-500:focus,
+html.theme-blue:not(.dark) .focus\:border-emerald-500:focus,
+html[data-accent="blue"]:not(.dark) .focus\:border-emerald-600:focus,
+html.theme-blue:not(.dark) .focus\:border-emerald-600:focus {
+  border-color: #2563eb !important;
+}
+
+/* Dark Mode Borders */
+html[data-accent="blue"].dark .dark\:border-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .dark\:border-\[\#3ECF8E\],
+html.theme-blue.dark .dark\:border-\[\#3ECF8E\],
+html.theme-blue .dark .dark\:border-\[\#3ECF8E\] {
+  border-color: #3b82f6 !important;
+}
+
+html[data-accent="blue"].dark .dark\:border-\[\#3ECF8E\]\/15,
+html[data-accent="blue"] .dark .dark\:border-\[\#3ECF8E\]\/15,
+html.theme-blue.dark .dark\:border-\[\#3ECF8E\]\/15,
+html.theme-blue .dark .dark\:border-\[\#3ECF8E\]\/15,
+html[data-accent="blue"].dark .dark\:border-\[\#3ECF8E\]\/20,
+html[data-accent="blue"] .dark .dark\:border-\[\#3ECF8E\]\/20,
+html.theme-blue.dark .dark\:border-\[\#3ECF8E\]\/20,
+html.theme-blue .dark .dark\:border-\[\#3ECF8E\]\/20,
+html[data-accent="blue"].dark .dark\:border-\[\#3ECF8E\]\/25,
+html[data-accent="blue"] .dark .dark\:border-\[\#3ECF8E\]\/25,
+html.theme-blue.dark .dark\:border-\[\#3ECF8E\]\/25,
+html.theme-blue .dark .dark\:border-\[\#3ECF8E\]\/25,
+html[data-accent="blue"].dark .dark\:border-\[\#3ECF8E\]\/30,
+html[data-accent="blue"] .dark .dark\:border-\[\#3ECF8E\]\/30,
+html.theme-blue.dark .dark\:border-\[\#3ECF8E\]\/30,
+html.theme-blue .dark .dark\:border-\[\#3ECF8E\]\/30,
+html[data-accent="blue"].dark .dark\:border-\[\#3ECF8E\]\/50,
+html[data-accent="blue"] .dark .dark\:border-\[\#3ECF8E\]\/50,
+html.theme-blue.dark .dark\:border-\[\#3ECF8E\]\/50,
+html.theme-blue .dark .dark\:border-\[\#3ECF8E\]\/50,
+html[data-accent="blue"].dark .dark\:border-emerald-500\/30,
+html[data-accent="blue"] .dark .dark\:border-emerald-500\/30,
+html.theme-blue.dark .dark\:border-emerald-500\/30,
+html.theme-blue .dark .dark\:border-emerald-500\/30,
+html[data-accent="blue"].dark .dark\:border-emerald-800\/30,
+html[data-accent="blue"] .dark .dark\:border-emerald-800\/30,
+html.theme-blue.dark .dark\:border-emerald-800\/30,
+html.theme-blue .dark .dark\:border-emerald-800\/30,
+html[data-accent="blue"].dark .dark\:border-emerald-800\/40,
+html[data-accent="blue"] .dark .dark\:border-emerald-800\/40,
+html.theme-blue.dark .dark\:border-emerald-800\/40,
+html.theme-blue .dark .dark\:border-emerald-800\/40,
+html[data-accent="blue"].dark .dark\:border-emerald-900\/30,
+html[data-accent="blue"] .dark .dark\:border-emerald-900\/30,
+html.theme-blue.dark .dark\:border-emerald-900\/30,
+html.theme-blue .dark .dark\:border-emerald-900\/30,
+html[data-accent="blue"].dark .dark\:border-emerald-900\/50,
+html[data-accent="blue"] .dark .dark\:border-emerald-900\/50,
+html.theme-blue.dark .dark\:border-emerald-900\/50,
+html.theme-blue .dark .dark\:border-emerald-900\/50 {
+  border-color: rgba(59, 130, 246, 0.32) !important;
+}
+
+/* Dark Mode Hover, Group-Hover, and Focus Borders (Cards & Buttons) */
+html[data-accent="blue"].dark .dark\:hover\:border-\[\#3ECF8E\]:hover,
+html[data-accent="blue"] .dark .dark\:hover\:border-\[\#3ECF8E\]:hover,
+html.theme-blue.dark .dark\:hover\:border-\[\#3ECF8E\]:hover,
+html.theme-blue .dark .dark\:hover\:border-\[\#3ECF8E\]:hover,
+html[data-accent="blue"].dark .dark\:hover\:border-\[\#3ECF8E\]\/30:hover,
+html[data-accent="blue"] .dark .dark\:hover\:border-\[\#3ECF8E\]\/30:hover,
+html.theme-blue.dark .dark\:hover\:border-\[\#3ECF8E\]\/30:hover,
+html.theme-blue .dark .dark\:hover\:border-\[\#3ECF8E\]\/30:hover,
+html[data-accent="blue"].dark .dark\:hover\:border-\[\#3ECF8E\]\/40:hover,
+html[data-accent="blue"] .dark .dark\:hover\:border-\[\#3ECF8E\]\/40:hover,
+html.theme-blue.dark .dark\:hover\:border-\[\#3ECF8E\]\/40:hover,
+html.theme-blue .dark .dark\:hover\:border-\[\#3ECF8E\]\/40:hover,
+html[data-accent="blue"].dark .dark\:hover\:border-\[\#3ECF8E\]\/50:hover,
+html[data-accent="blue"] .dark .dark\:hover\:border-\[\#3ECF8E\]\/50:hover,
+html.theme-blue.dark .dark\:hover\:border-\[\#3ECF8E\]\/50:hover,
+html.theme-blue .dark .dark\:hover\:border-\[\#3ECF8E\]\/50:hover,
+html[data-accent="blue"].dark .dark\:hover\:border-\[\#3ECF8E\]\/60:hover,
+html[data-accent="blue"] .dark .dark\:hover\:border-\[\#3ECF8E\]\/60:hover,
+html.theme-blue.dark .dark\:hover\:border-\[\#3ECF8E\]\/60:hover,
+html.theme-blue .dark .dark\:hover\:border-\[\#3ECF8E\]\/60:hover,
+html[data-accent="blue"].dark .dark\:group-hover\:border-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .dark\:group-hover\:border-\[\#3ECF8E\],
+html.theme-blue.dark .dark\:group-hover\:border-\[\#3ECF8E\],
+html.theme-blue .dark .dark\:group-hover\:border-\[\#3ECF8E\],
+html[data-accent="blue"].dark .dark\:group-hover\:border-\[\#3ECF8E\]\/50,
+html[data-accent="blue"] .dark .dark\:group-hover\:border-\[\#3ECF8E\]\/50,
+html.theme-blue.dark .dark\:group-hover\:border-\[\#3ECF8E\]\/50,
+html.theme-blue .dark .dark\:group-hover\:border-\[\#3ECF8E\]\/50,
+html[data-accent="blue"].dark .group:hover .dark\:group-hover\:border-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .group:hover .dark\:group-hover\:border-\[\#3ECF8E\],
+html.theme-blue.dark .group:hover .dark\:group-hover\:border-\[\#3ECF8E\],
+html.theme-blue .dark .group:hover .dark\:group-hover\:border-\[\#3ECF8E\],
+html[data-accent="blue"].dark .group:hover .dark\:group-hover\:border-\[\#3ECF8E\]\/50,
+html[data-accent="blue"] .dark .group:hover .dark\:group-hover\:border-\[\#3ECF8E\]\/50,
+html.theme-blue.dark .group:hover .dark\:group-hover\:border-\[\#3ECF8E\]\/50,
+html.theme-blue .dark .group:hover .dark\:group-hover\:border-\[\#3ECF8E\]\/50,
+html[data-accent="blue"].dark .dark\:focus\:border-\[\#3ECF8E\]:focus,
+html[data-accent="blue"] .dark .dark\:focus\:border-\[\#3ECF8E\]:focus,
+html.theme-blue.dark .dark\:focus\:border-\[\#3ECF8E\]:focus,
+html.theme-blue .dark .dark\:focus\:border-\[\#3ECF8E\]:focus {
+  border-color: #3b82f6 !important;
+}
+
+/* Soft Tints & Badges Backgrounds (Light Mode Only) */
+html[data-accent="blue"]:not(.dark) .bg-emerald-50,
+html.theme-blue:not(.dark) .bg-emerald-50,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/10,
+html.theme-blue:not(.dark) .bg-emerald-50\/10,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/20,
+html.theme-blue:not(.dark) .bg-emerald-50\/20,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/30,
+html.theme-blue:not(.dark) .bg-emerald-50\/30,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/40,
+html.theme-blue:not(.dark) .bg-emerald-50\/40,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/50,
+html.theme-blue:not(.dark) .bg-emerald-50\/50,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/60,
+html.theme-blue:not(.dark) .bg-emerald-50\/60,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/70,
+html.theme-blue:not(.dark) .bg-emerald-50\/70,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/80,
+html.theme-blue:not(.dark) .bg-emerald-50\/80,
+html[data-accent="blue"]:not(.dark) .bg-emerald-50\/90,
+html.theme-blue:not(.dark) .bg-emerald-50\/90,
+html[data-accent="blue"]:not(.dark) .bg-emerald-100,
+html.theme-blue:not(.dark) .bg-emerald-100,
+html[data-accent="blue"]:not(.dark) .bg-emerald-100\/70,
+html.theme-blue:not(.dark) .bg-emerald-100\/70,
+html[data-accent="blue"]:not(.dark) .bg-emerald-100\/80,
+html.theme-blue:not(.dark) .bg-emerald-100\/80,
+html[data-accent="blue"]:not(.dark) .bg-emerald-200,
+html.theme-blue:not(.dark) .bg-emerald-200,
+html[data-accent="blue"]:not(.dark) .bg-emerald-200\/60,
+html.theme-blue:not(.dark) .bg-emerald-200\/60,
+html[data-accent="blue"]:not(.dark) .bg-emerald-500\/5,
+html.theme-blue:not(.dark) .bg-emerald-500\/5,
+html[data-accent="blue"]:not(.dark) .bg-emerald-500\/10,
+html.theme-blue:not(.dark) .bg-emerald-500\/10,
+html[data-accent="blue"]:not(.dark) .bg-emerald-500\/15,
+html.theme-blue:not(.dark) .bg-emerald-500\/15,
+html[data-accent="blue"]:not(.dark) .bg-emerald-500\/20,
+html.theme-blue:not(.dark) .bg-emerald-500\/20,
+html[data-accent="blue"]:not(.dark) .bg-\[\#10B981\]\/10,
+html.theme-blue:not(.dark) .bg-\[\#10B981\]\/10,
+html[data-accent="blue"]:not(.dark) .bg-\[\#10B981\]\/15,
+html.theme-blue:not(.dark) .bg-\[\#10B981\]\/15,
+html[data-accent="blue"]:not(.dark) .bg-\[\#10B981\]\/20,
+html.theme-blue:not(.dark) .bg-\[\#10B981\]\/20 {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+}
+
+/* Soft Hover Backgrounds (Light Mode Only) */
+html[data-accent="blue"]:not(.dark) .hover\:bg-emerald-50:hover,
+html.theme-blue:not(.dark) .hover\:bg-emerald-50:hover,
+html[data-accent="blue"]:not(.dark) .hover\:bg-emerald-50\/10:hover,
+html.theme-blue:not(.dark) .hover\:bg-emerald-50\/10:hover,
+html[data-accent="blue"]:not(.dark) .hover\:bg-emerald-50\/30:hover,
+html.theme-blue:not(.dark) .hover\:bg-emerald-50\/30:hover,
+html[data-accent="blue"]:not(.dark) .hover\:bg-emerald-50\/40:hover,
+html.theme-blue:not(.dark) .hover\:bg-emerald-50\/40:hover,
+html[data-accent="blue"]:not(.dark) .hover\:bg-emerald-50\/70:hover,
+html.theme-blue:not(.dark) .hover\:bg-emerald-50\/70:hover,
+html[data-accent="blue"]:not(.dark) .hover\:bg-emerald-100:hover,
+html.theme-blue:not(.dark) .hover\:bg-emerald-100:hover,
+html[data-accent="blue"]:not(.dark) .hover\:bg-emerald-200:hover,
+html.theme-blue:not(.dark) .hover\:bg-emerald-200:hover,
+html[data-accent="blue"]:not(.dark) .active\:bg-emerald-100:active,
+html.theme-blue:not(.dark) .active\:bg-emerald-100:active,
+html[data-accent="blue"]:not(.dark) .active\:bg-emerald-200:active,
+html.theme-blue:not(.dark) .active\:bg-emerald-200:active {
+  background-color: #dbeafe !important;
+  color: #1e3a8a !important;
+}
+
+/* Soft Tints & Badges Backgrounds (Dark Mode) */
+html[data-accent="blue"].dark .dark\:bg-\[\#3ECF8E\]\/5,
+html[data-accent="blue"] .dark .dark\:bg-\[\#3ECF8E\]\/5,
+html.theme-blue.dark .dark\:bg-\[\#3ECF8E\]\/5,
+html.theme-blue .dark .dark\:bg-\[\#3ECF8E\]\/5,
+html[data-accent="blue"].dark .dark\:bg-\[\#3ECF8E\]\/10,
+html[data-accent="blue"] .dark .dark\:bg-\[\#3ECF8E\]\/10,
+html.theme-blue.dark .dark\:bg-\[\#3ECF8E\]\/10,
+html.theme-blue .dark .dark\:bg-\[\#3ECF8E\]\/10,
+html[data-accent="blue"].dark .dark\:bg-\[\#3ECF8E\]\/15,
+html[data-accent="blue"] .dark .dark\:bg-\[\#3ECF8E\]\/15,
+html.theme-blue.dark .dark\:bg-\[\#3ECF8E\]\/15,
+html.theme-blue .dark .dark\:bg-\[\#3ECF8E\]\/15,
+html[data-accent="blue"].dark .dark\:bg-\[\#3ECF8E\]\/20,
+html[data-accent="blue"] .dark .dark\:bg-\[\#3ECF8E\]\/20,
+html.theme-blue.dark .dark\:bg-\[\#3ECF8E\]\/20,
+html.theme-blue .dark .dark\:bg-\[\#3ECF8E\]\/20,
+html[data-accent="blue"].dark .dark\:bg-\[\#3ECF8E\]\/30,
+html[data-accent="blue"] .dark .dark\:bg-\[\#3ECF8E\]\/30,
+html.theme-blue.dark .dark\:bg-\[\#3ECF8E\]\/30,
+html.theme-blue .dark .dark\:bg-\[\#3ECF8E\]\/30,
+html[data-accent="blue"].dark .dark\:bg-emerald-500\/10,
+html[data-accent="blue"] .dark .dark\:bg-emerald-500\/10,
+html.theme-blue.dark .dark\:bg-emerald-500\/10,
+html.theme-blue .dark .dark\:bg-emerald-500\/10,
+html[data-accent="blue"].dark .dark\:bg-emerald-500\/20,
+html[data-accent="blue"] .dark .dark\:bg-emerald-500\/20,
+html.theme-blue.dark .dark\:bg-emerald-500\/20,
+html.theme-blue .dark .dark\:bg-emerald-500\/20,
+html[data-accent="blue"].dark .dark\:bg-emerald-950\/20,
+html[data-accent="blue"] .dark .dark\:bg-emerald-950\/20,
+html.theme-blue.dark .dark\:bg-emerald-950\/20,
+html.theme-blue .dark .dark\:bg-emerald-950\/20,
+html[data-accent="blue"].dark .dark\:bg-emerald-950\/30,
+html[data-accent="blue"] .dark .dark\:bg-emerald-950\/30,
+html.theme-blue.dark .dark\:bg-emerald-950\/30,
+html.theme-blue .dark .dark\:bg-emerald-950\/30,
+html[data-accent="blue"].dark .dark\:bg-emerald-950\/40,
+html[data-accent="blue"] .dark .dark\:bg-emerald-950\/40,
+html.theme-blue.dark .dark\:bg-emerald-950\/40,
+html.theme-blue .dark .dark\:bg-emerald-950\/40,
+html[data-accent="blue"].dark .dark\:bg-emerald-950\/50,
+html[data-accent="blue"] .dark .dark\:bg-emerald-950\/50,
+html.theme-blue.dark .dark\:bg-emerald-950\/50,
+html.theme-blue .dark .dark\:bg-emerald-950\/50,
+html[data-accent="blue"].dark .dark\:bg-emerald-950\/60,
+html[data-accent="blue"] .dark .dark\:bg-emerald-950\/60,
+html.theme-blue.dark .dark\:bg-emerald-950\/60,
+html.theme-blue .dark .dark\:bg-emerald-950\/60 {
+  background-color: rgba(59, 130, 246, 0.16) !important;
+}
+
+/* Soft Hover Backgrounds (Dark Mode) */
+html[data-accent="blue"].dark .dark\:hover\:bg-\[\#3ECF8E\]\/10:hover,
+html[data-accent="blue"] .dark .dark\:hover\:bg-\[\#3ECF8E\]\/10:hover,
+html.theme-blue.dark .dark\:hover\:bg-\[\#3ECF8E\]\/10:hover,
+html.theme-blue .dark .dark\:hover\:bg-\[\#3ECF8E\]\/10:hover,
+html[data-accent="blue"].dark .dark\:hover\:bg-\[\#3ECF8E\]\/15:hover,
+html[data-accent="blue"] .dark .dark\:hover\:bg-\[\#3ECF8E\]\/15:hover,
+html.theme-blue.dark .dark\:hover\:bg-\[\#3ECF8E\]\/15:hover,
+html.theme-blue .dark .dark\:hover\:bg-\[\#3ECF8E\]\/15:hover,
+html[data-accent="blue"].dark .dark\:hover\:bg-\[\#3ECF8E\]\/20:hover,
+html[data-accent="blue"] .dark .dark\:hover\:bg-\[\#3ECF8E\]\/20:hover,
+html.theme-blue.dark .dark\:hover\:bg-\[\#3ECF8E\]\/20:hover,
+html.theme-blue .dark .dark\:hover\:bg-\[\#3ECF8E\]\/20:hover,
+html[data-accent="blue"].dark .dark\:hover\:bg-\[\#3ECF8E\]\/30:hover,
+html[data-accent="blue"] .dark .dark\:hover\:bg-\[\#3ECF8E\]\/30:hover,
+html.theme-blue.dark .dark\:hover\:bg-\[\#3ECF8E\]\/30:hover,
+html.theme-blue .dark .dark\:hover\:bg-\[\#3ECF8E\]\/30:hover,
+html[data-accent="blue"].dark .dark\:hover\:bg-emerald-500\/20:hover,
+html[data-accent="blue"] .dark .dark\:hover\:bg-emerald-500\/20:hover,
+html.theme-blue.dark .dark\:hover\:bg-emerald-500\/20:hover,
+html.theme-blue .dark .dark\:hover\:bg-emerald-500\/20:hover {
+  background-color: rgba(59, 130, 246, 0.28) !important;
+}
+
+/* Rings & Focus Rings */
+html[data-accent="blue"] .ring-\[\#10B981\],
+html.theme-blue .ring-\[\#10B981\],
+html[data-accent="blue"] .ring-\[\#10B981\]\/20,
+html.theme-blue .ring-\[\#10B981\]\/20,
+html[data-accent="blue"] .ring-\[\#10B981\]\/30,
+html.theme-blue .ring-\[\#10B981\]\/30,
+html[data-accent="blue"] .ring-\[\#3ECF8E\]\/20,
+html.theme-blue .ring-\[\#3ECF8E\]\/20,
+html[data-accent="blue"] .ring-\[\#3ECF8E\]\/25,
+html.theme-blue .ring-\[\#3ECF8E\]\/25,
+html[data-accent="blue"] .ring-\[\#3ECF8E\]\/30,
+html.theme-blue .ring-\[\#3ECF8E\]\/30,
+html[data-accent="blue"] .ring-emerald-500\/10,
+html.theme-blue .ring-emerald-500\/10,
+html[data-accent="blue"] .ring-emerald-500\/20,
+html.theme-blue .ring-emerald-500\/20,
+html[data-accent="blue"] .ring-emerald-500\/30,
+html.theme-blue .ring-emerald-500\/30,
+html[data-accent="blue"] .focus\:ring-\[\#3ECF8E\]:focus,
+html.theme-blue .focus\:ring-\[\#3ECF8E\]:focus,
+html[data-accent="blue"] .focus\:ring-\[\#3ECF8E\]\/20:focus,
+html.theme-blue .focus\:ring-\[\#3ECF8E\]\/20:focus,
+html[data-accent="blue"] .focus\:ring-emerald-500\/20:focus,
+html.theme-blue .focus\:ring-emerald-500\/20:focus,
+html[data-accent="blue"].dark .dark\:ring-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .dark\:ring-\[\#3ECF8E\],
+html.theme-blue.dark .dark\:ring-\[\#3ECF8E\],
+html.theme-blue .dark .dark\:ring-\[\#3ECF8E\],
+html[data-accent="blue"].dark .dark\:ring-\[\#3ECF8E\]\/30,
+html[data-accent="blue"] .dark .dark\:ring-\[\#3ECF8E\]\/30,
+html.theme-blue.dark .dark\:ring-\[\#3ECF8E\]\/30,
+html.theme-blue .dark .dark\:ring-\[\#3ECF8E\]\/30 {
+  --tw-ring-color: rgba(37, 99, 235, 0.45) !important;
+}
+
+/* Gradients */
+html[data-accent="blue"] .from-\[\#10B981\],
+html.theme-blue .from-\[\#10B981\],
+html[data-accent="blue"] .from-emerald-400,
+html.theme-blue .from-emerald-400,
+html[data-accent="blue"] .from-emerald-500,
+html.theme-blue .from-emerald-500,
+html[data-accent="blue"] .from-emerald-500\/15,
+html.theme-blue .from-emerald-500\/15,
+html[data-accent="blue"] .from-emerald-500\/50,
+html.theme-blue .from-emerald-500\/50,
+html[data-accent="blue"] .from-emerald-600,
+html.theme-blue .from-emerald-600,
+html[data-accent="blue"] .hover\:from-emerald-600:hover,
+html.theme-blue .hover\:from-emerald-600:hover {
+  --tw-gradient-from: #2563eb var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(37 99 235 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+html[data-accent="blue"].dark .dark\:from-\[\#3ECF8E\],
+html[data-accent="blue"] .dark .dark\:from-\[\#3ECF8E\],
+html.theme-blue.dark .dark\:from-\[\#3ECF8E\],
+html.theme-blue .dark .dark\:from-\[\#3ECF8E\],
+html[data-accent="blue"].dark .dark\:from-emerald-500\/20,
+html[data-accent="blue"] .dark .dark\:from-emerald-500\/20,
+html.theme-blue.dark .dark\:from-emerald-500\/20,
+html.theme-blue .dark .dark\:from-emerald-500\/20 {
+  --tw-gradient-from: #3b82f6 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(59 130 246 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+html[data-accent="blue"] .to-\[\#10B981\],
+html.theme-blue .to-\[\#10B981\],
+html[data-accent="blue"] .to-\[\#3ECF8E\],
+html.theme-blue .to-\[\#3ECF8E\],
+html[data-accent="blue"] .to-\[\#3ECF8E\]\/50,
+html.theme-blue .to-\[\#3ECF8E\]\/50,
+html[data-accent="blue"] .to-emerald-600,
+html.theme-blue .to-emerald-600,
+html[data-accent="blue"] .to-emerald-600\/10,
+html.theme-blue .to-emerald-600\/10,
+html[data-accent="blue"] .to-emerald-700,
+html.theme-blue .to-emerald-700 {
+  --tw-gradient-to: #3b82f6 var(--tw-gradient-to-position) !important;
+}
+
+html[data-accent="blue"] .via-\[\#3ECF8E\],
+html.theme-blue .via-\[\#3ECF8E\],
+html[data-accent="blue"] .via-\[\#3ECF8E\]\/10,
+html.theme-blue .via-\[\#3ECF8E\]\/10,
+html[data-accent="blue"] .via-emerald-400\/50,
+html.theme-blue .via-emerald-400\/50,
+html[data-accent="blue"] .via-emerald-500,
+html.theme-blue .via-emerald-500 {
+  --tw-gradient-to: rgb(59 130 246 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), #3b82f6 var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+}
+
+/* Shadows */
+html[data-accent="blue"] .shadow-emerald-500,
+html.theme-blue .shadow-emerald-500,
+html[data-accent="blue"] .shadow-emerald-500\/10,
+html.theme-blue .shadow-emerald-500\/10,
+html[data-accent="blue"] .shadow-emerald-500\/20,
+html.theme-blue .shadow-emerald-500\/20,
+html[data-accent="blue"] .shadow-emerald-500\/25,
+html.theme-blue .shadow-emerald-500\/25,
+html[data-accent="blue"] .shadow-emerald-500\/30,
+html.theme-blue .shadow-emerald-500\/30,
+html[data-accent="blue"] .shadow-emerald-500\/40,
+html.theme-blue .shadow-emerald-500\/40,
+html[data-accent="blue"] .shadow-emerald-500\/50,
+html.theme-blue .shadow-emerald-500\/50,
+html[data-accent="blue"] .shadow-emerald-900\/30,
+html.theme-blue .shadow-emerald-900\/30,
+html[data-accent="blue"] .shadow-\[\#10B981\]\/20,
+html.theme-blue .shadow-\[\#10B981\]\/20,
+html[data-accent="blue"] .shadow-\[\#3ECF8E\]\/10,
+html.theme-blue .shadow-\[\#3ECF8E\]\/10,
+html[data-accent="blue"] .shadow-\[\#3ECF8E\]\/20,
+html.theme-blue .shadow-\[\#3ECF8E\]\/20,
+html[data-accent="blue"] .shadow-\[\#3ECF8E\]\/25,
+html.theme-blue .shadow-\[\#3ECF8E\]\/25,
+html[data-accent="blue"] .shadow-\[\#3ECF8E\]\/30,
+html.theme-blue .shadow-\[\#3ECF8E\]\/30,
+html[data-accent="blue"] .shadow-\[\#3ECF8E\]\/40,
+html.theme-blue .shadow-\[\#3ECF8E\]\/40,
+html[data-accent="blue"].dark .dark\:shadow-\[\#3ECF8E\]\/10,
+html[data-accent="blue"] .dark .dark\:shadow-\[\#3ECF8E\]\/10,
+html.theme-blue.dark .dark\:shadow-\[\#3ECF8E\]\/10,
+html.theme-blue .dark .dark\:shadow-\[\#3ECF8E\]\/10,
+html[data-accent="blue"].dark .dark\:shadow-\[\#3ECF8E\]\/30,
+html[data-accent="blue"] .dark .dark\:shadow-\[\#3ECF8E\]\/30,
+html.theme-blue.dark .dark\:shadow-\[\#3ECF8E\]\/30,
+html.theme-blue .dark .dark\:shadow-\[\#3ECF8E\]\/30 {
+  --tw-shadow-color: rgba(37, 99, 235, 0.3) !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28) !important;
+}
+
+/* User Selection */
+html[data-accent="blue"] ::selection,
+html.theme-blue ::selection,
+html[data-accent="blue"] .selection\:bg-\[\#3ECF8E\] *::selection,
+html.theme-blue .selection\:bg-\[\#3ECF8E\] *::selection {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* ================= BLUE THEME: STITCH MIDNIGHT NAVY DARK MODE PALETTE ================= */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]),
+html.theme-blue.dark:not(.dark-obsidian),
+html.theme-blue.dark[data-dark-style="midnight"] {
+  color-scheme: dark;
+}
+
+/* Base Canvas & Document Body */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) body,
+html.theme-blue.dark:not(.dark-obsidian) body,
+html.theme-blue.dark[data-dark-style="midnight"] body,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#121212\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#121212\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#121212\] {
+  background-color: #0A0F1D !important;
+  color: #E2E8F0 !important;
+}
+
+/* Sidebar, Topbar, Mobile Navigation & Inset Containers */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#141414\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#141414\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\] {
+  background-color: #0F172A !important;
+}
+
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#141414\]\/95,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#141414\]\/95,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\]\/95 {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+}
+
+/* Banking Cards, Modals, Bento Boxes, Dropdowns */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#18181B\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#18181B\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#18181B\],
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#1A1D24\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#1A1D24\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#1A1D24\] {
+  background-color: #131E36 !important;
+}
+
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#18181B\]\/95,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#18181B\]\/95,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#18181B\]\/95 {
+  background-color: rgba(19, 30, 54, 0.95) !important;
+}
+
+/* Elevated Utility Controls, Quick Buttons, Swatches */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#1C1C1C\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#1C1C1C\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#1C1C1C\] {
+  background-color: #182644 !important;
+}
+
+/* Elevated Hover Surfaces & Table Rows */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#202022\],
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#202024\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#202022\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#202024\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#202022\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#202024\] {
+  background-color: #1E2D4E !important;
+}
+
+/* Secondary Interactive Buttons & Chips */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#262626\],
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#27272A\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#262626\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#27272A\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#262626\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#27272A\] {
+  background-color: #223456 !important;
+}
+
+/* Hover States for Dark Mode Items */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:hover\:bg-\[\#202024\]:hover,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:hover\:bg-\[\#262626\]:hover,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:hover\:bg-\[\#333\]:hover,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:hover\:bg-\[\#202024\]:hover,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:hover\:bg-\[\#262626\]:hover,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:hover\:bg-\[\#333\]:hover,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#202024\]:hover,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#262626\]:hover,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#333\]:hover {
+  background-color: #223456 !important;
+}
+
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:hover\:bg-white\/\[0\.03\]:hover,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:hover\:bg-white\/\[0\.04\]:hover,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:hover\:bg-white\/\[0\.03\]:hover,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:hover\:bg-white\/\[0\.04\]:hover,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-white\/\[0\.03\]:hover,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-white\/\[0\.04\]:hover {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+}
+
+/* Crisp Slate-Navy Borders & Separators */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:border-\[\#262626\],
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:border-\[\#27272A\],
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:border-\[\#2E2E33\],
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:border-\[\#2E3340\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:border-\[\#262626\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:border-\[\#27272A\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:border-\[\#2E2E33\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:border-\[\#2E3340\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#262626\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#27272A\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#2E2E33\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#2E3340\] {
+  border-color: #1E2E4E !important;
+}
+
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:border-neutral-700,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:border-neutral-800,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:border-neutral-700,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:border-neutral-800,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-neutral-700,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-neutral-800 {
+  border-color: #1E2E4E !important;
+}
+
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]),
+html.theme-blue.dark:not(.dark-obsidian) .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]),
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1E2E4E !important;
+}
+
+/* Crisp Text Colors in Dark Mode */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:text-\[\#EDEDED\],
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:text-neutral-200,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:text-neutral-300,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:text-\[\#EDEDED\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:text-neutral-200,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:text-neutral-300,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:text-\[\#EDEDED\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:text-neutral-200,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:text-neutral-300 {
+  color: #E2E8F0 !important;
+}
+
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:text-neutral-400,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:text-neutral-500,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:text-\[\#8F8F8F\],
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:text-\[\#9CA3AF\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:text-neutral-400,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:text-neutral-500,
+html.theme-blue.dark:not(.dark-obsidian) .dark\:text-\[\#8F8F8F\],
+html.theme-blue.dark:not(.dark-obsidian) .dark\:text-\[\#9CA3AF\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:text-neutral-400,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:text-neutral-500,
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:text-\[\#8F8F8F\],
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:text-\[\#9CA3AF\] {
+  color: #94A3B8 !important;
+}
+
+/* Card Elevation & Depth in Dark Mode */
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .shadow-xs,
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .shadow-2xs,
+html.theme-blue.dark:not(.dark-obsidian) .shadow-xs,
+html.theme-blue.dark:not(.dark-obsidian) .shadow-2xs,
+html.theme-blue.dark[data-dark-style="midnight"] .shadow-xs,
+html.theme-blue.dark[data-dark-style="midnight"] .shadow-2xs {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(30, 46, 78, 0.5) !important;
+}
+
+html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .hover\:shadow-md:hover,
+html.theme-blue.dark:not(.dark-obsidian) .hover\:shadow-md:hover,
+html.theme-blue.dark[data-dark-style="midnight"] .hover\:shadow-md:hover {
+  box-shadow: 0 8px 24px -4px rgba(2, 6, 23, 0.7), 0 0 0 1px rgba(59, 130, 246, 0.35) !important;
+}
+
+/* Dedicated theme palette swatches (NEVER overridden by global accent rules) */
+.swatch-emerald {
+  background-color: #10B981 !important;
+  color: #ffffff !important;
+}
+.swatch-emerald-badge {
+  background-color: #ECFDF5 !important;
+  color: #047857 !important;
+  border-color: #A7F3D0 !important;
+}
+.dark .swatch-emerald-badge {
+  background-color: rgba(62, 207, 142, 0.15) !important;
+  color: #3ECF8E !important;
+  border-color: rgba(62, 207, 142, 0.25) !important;
+}
+
+.swatch-blue {
+  background-color: #2563EB !important;
+  color: #ffffff !important;
+}
+.swatch-blue-badge {
+  background-color: #EFF6FF !important;
+  color: #1D4ED8 !important;
+  border-color: #BFDBFE !important;
+}
+.dark .swatch-blue-badge {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60A5FA !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+}

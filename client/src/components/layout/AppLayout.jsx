@@ -22,6 +22,7 @@ import {
   Smartphone,
   Download,
   X,
+  Palette,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -45,7 +46,7 @@ export default function AppLayout() {
     closeLogoutModal,
     isLoggingOut,
   } = useAuth();
-  const { theme, isDark, toggleTheme } = useTheme();
+  const { theme, isDark, toggleTheme, accentColor, isBlue, toggleAccentColor } = useTheme();
   const {
     isInstallable,
     isStandalone,
@@ -173,7 +174,9 @@ export default function AppLayout() {
         title={!isHovered ? item.name : undefined}
         className={`group/item flex items-center h-9 px-2.5 rounded-md transition-all select-none ${
           active
-            ? 'bg-emerald-50 text-emerald-700 font-medium shadow-xs dark:bg-[#262626] dark:text-white'
+            ? (isBlue
+                ? 'bg-blue-50 text-blue-700 font-semibold shadow-xs dark:bg-blue-600/20 dark:text-blue-300 dark:border dark:border-blue-500/35'
+                : 'bg-emerald-50 text-emerald-700 font-medium shadow-xs dark:bg-[#262626] dark:text-white')
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-normal dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6] dark:hover:bg-white/[0.04]'
         }`}
       >
@@ -183,7 +186,7 @@ export default function AppLayout() {
             strokeWidth={1.75}
             className={`transition-colors ${
               active
-                ? 'text-emerald-600 dark:text-[#3ECF8E]'
+                ? (isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-[#3ECF8E]')
                 : 'text-slate-500 group-hover/item:text-slate-900 dark:text-[#9CA3AF] dark:group-hover/item:text-[#F3F4F6]'
             }`}
           />
@@ -196,7 +199,7 @@ export default function AppLayout() {
               : 'opacity-0 max-w-0 ml-0 pointer-events-none'
           } ${
             active
-              ? 'text-emerald-700 dark:text-white font-medium'
+              ? (isBlue ? 'text-blue-700 dark:text-blue-200 font-semibold' : 'text-emerald-700 dark:text-white font-medium')
               : 'text-slate-600 group-hover/item:text-slate-900 dark:text-[#9CA3AF] dark:group-hover/item:text-[#F3F4F6] font-normal'
           }`}
         >
@@ -214,7 +217,11 @@ export default function AppLayout() {
                 Alert
               </span>
             ) : (
-              <span className="px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-[#3ECF8E]/10 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/20 text-[10px] font-mono font-medium">
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-medium ${
+                isBlue
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-[#3ECF8E]/10 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/20'
+              }`}>
                 {item.badge}
               </span>
             )}
@@ -412,7 +419,7 @@ export default function AppLayout() {
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-emerald-50 dark:bg-[#1C1C1C] dark:hover:bg-[#3ECF8E]/10 text-slate-500 hover:text-emerald-700 dark:text-neutral-400 dark:hover:text-[#3ECF8E] flex items-center justify-center border border-slate-200 dark:border-[#262626] transition-all cursor-pointer active:scale-95 shadow-2xs"
+              className={`md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 ${isBlue ? 'hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-500/15 dark:hover:text-blue-400' : 'hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-[#3ECF8E]/10 dark:hover:text-[#3ECF8E]'} text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#262626] transition-all cursor-pointer active:scale-95 shadow-2xs`}
               title="Search Vault (Aadhaar, PAN, policies)"
             >
               <Search size={15} />
@@ -421,10 +428,10 @@ export default function AppLayout() {
             {/* Desktop Search Bar */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="hidden md:flex w-full h-10 px-3.5 bg-slate-100/90 hover:bg-slate-100 dark:bg-[#18181B] dark:hover:bg-[#202024] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200/90 dark:border-[#262626] hover:border-emerald-500/50 dark:hover:border-[#3ECF8E]/40 transition-all cursor-pointer shadow-2xs group"
+              className={`hidden md:flex w-full h-10 px-3.5 bg-slate-100/90 hover:bg-slate-100 dark:bg-[#18181B] dark:hover:bg-[#202024] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200/90 dark:border-[#262626] ${isBlue ? 'hover:border-blue-500/50 dark:hover:border-blue-400/40' : 'hover:border-emerald-500/50 dark:hover:border-[#3ECF8E]/40'} transition-all cursor-pointer shadow-2xs group`}
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <Search size={15} className="text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-[#3ECF8E] shrink-0 transition-colors" />
+                <Search size={15} className={`text-slate-400 dark:text-neutral-500 ${isBlue ? 'group-hover:text-blue-600 dark:group-hover:text-blue-400' : 'group-hover:text-emerald-600 dark:group-hover:text-[#3ECF8E]'} shrink-0 transition-colors`} />
                 <span className="truncate text-xs font-medium">Search Aadhaar, PAN, insurance, flat deed...</span>
               </div>
               <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-[#262626] text-slate-600 dark:text-neutral-400 font-mono text-[10px] border border-slate-200 dark:border-[#333338] shadow-2xs">
@@ -435,12 +442,29 @@ export default function AppLayout() {
 
           {/* Topbar Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Theme Accent Toggle: Emerald Green vs Stitch Royal Blue */}
+            <button
+              type="button"
+              onClick={toggleAccentColor}
+              title={`Active: ${isBlue ? 'Stitch Royal Blue' : 'Emerald Green'}. Click to switch theme accent.`}
+              className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs group"
+            >
+              <span
+                className={`w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-[#141414] shadow-xs transition-transform group-hover:scale-110 shrink-0 ${
+                  isBlue ? 'swatch-blue' : 'swatch-emerald'
+                }`}
+              />
+              <span className="text-[11px] font-bold text-slate-700 dark:text-neutral-300">
+                {isBlue ? 'Blue' : 'Green'}
+              </span>
+            </button>
+
             {/* Dark / Light Mode Toggle */}
             <button
               type="button"
               onClick={toggleTheme}
               title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 ${isBlue ? 'dark:text-blue-400' : 'dark:text-[#3ECF8E]'} flex items-center justify-center transition-all cursor-pointer shadow-2xs`}
             >
               {isDark ? <Sun size={15} strokeWidth={2} /> : <Moon size={15} strokeWidth={2} />}
             </button>
@@ -460,11 +484,11 @@ export default function AppLayout() {
               >
                 <Bell size={15} strokeWidth={1.8} />
                 {unreadNotifCount > 0 ? (
-                  <span className="absolute -top-1 -right-1 px-1.5 py-0.2 min-w-[17px] h-[17px] rounded-full bg-emerald-500 text-white font-bold text-[9px] flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#141414] animate-pulse">
+                  <span className={`absolute -top-1 -right-1 px-1.5 py-0.2 min-w-[17px] h-[17px] rounded-full ${isBlue ? 'bg-blue-600' : 'bg-emerald-500'} text-white font-bold text-[9px] flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#141414] animate-pulse`}>
                     {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
                   </span>
                 ) : (
-                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-neutral-600" />
+                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 dark:neutral-600" />
                 )}
               </button>
 
@@ -488,7 +512,7 @@ export default function AppLayout() {
               <img
                 src={
                   user?.avatar ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3ECF8E&color=121212`
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=${isBlue ? '2563EB' : '3ECF8E'}&color=121212`
                 }
                 alt={user?.name || 'User'}
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-700"
@@ -501,7 +525,7 @@ export default function AppLayout() {
                 type="button"
                 onClick={triggerNativeInstall}
                 title="Install GharVault App on Phone"
-                className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-emerald-300 dark:border-[#3ECF8E]/30 bg-emerald-50/90 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
+                className={`md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border ${isBlue ? 'border-blue-300 dark:border-blue-500/30 bg-blue-50/90 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400' : 'border-emerald-300 dark:border-[#3ECF8E]/30 bg-emerald-50/90 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E]'} flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95`}
               >
                 <Download size={15} strokeWidth={2.2} />
               </button>
@@ -586,12 +610,12 @@ export default function AppLayout() {
           to="/dashboard"
           className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/dashboard'
-              ? 'text-[#10B981] dark:text-[#3ECF8E]'
+              ? (isBlue ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-[#10B981] dark:text-[#3ECF8E]')
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
           <LayoutDashboard size={19} strokeWidth={location.pathname === '/dashboard' ? 2.2 : 1.75} />
-          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Ghar</span>
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Home</span>
         </Link>
 
         {/* All Documents / Vault */}
@@ -599,19 +623,23 @@ export default function AppLayout() {
           to="/vault"
           className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/vault'
-              ? 'text-[#10B981] dark:text-[#3ECF8E]'
+              ? (isBlue ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-[#10B981] dark:text-[#3ECF8E]')
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
           <Files size={19} strokeWidth={location.pathname === '/vault' ? 2.2 : 1.75} />
-          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Kagaz</span>
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Docs</span>
         </Link>
 
-        {/* Central Floating Action Button (Supabase Green +) */}
+        {/* Central Floating Action Button */}
         <div className="relative -top-3 sm:-top-3.5 flex items-center justify-center shrink-0 px-1">
           <Link
             to="/vault/upload"
-            className="w-12 h-12 sm:w-[50px] sm:h-[50px] rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 active:scale-95 transition-all ring-4 ring-white dark:ring-[#141414]"
+            className={`w-12 h-12 sm:w-[50px] sm:h-[50px] rounded-full flex items-center justify-center active:scale-95 transition-all ${
+              isBlue
+                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/35 ring-4 ring-white dark:ring-[#0F172A]'
+                : 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 ring-4 ring-white dark:ring-[#141414]'
+            }`}
             title="Upload Document"
           >
             <Plus size={24} strokeWidth={2.8} />
@@ -623,12 +651,12 @@ export default function AppLayout() {
           to="/family"
           className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname.startsWith('/family')
-              ? 'text-[#10B981] dark:text-[#3ECF8E]'
+              ? (isBlue ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-[#10B981] dark:text-[#3ECF8E]')
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
           <Users size={19} strokeWidth={location.pathname.startsWith('/family') ? 2.2 : 1.75} />
-          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Parivaar</span>
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Family</span>
         </Link>
 
         {/* Settings */}
@@ -636,7 +664,7 @@ export default function AppLayout() {
           to="/settings"
           className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/settings'
-              ? 'text-[#10B981] dark:text-[#3ECF8E]'
+              ? (isBlue ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-[#10B981] dark:text-[#3ECF8E]')
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
