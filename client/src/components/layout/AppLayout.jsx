@@ -591,7 +591,7 @@ export default function AppLayout() {
           }`}
         >
           <LayoutDashboard size={19} strokeWidth={location.pathname === '/dashboard' ? 2.2 : 1.75} />
-          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Home</span>
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Ghar</span>
         </Link>
 
         {/* All Documents / Vault */}
@@ -604,7 +604,7 @@ export default function AppLayout() {
           }`}
         >
           <Files size={19} strokeWidth={location.pathname === '/vault' ? 2.2 : 1.75} />
-          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Vault</span>
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Kagaz</span>
         </Link>
 
         {/* Central Floating Action Button (Supabase Green +) */}
@@ -628,7 +628,7 @@ export default function AppLayout() {
           }`}
         >
           <Users size={19} strokeWidth={location.pathname.startsWith('/family') ? 2.2 : 1.75} />
-          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Family</span>
+          <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Parivaar</span>
         </Link>
 
         {/* Settings */}

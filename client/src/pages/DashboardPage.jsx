@@ -76,6 +76,8 @@ export default function DashboardPage() {
   const [revealedIds, setRevealedIds] = useState(new Set());
   const [selectedLocation, setSelectedLocation] = useState('ALL');
   const [showKycDetails, setShowKycDetails] = useState(false);
+  const [isPushBannerDismissed, setIsPushBannerDismissed] = useState(false);
+  const [isPersonalKycBannerDismissed, setIsPersonalKycBannerDismissed] = useState(false);
 
   useEffect(() => {
     loadDashboard();
@@ -436,6 +438,35 @@ export default function DashboardPage() {
     };
   }, [documents, user]);
 
+  // Quick 4-Category Counts (Pehchaan, Health, Bank & Property, Gadi & Bills)
+  const categoryCounts = useMemo(() => {
+    const activeDocs = selectedMemberId === 'ALL'
+      ? documents
+      : documents.filter(d => (d.assignedMember?._id || d.assignedMemberId || d.uploaderId)?.toString() === selectedMemberId.toString());
+
+    const idCount = activeDocs.filter(d => {
+      const c = (d.category || '').toLowerCase();
+      const t = (d.title || '').toLowerCase();
+      return c.includes('id') || c.includes('identity') || t.includes('aadhaar') || t.includes('pan') || t.includes('voter') || t.includes('license');
+    }).length;
+
+    const healthCount = activeDocs.filter(d => {
+      const c = (d.category || '').toLowerCase();
+      const t = (d.title || '').toLowerCase();
+      return c.includes('health') || c.includes('medical') || t.includes('ayushman') || t.includes('hospital') || t.includes('insurance');
+    }).length;
+
+    const bankCount = activeDocs.filter(d => {
+      const c = (d.category || '').toLowerCase();
+      const t = (d.title || '').toLowerCase();
+      return c.includes('bank') || c.includes('property') || c.includes('financial') || t.includes('khata') || t.includes('registry') || t.includes('passbook');
+    }).length;
+
+    const billsCount = Math.max(0, activeDocs.length - idCount - healthCount - bankCount);
+
+    return { idCount, healthCount, bankCount, billsCount };
+  }, [documents, selectedMemberId]);
+
   // Auto-prompt personal KYC modal once per session if logged-in user is missing documents
   useEffect(() => {
     if (loading) return;
@@ -567,17 +598,17 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] animate-pulse shrink-0" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] animate-pulse shrink-0" />
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">
-                {family?.name || `${user?.name?.split(' ')[0] || 'Family'}'s Vault`}
+                {family?.name || `${user?.name?.split(' ')[0] || 'Parivaar'}'s Vault`}
               </h1>
               <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/20">
                 <ShieldCheck size={11} />
-                <span>AES-256 Protected</span>
+                <span>100% Surakshit</span>
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
-              Encrypted repository for ID cards, property papers, and medical records.
+              Aapke parivaar ke sabhi zaroori kagaz ek jagah surakshit.
             </p>
           </div>
 
@@ -589,7 +620,7 @@ export default function DashboardPage() {
               className="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <HeartPulse size={14} className="text-red-600 dark:text-red-400" />
-              <span>Emergency SOS</span>
+              <span>Emergency Locker</span>
             </button>
 
             <Link
@@ -597,7 +628,7 @@ export default function DashboardPage() {
               className="px-3.5 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center gap-1 shadow-xs transition-all cursor-pointer"
             >
               <Plus size={15} strokeWidth={2.5} />
-              <span>Upload Document</span>
+              <span>+ Naya Kagaz</span>
             </Link>
           </div>
         </div>
@@ -605,8 +636,8 @@ export default function DashboardPage() {
         {/* Level 2: Family Persona Story Avatars (Instagram / Apple Style Horizontal Scroll) */}
         <div className="pt-2 border-t border-slate-100 dark:border-[#27272A]">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400 mb-2 font-medium">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
-              Family Personas (Filter by Member)
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400 flex items-center gap-1.5">
+              <span>👨‍👩‍👧 Kiske kagaz dekhne hain? (Tap to filter)</span>
             </span>
             {selectedMemberId !== 'ALL' && (
               <button
@@ -614,7 +645,7 @@ export default function DashboardPage() {
                 onClick={() => setSelectedMemberId('ALL')}
                 className="text-emerald-700 dark:text-[#3ECF8E] hover:underline text-[11px] font-bold cursor-pointer"
               >
-                Reset Filter ✕
+                Sabhi Dekhein ✕
               </button>
             )}
           </div>
@@ -633,7 +664,7 @@ export default function DashboardPage() {
               <span className="w-5 h-5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center text-[10px] font-bold">
                 ★
               </span>
-              <span>All Documents</span>
+              <span>Sabhi Kagaz</span>
               <span className="text-[10px] opacity-70 font-mono">({documents.length})</span>
             </button>
 
@@ -669,7 +700,7 @@ export default function DashboardPage() {
                       className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-white dark:ring-[#141414] ${
                         isMemberKycDone ? 'bg-[#10B981] dark:bg-[#3ECF8E]' : 'bg-amber-500'
                       }`}
-                      title={isMemberKycDone ? 'Essential KYC Complete' : 'KYC Documents Pending'}
+                      title={isMemberKycDone ? 'Essential IDs Uploaded' : 'IDs Pending'}
                     />
                   </div>
                   <span className="truncate max-w-[100px]">{member.name?.split(' ')[0] || 'Member'}</span>
@@ -685,7 +716,7 @@ export default function DashboardPage() {
                         : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
                     }`}
                   >
-                    {isMemberKycDone ? '✓ KYC' : 'KYC!'}
+                    {isMemberKycDone ? '✓ Ready' : 'Pending'}
                   </span>
                   <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-mono">
                     ({memberDocCount})
@@ -700,51 +731,11 @@ export default function DashboardPage() {
               className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-dashed border-slate-300 dark:border-neutral-700 hover:border-emerald-500 text-slate-600 dark:text-neutral-400 text-xs font-semibold shrink-0 transition-colors"
             >
               <UserPlus size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
-              <span>Add Member</span>
+              <span>+ Member</span>
             </Link>
           </div>
         </div>
       </div>
-
-      {/* ================= PUSH NOTIFICATION OPT-IN PROMPT BANNER ================= */}
-      {isSupported && !isSubscribed && permission === 'default' && (
-        <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-slate-800 dark:text-neutral-200 animate-fadeIn">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#10B981]/20 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
-              <Smartphone size={18} />
-            </div>
-            <div>
-              <div className="text-xs sm:text-sm font-bold flex items-center gap-2">
-                <span>Phone Push Notifications Enable Karein 📲</span>
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold">
-                  Recommended
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-neutral-400 mt-0.5">
-                Naye family documents aur urgent updates aane par aapke phone screen par instant pop-up bajega.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={requestPushPermission}
-              disabled={pushLoading}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              {pushLoading ? (
-                <span>Connecting...</span>
-              ) : (
-                <>
-                  <Bell size={13} />
-                  <span>Allow Notifications</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ================= 2. UNIVERSAL FAST SEARCH BAR ================= */}
       <div className="relative">
@@ -755,8 +746,8 @@ export default function DashboardPage() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by ID number (Aadhaar, PAN), document title, member, or Almirah shelf..."
-          className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 text-xs sm:text-sm focus:outline-hidden focus:border-[#10B981] dark:focus:border-[#3ECF8E] transition-all shadow-2xs"
+          placeholder="Aadhaar, PAN, RC, Insurance, Bijli Bill ya kagaz ka naam dhoondhein..."
+          className="w-full pl-10 pr-9 py-2.5 sm:py-3 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 text-xs sm:text-sm focus:outline-hidden focus:border-[#10B981] dark:focus:border-[#3ECF8E] transition-all shadow-2xs"
         />
         {searchQuery && (
           <button
@@ -769,178 +760,242 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ================= 3. RENEWAL RADAR ALERT (If expiring in 30 days) ================= */}
-      {expiringDocs.length > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 dark:text-amber-200">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <AlertTriangle size={18} />
+      {/* ================= 3. 4 BIG VISUAL FAMILY CATEGORIES (PAPA & FAMILY FIRST) ================= */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
+        {/* Category 1: ID Cards */}
+        <Link
+          to={`/vault?category=${encodeURIComponent('ID Cards')}${selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''}`}
+          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-emerald-500/20 dark:border-[#27272A] hover:border-emerald-500 shadow-2xs hover:shadow-md transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
+              🪪
             </div>
-            <div>
-              <div className="text-xs sm:text-sm font-bold flex items-center gap-2">
-                <span>Renewal Radar: Urgent Document Expiring Soon</span>
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">
-                  {Math.ceil((new Date(expiringDocs[0].expiryDate) - Date.now()) / 86400000)} days left
+            <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]">
+              {categoryCounts.idCount} kagaz
+            </span>
+          </div>
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#10B981] dark:group-hover:text-[#3ECF8E] transition-colors">
+              Pehchaan (ID Cards)
+            </h3>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+              Aadhaar, PAN, Voter, DL
+            </p>
+          </div>
+        </Link>
+
+        {/* Category 2: Health & Medical */}
+        <Link
+          to={`/vault?category=${encodeURIComponent('Medical & Health')}${selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''}`}
+          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-rose-500/20 dark:border-[#27272A] hover:border-rose-500 shadow-2xs hover:shadow-md transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
+              🏥
+            </div>
+            <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300">
+              {categoryCounts.healthCount} kagaz
+            </span>
+          </div>
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+              Health & Dawaai
+            </h3>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+              Ayushman, Reports, Policy
+            </p>
+          </div>
+        </Link>
+
+        {/* Category 3: Bank & Property */}
+        <Link
+          to={`/vault?category=${encodeURIComponent('Bank & Property')}${selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''}`}
+          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-blue-500/20 dark:border-[#27272A] hover:border-blue-500 shadow-2xs hover:shadow-md transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
+              🏦
+            </div>
+            <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300">
+              {categoryCounts.bankCount} kagaz
+            </span>
+          </div>
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              Bank aur Property
+            </h3>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+              Khata, Registry, Passbook
+            </p>
+          </div>
+        </Link>
+
+        {/* Category 4: Gadi aur Bills */}
+        <Link
+          to={`/vault?category=${encodeURIComponent('Vehicles & Transport')}${selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''}`}
+          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-amber-500/20 dark:border-[#27272A] hover:border-amber-500 shadow-2xs hover:shadow-md transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
+              🚗
+            </div>
+            <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300">
+              {categoryCounts.billsCount} kagaz
+            </span>
+          </div>
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+              Gadi aur Bills
+            </h3>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+              RC, Insurance, Bijli Bill
+            </p>
+          </div>
+        </Link>
+      </div>
+
+      {/* ================= GENTLE ALERT CHIPS (COMPACT & NON-SCARY) ================= */}
+      <div className="space-y-2">
+        {/* Push Notification Opt-in Chip */}
+        {isSupported && !isSubscribed && permission === 'default' && !isPushBannerDismissed && (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 text-xs text-slate-800 dark:text-neutral-200 animate-fadeIn">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base shrink-0">📲</span>
+              <span className="truncate">Naye family documents aane par phone par notification paayein</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={requestPushPermission}
+                disabled={pushLoading}
+                className="px-2.5 py-1 rounded-lg bg-[#10B981] hover:bg-emerald-600 text-white dark:text-[#121212] font-bold text-[11px] cursor-pointer"
+              >
+                {pushLoading ? '...' : 'Allow'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsPushBannerDismissed(true)}
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                title="Dismiss"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Urgent Expiry Radar Chip */}
+        {expiringDocs.length > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200 animate-fadeIn">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base shrink-0">⏰</span>
+              <span className="truncate">
+                <strong>{expiringDocs[0].title}</strong> agle {Math.ceil((new Date(expiringDocs[0].expiryDate) - Date.now()) / 86400000)} din mein expire ho raha hai!
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const doc = expiringDocs[0];
+                  const msg = `⚠️ Reminder: Hamara family document *${doc.title}* expiring on ${new Date(doc.expiryDate).toLocaleDateString()}. Please renewal karwayein.`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                }}
+                className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-[11px] flex items-center gap-1 border border-emerald-300 dark:border-emerald-500/30 cursor-pointer"
+              >
+                <MessageCircle size={12} />
+                <span>WhatsApp Alert</span>
+              </button>
+              <Link
+                to={`/vault/documents/${expiringDocs[0]._id}`}
+                className="px-2.5 py-1 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-[11px]"
+              >
+                Kagaz Dekhein →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Personal KYC Gentle Chip */}
+        {isVerifiedUser && !myPersonalKycStatus.isComplete && !isPersonalKycBannerDismissed && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200 animate-fadeIn">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base shrink-0">💡</span>
+              <div className="min-w-0">
+                <span className="font-bold">{user?.name?.split(' ')[0] || 'Aapke'} zaroori kagaz baaki hain</span>
+                <span className="text-slate-500 dark:text-neutral-400 ml-1.5 hidden sm:inline">
+                  ({myPersonalKycStatus.missing.map(m => m.title).join(', ')})
                 </span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-neutral-400 mt-0.5">
-                <strong>{expiringDocs[0].title}</strong> ({expiringDocs[0].assignedMember?.name || 'Family'}) is due on{' '}
-                {new Date(expiringDocs[0].expiryDate).toLocaleDateString()}
-                {expiringDocs.length > 1 && ` (+${expiringDocs.length - 1} more papers)`}.
-              </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={() => {
-                const doc = expiringDocs[0];
-                const msg = `⚠️ Reminder: Our family document *${doc.title}* is expiring on ${new Date(doc.expiryDate).toLocaleDateString()}. Please initiate renewal promptly.`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-              }}
-              className="flex-1 sm:flex-none px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
-            >
-              <MessageCircle size={13} />
-              <span>Remind on WhatsApp</span>
-            </button>
-            <Link
-              to={`/vault/documents/${expiringDocs[0]._id}`}
-              className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black text-xs font-bold text-center hover:opacity-90 transition-opacity"
-            >
-              View Document →
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* ================= PERSONAL KYC URGENT ACTION BANNER (For Logged-in Verified Member) ================= */}
-      {isVerifiedUser && !myPersonalKycStatus.isComplete && (
-        <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-orange-500/15 border-2 border-amber-500/40 dark:border-amber-500/50 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3 animate-fadeIn">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 ring-1 ring-amber-500/30">
-                <AlertTriangle size={22} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                    ⚠️ {user?.name?.split(' ')[0] || 'Apne'}, Essential KYC Documents Pending Hain!
-                  </h3>
-                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300">
-                    {myPersonalKycStatus.completedCount} of 4 Uploaded
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-neutral-300 mt-1">
-                  Aap ek verified family member hain. Emergency identification aur hospital cashless admission ke liye aapke{' '}
-                  <strong className="text-amber-700 dark:text-amber-300">
-                    {myPersonalKycStatus.missing.map(m => m.title).join(', ')}
-                  </strong>{' '}
-                  upload hona zaroori hain.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsPersonalKycModalOpen(true)}
-                className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] shadow-xs cursor-pointer"
               >
-                <Plus size={15} strokeWidth={2.5} />
-                <span>Upload Missing Documents</span>
+                + Upload Karein
               </button>
-            </div>
-          </div>
-
-          {/* Quick missing doc tags */}
-          <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-amber-500/20">
-            <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">Missing right now:</span>
-            {myPersonalKycStatus.missing.map((item) => (
-              <Link
-                key={item.id}
-                to={`/vault/upload?category=${encodeURIComponent(item.category)}&title=${encodeURIComponent(item.title)}&member=${user?._id || user?.id}`}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/80 dark:bg-[#202022] hover:bg-white dark:hover:bg-[#28282b] border border-amber-300/60 dark:border-amber-500/30 text-[11px] font-bold text-slate-800 dark:text-neutral-200 transition-colors shadow-2xs"
-              >
-                <span>{item.icon}</span>
-                <span>{item.title}</span>
-                <span className="text-amber-600 dark:text-amber-400 text-[10px]">Upload +</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ================= ESSENTIAL FAMILY KYC & BASIC ONBOARDING CHECKLIST ================= */}
-      <div className={`rounded-2xl border transition-all ${
-        kycStatus.isComplete
-          ? 'bg-emerald-500/5 dark:bg-[#3ECF8E]/5 border-emerald-500/20 dark:border-[#3ECF8E]/20 p-4'
-          : 'bg-white dark:bg-[#18181B] border-amber-400/40 dark:border-amber-500/30 shadow-xs p-4 sm:p-5'
-      }`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-              kycStatus.isComplete
-                ? 'bg-[#10B981]/20 dark:bg-[#3ECF8E]/20 text-[#10B981] dark:text-[#3ECF8E]'
-                : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-            }`}>
-              {kycStatus.isComplete ? <ShieldCheck size={20} /> : <ListChecks size={20} />}
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                  {kycStatus.isComplete
-                    ? '100% Essential Family KYC Verified'
-                    : 'Essential Family KYC & Basic IDs Onboarding'}
-                </h2>
-                <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${
-                  kycStatus.isComplete
-                    ? 'bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]'
-                    : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
-                }`}>
-                  {kycStatus.completedCount} of {kycStatus.total} Vaulted ({kycStatus.progressPercent}%)
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
-                {kycStatus.isComplete
-                  ? 'All 4 essential Indian identity documents (Aadhaar, PAN, DL/Voter, Health Card) are securely stored.'
-                  : 'Emergency readiness requires 4 core IDs: Aadhaar, PAN, Driving License / Voter ID, and Health / Ayushman Card.'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            {!kycStatus.isComplete && (
               <button
                 type="button"
-                onClick={handleKycReminderWhatsApp}
-                className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] text-xs font-bold border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-1.5 transition-colors cursor-pointer"
-                title="Send WhatsApp reminder to family"
+                onClick={() => setIsPersonalKycBannerDismissed(true)}
+                className="p-1 text-amber-700 dark:text-amber-400 hover:text-amber-950 dark:hover:text-white cursor-pointer"
+                title="Dismiss"
               >
-                <MessageCircle size={13} className="text-emerald-600 dark:text-[#3ECF8E]" />
-                <span className="hidden sm:inline">WhatsApp Family Reminder</span>
-                <span className="sm:hidden">Remind Family</span>
+                <X size={13} />
               </button>
-            )}
+            </div>
+          </div>
+        )}
 
-            {kycStatus.isComplete && (
+        {/* Essential Family KYC Checklist (Collapsible Strip) */}
+        <div className="rounded-2xl border border-slate-200/90 dark:border-[#27272A] bg-white dark:bg-[#18181B] p-3 sm:p-4 shadow-2xs transition-all">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-lg shrink-0">{kycStatus.isComplete ? '🛡️' : '📋'}</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                    {kycStatus.isComplete ? 'Ghar ke Saare Zaroori Kagaz Uploaded' : 'Ghar ke Zaroori Kagaz (Essential IDs)'}
+                  </h3>
+                  <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${
+                    kycStatus.isComplete
+                      ? 'bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]'
+                      : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
+                  }`}>
+                    {kycStatus.completedCount} of {kycStatus.total} Complete ({kycStatus.progressPercent}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              {!kycStatus.isComplete && (
+                <button
+                  type="button"
+                  onClick={handleKycReminderWhatsApp}
+                  className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] text-[11px] font-bold border border-emerald-200 dark:border-[#3ECF8E]/30 cursor-pointer"
+                >
+                  <MessageCircle size={12} />
+                  <span>Family Reminder</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setShowKycDetails(prev => !prev)}
-                className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#252525] flex items-center gap-1 cursor-pointer"
               >
-                <span>{showKycDetails ? 'Hide Details' : 'View Checklist'}</span>
+                <span>{showKycDetails ? 'Chupayein' : 'Checklist Dekhein'}</span>
                 {showKycDetails ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
               </button>
-            )}
+            </div>
           </div>
-        </div>
 
-        {/* Progress Bar */}
-        <div className="mt-3.5 space-y-1.5">
-          <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-[#242424] overflow-hidden">
+          {/* Progress Bar */}
+          <div className="mt-2.5 w-full h-1.5 rounded-full bg-slate-100 dark:bg-[#252525] overflow-hidden">
             <div
-              className={`h-full transition-all duration-500 rounded-full ${
+              className={`h-full rounded-full transition-all duration-500 ${
                 kycStatus.isComplete
                   ? 'bg-gradient-to-r from-emerald-500 to-[#3ECF8E]'
                   : 'bg-gradient-to-r from-amber-500 via-emerald-500 to-[#3ECF8E]'
@@ -948,78 +1003,63 @@ export default function DashboardPage() {
               style={{ width: `${Math.max(kycStatus.progressPercent, 5)}%` }}
             />
           </div>
-        </div>
 
-        {/* 4 Cards Grid - Always visible if incomplete, collapsible if complete */}
-        {(!kycStatus.isComplete || showKycDetails) && (
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-            {kycStatus.items.map(item => (
-              <div
-                key={item.id}
-                className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${
-                  item.done
-                    ? 'bg-emerald-50/50 dark:bg-[#3ECF8E]/5 border-emerald-200/80 dark:border-[#3ECF8E]/20'
-                    : 'bg-slate-50/80 dark:bg-[#141414] border-dashed border-slate-300 dark:border-[#2D2D2D] hover:border-emerald-500 dark:hover:border-[#3ECF8E]'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-1.5 mb-1.5">
-                    <span className="text-base">{item.icon}</span>
+          {/* Collapsible 4 Checklist Cards */}
+          {showKycDetails && (
+            <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-[#27272A] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 animate-fadeIn">
+              {kycStatus.items.map(item => (
+                <div
+                  key={item.id}
+                  className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${
+                    item.done
+                      ? 'bg-emerald-50/50 dark:bg-[#3ECF8E]/5 border-emerald-200/80 dark:border-[#3ECF8E]/20'
+                      : 'bg-slate-50 dark:bg-[#141414] border-dashed border-slate-300 dark:border-[#2D2D2D]'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-base">{item.icon}</span>
+                      {item.done ? (
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-[#3ECF8E] flex items-center gap-1 bg-emerald-100 dark:bg-[#3ECF8E]/20 px-2 py-0.5 rounded-full">
+                          <CheckCircle2 size={11} />
+                          <span>Uploaded</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 py-0.5 rounded-full">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {item.title}
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 leading-snug">
+                      {item.desc}
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-[#262626]">
                     {item.done ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]">
-                        <CheckCircle2 size={11} />
-                        <span>Vaulted</span>
-                      </span>
+                      <Link to="/vault" className="text-[11px] font-bold text-emerald-700 dark:text-[#3ECF8E] hover:underline flex items-center justify-between">
+                        <span>Kagaz Dekhein</span>
+                        <ChevronRight size={12} />
+                      </Link>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300">
-                        <AlertTriangle size={10} />
-                        <span>Missing</span>
-                      </span>
+                      <Link
+                        to={`/vault/upload?category=${encodeURIComponent(item.category)}&title=${encodeURIComponent(item.title)}${
+                          selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''
+                        }`}
+                        className="w-full py-1.5 px-2 rounded-lg bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center justify-center gap-1"
+                      >
+                        <Plus size={12} strokeWidth={2.5} />
+                        <span>Upload Karein</span>
+                      </Link>
                     )}
                   </div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">
-                    {item.title}
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 leading-snug">
-                    {item.desc}
-                  </p>
                 </div>
-
-                <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-[#262626]">
-                  {item.done ? (
-                    <Link
-                      to="/vault"
-                      className="text-[11px] font-bold text-emerald-700 dark:text-[#3ECF8E] hover:underline flex items-center justify-between"
-                    >
-                      <span>View in Vault</span>
-                      <ChevronRight size={13} />
-                    </Link>
-                  ) : (
-                    <Link
-                      to={`/vault/upload?category=${encodeURIComponent(item.category)}&title=${encodeURIComponent(item.title)}${
-                        selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''
-                      }`}
-                      className="w-full py-1.5 px-2 rounded-lg bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-2xs"
-                    >
-                      <Plus size={12} strokeWidth={2.5} />
-                      <span>Upload in 1-Tap</span>
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Ongoing Reminder Policy Footer Note */}
-        {!kycStatus.isComplete && (
-          <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-[#27272A] flex items-center gap-2 text-[11px] text-slate-500 dark:text-neutral-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-            <span>
-              <strong>Active Security Policy:</strong> In-app reminders and notifications will alert members until all 4 basic KYC cards are uploaded.
-            </span>
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ================= 4. MAIN BENTO GRID (DESKTOP 2-COLUMN, MOBILE FLUID) ================= */}
@@ -1032,7 +1072,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2">
                 <CreditCard size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Essential Indian ID Cards (1-Tap Copy)
+                  🪪 Ghar ke Zaroori ID Cards (1-Tap Copy)
                 </h2>
               </div>
               <span className="text-[11px] font-mono text-slate-400 dark:text-neutral-500">
@@ -1168,10 +1208,10 @@ export default function DashboardPage() {
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <FileText size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
-                  <span>Recent Documents</span>
+                  <span>📄 Haal hi ke Kagaz (Recent Documents)</span>
                 </h3>
                 <p className="text-[11px] text-slate-500 dark:text-neutral-400">
-                  Quick access to recently added family records
+                  Ghar ke haal hi mein upload huye kagaz
                 </p>
               </div>
 
@@ -1250,7 +1290,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2">
                 <Box size={16} className="text-amber-600 dark:text-amber-400" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                  Physical Paper Locator (Almari Tracker)
+                  🗄️ Ghar ki Almari / Locker Locator
                 </h3>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 font-bold">
@@ -1259,7 +1299,7 @@ export default function DashboardPage() {
             </div>
 
             <p className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed">
-              Find where original paper certificates and registry files are kept inside your home.
+              Asli kagaz ghar mein kahan rakhe hain (Almari, Drawer, Safe) — yahan se pata karein.
             </p>
 
             <div className="grid grid-cols-1 gap-2">
@@ -1302,7 +1342,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2">
                 <UserPlus size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                  Family Vault Invite
+                  👨‍👩‍👧 Parivaar ko Jodein (Invite Code)
                 </h3>
               </div>
               <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold">
@@ -1311,7 +1351,7 @@ export default function DashboardPage() {
             </div>
 
             <p className="text-[11px] text-slate-600 dark:text-neutral-400 leading-relaxed">
-              Family members can log in on their phones and enter this code under "Join Existing Family" to sync.
+              Ghar ke sabhi phones par ye code daal kar sync karein, taaki sabhi log kagaz dekh sakein.
             </p>
 
             {/* Invite Code Box & Buttons */}
@@ -1362,7 +1402,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2">
                 <HardDrive size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                  Vault Storage & Health
+                  📦 Surakshit Storage (50 GB Free)
                 </h3>
               </div>
               <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-[#3ECF8E]">
