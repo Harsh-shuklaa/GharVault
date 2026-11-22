@@ -848,7 +848,7 @@ export default function SettingsPage() {
                   <span>100% Free-Tier Cloud Infrastructure (₹0 Cost)</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-neutral-400">
-                  GharVault runs entirely on permanent free tiers with zero AWS S3 or paid hosting overhead.
+                  Dastavej runs entirely on permanent free tiers with zero AWS S3 or paid hosting overhead.
                 </p>
 
                 <div className="space-y-3 text-xs pt-1">
@@ -1023,7 +1023,7 @@ export default function SettingsPage() {
                     <span>Brand Theme & Accent Color</span>
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
-                    Choose between GharVault's Emerald Green or Stitch's Royal Blue theme.
+                    Choose between Dastavej's Emerald Green or Royal Blue theme.
                   </p>
                 </div>
 
@@ -1053,7 +1053,7 @@ export default function SettingsPage() {
                       <span
                         className="text-[10px] font-mono px-2 py-0.5 rounded-full border swatch-emerald-badge font-bold"
                       >
-                        GharVault Classic
+                        Dastavej Classic
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed">
@@ -1168,8 +1168,8 @@ export default function SettingsPage() {
                     </div>
                     <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1 leading-relaxed">
                       {isStandalone
-                        ? 'GharVault is currently running as an installed standalone PWA app on this device.'
-                        : 'Tap below to trigger instant installation or follow simple steps to add GharVault to your home screen.'}
+                        ? 'Dastavej is currently running as an installed standalone PWA app on this device.'
+                        : 'Tap below to trigger instant installation or follow simple steps to add Dastavej to your home screen.'}
                     </p>
                   </div>
 

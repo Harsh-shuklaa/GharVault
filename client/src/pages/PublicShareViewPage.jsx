@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { Shield, Clock, AlertCircle, Lock, Eye, Check } from 'lucide-react';
+import DastavejLogo from '../components/common/DastavejLogo';
 
 export default function PublicShareViewPage() {
   const { token } = useParams();
@@ -88,12 +89,10 @@ export default function PublicShareViewPage() {
       {/* Top Header */}
       <header className="h-16 border-b border-slate-200 dark:border-[#262626] bg-white dark:bg-[#141414] px-4 sm:px-8 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-[#1C1C1C] border border-emerald-200 dark:border-[#2E2E2E] flex items-center justify-center">
-            <Shield className="w-5 h-5 text-[#10B981] dark:text-[#3ECF8E] stroke-[2.2]" />
-          </div>
+          <DastavejLogo size={32} />
           <div>
-            <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">GharVault</span>
-            <span className="ml-2 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] font-bold">
+            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">Dastavej</span>
+            <span className="ml-2 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 font-bold border border-blue-200 dark:border-blue-500/20">
               Safe Share
             </span>
           </div>
@@ -214,7 +213,7 @@ export default function PublicShareViewPage() {
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-slate-400 dark:text-neutral-600 border-t border-slate-200 dark:border-[#262626]">
-        Powered by <strong className="text-slate-600 dark:text-neutral-400">GharVault</strong> — Sovereign Digital Family Locker
+        Powered by <strong className="text-slate-600 dark:text-neutral-400">Dastavej</strong> — Sovereign Digital Family Locker
       </footer>
     </div>
   );

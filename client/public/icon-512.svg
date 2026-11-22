@@ -1,7 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="128" fill="#10B981"/>
-  <path d="M256 70L106 136v124c0 115.3 64 222.8 150 252 86-29.2 150-136.7 150-252V136L256 70z" fill="#065F46" opacity="0.4"/>
-  <path d="M256 90L126 148v112c0 102.5 55.4 198 130 224 74.6-26 130-121.5 130-224V148L256 90z" fill="#ffffff"/>
-  <path d="M256 190c-33.1 0-60 26.9-60 60v30h-10c-11 0-20 9-20 20v90c0 11 9 20 20 20h140c11 0 20-9 20-20v-90c0-11-9-20-20-20h-10v-30c0-33.1-26.9-60-60-60zm0 30c16.6 0 30 13.4 30 30v30h-60v-30c0-16.6 13.4-30 30-30z" fill="#10B981"/>
-  <circle cx="256" cy="355" r="14" fill="#047857"/>
+<svg width="512" height="512" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgPwa512" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="spinePwa512" x1="0" y1="0" x2="0" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="topPwa512" x1="0" y1="0" x2="128" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#60A5FA" />
+    </linearGradient>
+    <linearGradient id="arcPwa512" x1="128" y1="0" x2="64" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="cornerPwa512" x1="64" y1="32" x2="100" y2="68" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93C5FD" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="32" fill="url(#bgPwa512)"/>
+  <rect x="1" y="1" width="126" height="126" rx="31" fill="none" stroke="rgba(56,189,248,0.4)" stroke-width="2"/>
+  <path d="M32 28 H54 V100 H32 Z" fill="url(#spinePwa512)"/>
+  <path d="M54 28 H82 L68 48 H54 Z" fill="url(#topPwa512)"/>
+  <path d="M82 28 C96 28 106 38 106 54 V74 C106 90 96 100 82 100 H54 L68 80 H80 C88 80 92 76 92 70 V58 C92 52 88 48 80 48 L82 28 Z" fill="url(#arcPwa512)"/>
+  <path d="M54 100 H82 L68 80 H54 Z" fill="url(#spinePwa512)"/>
+  <path d="M82 28 L106 52 H82 Z" fill="url(#cornerPwa512)" opacity="0.95"/>
+  <line x1="54" y1="28" x2="54" y2="100" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" />
+  <line x1="82" y1="28" x2="106" y2="52" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" />
 </svg>

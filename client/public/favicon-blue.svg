@@ -1,0 +1,33 @@
+<svg width="64" height="64" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgBlue" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="spineBlue" x1="0" y1="0" x2="0" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="topBlue" x1="0" y1="0" x2="128" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#60A5FA" />
+    </linearGradient>
+    <linearGradient id="arcBlue" x1="128" y1="0" x2="64" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="cornerBlue" x1="64" y1="32" x2="100" y2="68" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93C5FD" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="32" fill="url(#bgBlue)"/>
+  <rect x="1" y="1" width="126" height="126" rx="31" fill="none" stroke="rgba(56,189,248,0.4)" stroke-width="2"/>
+  <path d="M32 28 H54 V100 H32 Z" fill="url(#spineBlue)"/>
+  <path d="M54 28 H82 L68 48 H54 Z" fill="url(#topBlue)"/>
+  <path d="M82 28 C96 28 106 38 106 54 V74 C106 90 96 100 82 100 H54 L68 80 H80 C88 80 92 76 92 70 V58 C92 52 88 48 80 48 L82 28 Z" fill="url(#arcBlue)"/>
+  <path d="M54 100 H82 L68 80 H54 Z" fill="url(#spineBlue)"/>
+  <path d="M82 28 L106 52 H82 Z" fill="url(#cornerBlue)" opacity="0.95"/>
+  <line x1="54" y1="28" x2="54" y2="100" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" />
+  <line x1="82" y1="28" x2="106" y2="52" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" />
+</svg>

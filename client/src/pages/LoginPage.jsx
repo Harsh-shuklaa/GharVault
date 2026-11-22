@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import DastavejLogo from '../components/common/DastavejLogo';
 import { api } from '../lib/api';
 
 export default function LoginPage() {
@@ -193,11 +194,9 @@ export default function LoginPage() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
         <Link to="/" className="inline-flex items-center justify-center gap-2.5 mb-5 group">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-[#1C1C1C] border border-emerald-200 dark:border-[#2E2E2E] group-hover:border-[#10B981] dark:group-hover:border-[#3ECF8E]/50 flex items-center justify-center shadow-xs transition-colors">
-            <Shield className="w-6 h-6 text-[#10B981] dark:text-[#3ECF8E] stroke-[2.2]" />
-          </div>
-          <span className="font-bold text-2xl tracking-tight text-slate-900 dark:text-[#EDEDED]">
-            GharVault
+          <DastavejLogo size={42} />
+          <span className="font-headline font-extrabold text-2xl tracking-tight text-slate-900 dark:text-[#EDEDED]">
+            Dastavej
           </span>
         </Link>
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#EDEDED]">

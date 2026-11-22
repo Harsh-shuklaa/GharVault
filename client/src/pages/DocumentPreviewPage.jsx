@@ -271,7 +271,7 @@ export default function DocumentPreviewPage() {
         );
       }
       const msg = encodeURIComponent(
-        `Namaste, here is the secure view link for "${doc?.title || 'Document'}" via GharVault (Valid for 24 hours): ${linkToShare}`
+        `Namaste, here is the secure view link for "${doc?.title || 'Document'}" via Dastavej (Valid for 24 hours): ${linkToShare}`
       );
       window.open(`https://wa.me/?text=${msg}`, '_blank');
       toast.success('Opened WhatsApp with 24-hr expiring link!');

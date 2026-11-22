@@ -481,7 +481,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
           <span className="text-[11px] flex items-center gap-1 font-semibold text-emerald-800 dark:text-[#3ECF8E]">
             <Shield size={12} />
-            <span>GharVault Safe Instant Search</span>
+            <span>Dastavej Safe Instant Search</span>
           </span>
         </div>
       </div>

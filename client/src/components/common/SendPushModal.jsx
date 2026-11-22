@@ -19,7 +19,7 @@ export default function SendPushModal({ isOpen, onClose, members = [] }) {
   const { sendPushAlert, isSubscribed, requestPushPermission, testLocalNotification } = usePushNotification();
   const { toast } = useToast();
 
-  const [title, setTitle] = useState('🔔 GharVault Update');
+  const [title, setTitle] = useState('🔔 Dastavej Update');
   const [body, setBody] = useState('Naye updates aur documents aa gaye hain, abhi check karein!');
   const [url, setUrl] = useState('/dashboard');
   const [targetMemberId, setTargetMemberId] = useState('ALL');
@@ -32,7 +32,7 @@ export default function SendPushModal({ isOpen, onClose, members = [] }) {
       icon: '🚀',
       label: 'Update aa gaye hain check kar',
       title: '🔔 Naya Update Aa Gaya Hai!',
-      body: 'GharVault me naye updates aur documents aa gaye hain, abhi open karke check karein!',
+      body: 'Dastavej me naye updates aur documents aa gaye hain, abhi open karke check karein!',
       url: '/dashboard',
     },
     {

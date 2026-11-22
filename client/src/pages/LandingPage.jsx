@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import DastavejLogo from '../components/common/DastavejLogo';
 
 export default function LandingPage() {
   const { user, loginWithGoogle } = useAuth();
@@ -45,8 +46,8 @@ export default function LandingPage() {
 
   const faqs = [
     {
-      q: 'How does GharVault ensure zero financial cost (₹0 setup)?',
-      a: 'GharVault provides 100% free, private 256-bit bank-grade encryption for all family documents up to 25MB per file with time-limited safe links. Zero paid subscriptions, credit cards, or hidden fees required.',
+      q: 'How does Dastavej ensure zero financial cost (₹0 setup)?',
+      a: 'Dastavej provides 100% free, private 256-bit bank-grade encryption for all family documents up to 25MB per file with time-limited safe links. Zero paid subscriptions, credit cards, or hidden fees required.',
     },
     {
       q: 'How does the Emergency Medical Card work in a hospital crisis?',
@@ -54,7 +55,7 @@ export default function LandingPage() {
     },
     {
       q: 'What is the One-Tap "Copy Number" feature?',
-      a: 'For ID cards like Aadhaar, PAN, Passport, and Bank Accounts, GharVault provides an instant copy button on each card. You can copy the number to your clipboard with a single tap without downloading or opening the file.',
+      a: 'For ID cards like Aadhaar, PAN, Passport, and Bank Accounts, Dastavej provides an instant copy button on each card. You can copy the number to your clipboard with a single tap without downloading or opening the file.',
     },
     {
       q: 'How does "Share Safely" protect family documents?',
@@ -68,17 +69,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#121212]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#262626] transition-colors">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-[#1C1C1C] border border-emerald-200 dark:border-[#2E2E2E] group-hover:border-[#10B981] dark:group-hover:border-[#3ECF8E]/50 flex items-center justify-center shadow-xs transition-colors">
-              <Shield className="w-4 h-4 text-[#10B981] dark:text-[#3ECF8E] stroke-[2.2]" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-semibold text-base tracking-tight text-slate-900 dark:text-[#EDEDED]">
-                GharVault
-              </span>
-              <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 dark:text-[#8F8F8F]">
-                One Family • One Space
-              </span>
-            </div>
+            <DastavejLogo size={32} showWordmark={true} />
           </Link>
 
           {/* Navigation Links */}
@@ -310,7 +301,7 @@ export default function LandingPage() {
               Frequently Asked Questions
             </h2>
             <p className="mt-2 text-sm text-slate-600 dark:text-[#8F8F8F]">
-              Everything you need to know about GharVault security and setup.
+              Everything you need to know about Dastavej security and setup.
             </p>
           </div>
 
@@ -352,15 +343,12 @@ export default function LandingPage() {
       <footer className="bg-white dark:bg-[#121212] text-slate-600 dark:text-[#8F8F8F] py-8 sm:py-10 border-t border-slate-200 dark:border-[#262626] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-[#1C1C1C] border border-emerald-200 dark:border-[#2E2E2E] flex items-center justify-center shadow-xs">
-              <Shield className="w-3.5 h-3.5 text-[#10B981] dark:text-[#3ECF8E] stroke-[2.2]" />
-            </div>
-            <span className="font-semibold text-sm text-slate-900 dark:text-[#EDEDED]">GharVault</span>
-            <span className="text-[11px] text-slate-400 dark:text-[#555] font-mono">v2.5</span>
+            <DastavejLogo size={24} showWordmark={true} />
+            <span className="text-[11px] text-slate-400 dark:text-[#555] font-mono ml-1">v2.5</span>
           </div>
 
           <p className="text-xs text-slate-500 dark:text-[#8F8F8F] text-center">
-            © 2026 GharVault. Secured with Bank-Grade 256-Bit Encryption. Built for Indian Families.
+            © 2026 Dastavej. Secured with Bank-Grade 256-Bit Encryption. Built for Indian Families.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-medium text-slate-600 dark:text-[#8F8F8F]">

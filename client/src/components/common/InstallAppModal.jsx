@@ -77,7 +77,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h3 className="text-sm sm:text-base font-extrabold tracking-tight truncate">
-                  Install GharVault App
+                  Install Dastavej App
                 </h3>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/15 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/30">
                   PWA
@@ -196,7 +196,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
                           Tap "Add" in the top-right corner
                         </span>
                         <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5">
-                          GharVault will instantly appear on your iPhone home screen!
+                          Dastavej will instantly appear on your iPhone home screen!
                         </p>
                       </div>
                     </div>
@@ -206,7 +206,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
                 /* Instructions: Safari on iPhone (or default iOS) */
                 <div className="space-y-3">
                   <p className="text-xs text-slate-600 dark:text-neutral-300">
-                    To install GharVault with full-screen native experience on iPhone:
+                    To install Dastavej with full-screen native experience on iPhone:
                   </p>
 
                   <div className="space-y-2.5">
@@ -256,7 +256,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
                           Tap "Add" at the top right
                         </span>
                         <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5">
-                          The GharVault app icon will be added to your iPhone home screen!
+                          The Dastavej app icon will be added to your iPhone home screen!
                         </p>
                       </div>
                     </div>
@@ -293,7 +293,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
               {deferredPrompt ? (
                 <div className="text-center space-y-3 py-2">
                   <p className="text-xs text-slate-600 dark:text-neutral-300">
-                    Your browser supports 1-click direct installation. Tap below to install GharVault onto your device:
+                    Your browser supports 1-click direct installation. Tap below to install Dastavej onto your device:
                   </p>
                   <button
                     type="button"
@@ -301,13 +301,13 @@ export default function InstallAppModal({ isOpen, onClose }) {
                     className="w-full min-h-[44px] py-3 px-6 rounded-2xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98"
                   >
                     <Download size={16} />
-                    <span>Install GharVault on This Device</span>
+                    <span>Install Dastavej on This Device</span>
                   </button>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <p className="text-xs text-slate-600 dark:text-neutral-300">
-                    Install GharVault directly via your browser menu:
+                    Install Dastavej directly via your browser menu:
                   </p>
                   <div className="space-y-2.5">
                     <div className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626]">
@@ -333,7 +333,7 @@ export default function InstallAppModal({ isOpen, onClose }) {
                           Tap "Install app" or "Add to Home screen"
                         </span>
                         <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5">
-                          Confirms adding GharVault to your home screen or desktop.
+                          Confirms adding Dastavej to your home screen or desktop.
                         </p>
                       </div>
                     </div>

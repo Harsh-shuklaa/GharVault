@@ -48,7 +48,7 @@ export default function LogoutModal({ isOpen, onClose, onConfirm, loading = fals
             </div>
             <div>
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white">
-                Log Out of GharVault?
+                Log Out of Dastavej?
               </h3>
               <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
                 Secure Session Termination

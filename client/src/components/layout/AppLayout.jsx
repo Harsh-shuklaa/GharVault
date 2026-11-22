@@ -32,6 +32,7 @@ import EmergencyCardModal from '../common/EmergencyCardModal';
 import LogoutModal from '../common/LogoutModal';
 import InstallAppModal from '../common/InstallAppModal';
 import NotificationsDropdown from '../common/NotificationsDropdown';
+import DastavejLogo from '../common/DastavejLogo';
 import { api } from '../../lib/api';
 
 export default function AppLayout() {
@@ -243,19 +244,28 @@ export default function AppLayout() {
       >
         <div className="flex flex-col">
           {/* Header Brand */}
-          <div className="flex items-center gap-2.5 px-1.5 py-1 mb-2">
-            <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0" title="GharVault Home">
-              <div className="w-8 h-8 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] flex items-center justify-center text-white dark:text-[#121212] shrink-0 shadow-sm shadow-[#10B981]/20 font-bold">
-                <Shield size={18} strokeWidth={2.2} />
-              </div>
+          <div className="flex items-center px-1.5 py-1 mb-2">
+            <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0" title="Dastavej Home">
+              <DastavejLogo size={32} />
               <div
                 className={`flex flex-col min-w-0 transition-all duration-200 ${
                   isHovered ? 'opacity-100 max-w-[160px]' : 'opacity-0 max-w-0 pointer-events-none'
                 }`}
               >
-                <span className="font-headline font-bold text-sm tracking-tight text-slate-900 dark:text-white leading-none">
-                  GharVault
-                </span>
+                <div className="flex items-center gap-1.5 leading-none">
+                  <span className="font-headline font-extrabold text-sm tracking-tight text-slate-900 dark:text-white">
+                    Dastavej
+                  </span>
+                  <span
+                    className={`text-[8px] font-mono uppercase px-1.5 py-0.5 rounded font-bold tracking-wider ${
+                      isBlue
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400 border border-blue-200/80 dark:border-blue-500/30'
+                        : 'bg-emerald-100 text-emerald-800 dark:bg-[#3ECF8E]/15 dark:text-[#3ECF8E] border border-emerald-200/80 dark:border-[#3ECF8E]/30'
+                    }`}
+                  >
+                    Vault
+                  </span>
+                </div>
                 <span className="text-[11px] text-slate-500 dark:text-[#9CA3AF] font-normal truncate mt-1">
                   {family?.name || 'Family Vault'}
                 </span>
@@ -393,12 +403,10 @@ export default function AppLayout() {
           {/* Left: Mobile Brand / Desktop Breadcrumb */}
           <div className="flex items-center gap-2 min-w-0">
             {/* Mobile Brand Shield & Name */}
-            <Link to="/dashboard" className="flex items-center gap-1.5 min-w-0" title="GharVault">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] flex items-center justify-center text-white dark:text-[#121212] font-bold shadow-xs shrink-0">
-                <Shield size={16} strokeWidth={2.2} />
-              </div>
-              <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900 dark:text-white truncate block md:hidden">
-                GharVault
+            <Link to="/dashboard" className="flex items-center gap-1.5 min-w-0" title="Dastavej">
+              <DastavejLogo size={28} />
+              <span className="font-headline font-extrabold text-xs sm:text-sm tracking-tight text-slate-900 dark:text-white truncate block md:hidden">
+                Dastavej
               </span>
             </Link>
 
@@ -524,7 +532,7 @@ export default function AppLayout() {
               <button
                 type="button"
                 onClick={triggerNativeInstall}
-                title="Install GharVault App on Phone"
+                title="Install Dastavej App on Phone"
                 className={`md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border ${isBlue ? 'border-blue-300 dark:border-blue-500/30 bg-blue-50/90 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400' : 'border-emerald-300 dark:border-[#3ECF8E]/30 bg-emerald-50/90 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E]'} flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95`}
               >
                 <Download size={15} strokeWidth={2.2} />
@@ -536,7 +544,7 @@ export default function AppLayout() {
               <button
                 type="button"
                 onClick={triggerNativeInstall}
-                title="Install GharVault App"
+                title="Install Dastavej App"
                 className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-[#3ECF8E]/10 dark:hover:bg-[#3ECF8E]/20 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/30 text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-98"
               >
                 <Smartphone size={15} />
@@ -573,7 +581,7 @@ export default function AppLayout() {
                 <Smartphone size={15} />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white truncate">Install GharVault App</p>
+                <p className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white truncate">Install Dastavej App</p>
                 <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-neutral-400 truncate">1-tap fast access on your phone</p>
               </div>
             </div>

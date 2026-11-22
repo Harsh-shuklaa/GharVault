@@ -1406,7 +1406,7 @@ export default function DocumentUploadPage() {
                   ) : (
                     <>
                       <Lock size={15} />
-                      <span>🔒 Encrypt & Save to GharVault</span>
+                      <span>🔒 Encrypt & Save to Dastavej</span>
                     </>
                   )}
                 </button>

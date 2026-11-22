@@ -272,9 +272,9 @@ export default function FamilyDirectoryPage() {
 
   // Generate Emergency Medical WhatsApp text
   const handleCopyOrShareAllEmergency = (shareWhatsApp = false) => {
-    const vaultName = family?.name || 'GharVault Family';
+    const vaultName = family?.name || 'Dastavej Family';
     let text = `🚨 *EMERGENCY MEDICAL SUMMARY - ${vaultName.toUpperCase()}*\n`;
-    text += `Generated securely via GharVault on ${new Date().toLocaleDateString('en-IN')}\n\n`;
+    text += `Generated securely via Dastavej on ${new Date().toLocaleDateString('en-IN')}\n\n`;
 
     members.forEach((m, idx) => {
       text += `${idx + 1}. *${m.name}* (${m.relationship || 'Member'})\n`;
@@ -515,7 +515,7 @@ export default function FamilyDirectoryPage() {
                 {family?.inviteCode && (
                   <a
                     href={`https://wa.me/?text=${encodeURIComponent(
-                      `Join our GharVault family vault! Use this invite code during sign up: ${family.inviteCode}`
+                      `Join our Dastavej family vault! Use this invite code during sign up: ${family.inviteCode}`
                     )}`}
                     target="_blank"
                     rel="noreferrer"
@@ -1386,7 +1386,7 @@ export default function FamilyDirectoryPage() {
                       {family?.inviteCode && (
                         <a
                           href={`https://wa.me/?text=${encodeURIComponent(
-                            `Join our GharVault family vault! Use this invite code during sign up: ${family.inviteCode}`
+                            `Join our Dastavej family vault! Use this invite code during sign up: ${family.inviteCode}`
                           )}`}
                           target="_blank"
                           rel="noreferrer"

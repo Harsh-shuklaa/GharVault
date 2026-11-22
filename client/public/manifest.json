@@ -1,10 +1,10 @@
 {
-  "short_name": "GharVault",
-  "name": "GharVault — Private Family Document Management",
+  "short_name": "Dastavej",
+  "name": "Dastavej — Private Family Document Management",
   "description": "Encrypted digital vault for your family's vital IDs, health cards, and property papers.",
   "start_url": "/dashboard",
-  "background_color": "#18181B",
-  "theme_color": "#10B981",
+  "background_color": "#121212",
+  "theme_color": "#2563EB",
   "display": "standalone",
   "orientation": "portrait",
   "icons": [

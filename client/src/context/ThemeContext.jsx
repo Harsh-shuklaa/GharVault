@@ -85,6 +85,18 @@ export const ThemeProvider = ({ children }) => {
     } catch (e) {
       // Ignore
     }
+
+    // Dynamic Live Favicon Switcher based on Active Theme
+    const favicon = document.getElementById('app-favicon') || document.querySelector("link[rel*='icon']");
+    if (favicon) {
+      favicon.href = accentColor === 'blue' ? '/favicon-blue.svg' : '/favicon-emerald.svg';
+    }
+
+    // Dynamic Theme Color for Mobile Browser Address Bar
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', accentColor === 'blue' ? '#2563EB' : '#10B981');
+    }
   }, [accentColor]);
 
   const toggleTheme = () => {

@@ -52,7 +52,7 @@ import { usePushNotification } from '../context/PushNotificationContext';
 
 export default function DashboardPage() {
   const { user, family, setIsEmergencyModalOpen } = useAuth();
-  const { isBlue } = useTheme();
+  const { isBlue, isDark } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
   const {
@@ -141,7 +141,7 @@ export default function DashboardPage() {
   const handleWhatsAppInvite = () => {
     const code = family?.inviteCode || 'GHAR-4892';
     const famName = family?.name || 'our Family';
-    const msg = `Namaste! Join our ${famName} Vault on GharVault to securely access our family's Aadhaar, property papers, and insurance records.\n\nUse Invite Code: *${code}*\nLogin at: ${window.location.origin}`;
+    const msg = `Namaste! Join our ${famName} Vault on Dastavej to securely access our family's Aadhaar, property papers, and insurance records.\n\nUse Invite Code: *${code}*\nLogin at: ${window.location.origin}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -186,7 +186,7 @@ export default function DashboardPage() {
     try {
       const res = await api.createShareLink(doc._id, { durationMinutes: 1440 });
       const shareUrl = res.shareUrl || res.shareLink || `${window.location.origin}/share/${res.token}`;
-      const msg = `Here is the secure 24-hour view link for *${doc.title}* from GharVault:\n${shareUrl}\n\n(Note: This link automatically expires after 24 hours for security).`;
+      const msg = `Here is the secure 24-hour view link for *${doc.title}* from Dastavej:\n${shareUrl}\n\n(Note: This link automatically expires after 24 hours for security).`;
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
       toast.success('24h safe link ready on WhatsApp!');
     } catch (err) {
@@ -349,7 +349,7 @@ export default function DashboardPage() {
     const memberName = selectedMemberId === 'ALL'
       ? (family?.name || 'Hamari Family')
       : (members.find(m => m._id === selectedMemberId)?.name || 'Family Member');
-    const msg = `Namaste! GharVault par ${memberName} ke essential documents missing hain: ${missing}.\nKripya apne safe vault me inko jald upload karein ya photo bhejein taaki emergency me sabhi IDs ready rahein.`;
+    const msg = `Namaste! Dastavej par ${memberName} ke essential documents missing hain: ${missing}.\nKripya apne safe vault me inko jald upload karein ya photo bhejein taaki emergency me sabhi IDs ready rahein.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -1344,7 +1344,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Bento: Family Vault Hub & Invite Code */}
-          <div className={`${isBlue ? 'bg-blue-50/70 border-blue-200/80' : 'bg-emerald-50/70 border-emerald-200/80'} dark:bg-[#18181B] rounded-2xl p-4 sm:p-5 border dark:border-[#27272A] shadow-xs space-y-3.5 transition-colors`}>
+          <div className={`${isDark ? 'bg-[#18181B] dark:bg-[#18181B] border-[#27272A] dark:border-[#27272A]' : isBlue ? 'bg-blue-50/70 border-blue-200/80' : 'bg-emerald-50/70 border-emerald-200/80'} rounded-2xl p-4 sm:p-5 border shadow-xs space-y-3.5 transition-colors`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <UserPlus size={16} className={isBlue ? "text-blue-600 dark:text-blue-400" : "text-[#10B981] dark:text-[#3ECF8E]"} />

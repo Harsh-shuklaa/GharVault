@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Home, UserPlus, CheckCircle2, AlertCircle, Check, Sparkles } from 'lucide-react';
+import DastavejLogo from '../components/common/DastavejLogo';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -91,11 +92,9 @@ export default function FamilySetupPage() {
       <div className="max-w-xl mx-auto w-full relative z-10">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5 mb-4">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-600 dark:bg-[#3ECF8E] text-white dark:text-black flex items-center justify-center shadow-lg shadow-emerald-500/25">
-              <Shield className="w-6 h-6 stroke-[2.2]" />
-            </div>
-            <span className="font-headline font-bold text-2xl text-slate-900 dark:text-white tracking-tight">
-              GharVault
+            <DastavejLogo size={42} />
+            <span className="font-headline font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">
+              Dastavej
             </span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">

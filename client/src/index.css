@@ -944,3 +944,49 @@ html.theme-blue.dark[data-dark-style="midnight"] .hover\:shadow-md:hover {
   color: #60A5FA !important;
   border-color: rgba(59, 130, 246, 0.25) !important;
 }
+
+/* ================= BLUE THEME: OBSIDIAN DARK MODE PALETTE ================= */
+html[data-accent="blue"].dark.dark-obsidian,
+html.theme-blue.dark.dark-obsidian,
+html[data-accent="blue"].dark[data-dark-style="obsidian"],
+html.theme-blue.dark[data-dark-style="obsidian"] {
+  color-scheme: dark;
+}
+
+/* Base Canvas & Document Body */
+html[data-accent="blue"].dark.dark-obsidian body,
+html.theme-blue.dark.dark-obsidian body,
+html[data-accent="blue"].dark[data-dark-style="obsidian"] body,
+html[data-accent="blue"].dark.dark-obsidian .dark\:bg-\[\#121212\],
+html.theme-blue.dark.dark-obsidian .dark\:bg-\[\#121212\],
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#121212\] {
+  background-color: #0A0A0C !important;
+  color: #E2E8F0 !important;
+}
+
+/* Sidebar, Topbar, Mobile Navigation & Inset Containers */
+html[data-accent="blue"].dark.dark-obsidian .dark\:bg-\[\#141414\],
+html.theme-blue.dark.dark-obsidian .dark\:bg-\[\#141414\],
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#141414\] {
+  background-color: #10121A !important;
+}
+
+/* Bento Boxes, Cards, Modals */
+html[data-accent="blue"].dark.dark-obsidian .dark\:bg-\[\#18181B\],
+html.theme-blue.dark.dark-obsidian .dark\:bg-\[\#18181B\],
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#18181B\],
+html[data-accent="blue"].dark.dark-obsidian .dark\:bg-\[\#1A1D24\],
+html.theme-blue.dark.dark-obsidian .dark\:bg-\[\#1A1D24\],
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#1A1D24\] {
+  background-color: #141722 !important;
+}
+
+/* Obsidian Borders */
+html[data-accent="blue"].dark.dark-obsidian .dark\:border-\[\#262626\],
+html[data-accent="blue"].dark.dark-obsidian .dark\:border-\[\#27272A\],
+html.theme-blue.dark.dark-obsidian .dark\:border-\[\#262626\],
+html.theme-blue.dark.dark-obsidian .dark\:border-\[\#27272A\],
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:border-\[\#262626\],
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:border-\[\#27272A\] {
+  border-color: #212838 !important;
+}

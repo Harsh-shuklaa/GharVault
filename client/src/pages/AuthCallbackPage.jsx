@@ -15,6 +15,7 @@ import {
   Check,
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured, signInWithGoogle } from '../lib/supabaseClient';
+import DastavejLogo from '../components/common/DastavejLogo';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -263,16 +264,14 @@ export default function AuthCallbackPage() {
       <div className="relative max-w-md w-full space-y-4 sm:space-y-6 z-10">
         {/* Brand Logo Header */}
         <div className="text-center">
-          <Link to="/" className="inline-flex items-center justify-center gap-2 group">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white dark:bg-[#1A1D24] border border-emerald-500/30 dark:border-[#2E3340] group-hover:border-[#10B981] dark:group-hover:border-[#3ECF8E] flex items-center justify-center shadow-lg shadow-emerald-500/10 transition-all duration-300 transform group-hover:scale-105">
-              <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-[#10B981] dark:text-[#3ECF8E] stroke-[2.2]" />
-            </div>
+          <Link to="/" className="inline-flex items-center justify-center gap-2.5 group">
+            <DastavejLogo size={44} />
             <div className="text-left">
               <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900 dark:text-white block leading-none">
-                GharVault
+                Dastavej
               </span>
               <span className="text-[9px] sm:text-[10px] font-semibold text-emerald-600 dark:text-[#3ECF8E] tracking-wider uppercase">
-                Family Security Cloud
+                Family Security Space
               </span>
             </div>
           </Link>
