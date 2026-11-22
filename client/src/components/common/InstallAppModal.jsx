@@ -71,9 +71,11 @@ export default function InstallAppModal({ isOpen, onClose }) {
           </button>
 
           <div className="flex items-center gap-2.5 sm:gap-3 pr-8">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-md shadow-[#3ECF8E]/25 shrink-0">
-              <Smartphone size={20} strokeWidth={2.2} className="sm:w-6 sm:h-6" />
-            </div>
+            <img
+              src="/icon-192.svg"
+              alt="Dastavej App Icon"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl shadow-md shadow-[#3ECF8E]/20 shrink-0 border border-[#3ECF8E]/30"
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h3 className="text-sm sm:text-base font-extrabold tracking-tight truncate">
