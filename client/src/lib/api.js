@@ -28,6 +28,10 @@ const getHeaders = (isFormData = false) => {
   if (familyId) {
     headers['x-family-id'] = familyId.toString();
   }
+  const customGeminiKey = localStorage.getItem('gharvault_gemini_key');
+  if (customGeminiKey) {
+    headers['x-gemini-api-key'] = customGeminiKey.trim();
+  }
   return headers;
 };
 
@@ -222,6 +226,14 @@ export const api = {
   async getDocument(id) {
     return request(`${API_BASE}/documents/${id}`, {
       headers: getHeaders(),
+    });
+  },
+
+  async scanDocument(formData) {
+    return request(`${API_BASE}/documents/ai-scan`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: formData,
     });
   },
 

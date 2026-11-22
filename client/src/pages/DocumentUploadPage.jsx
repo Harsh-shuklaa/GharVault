@@ -70,6 +70,11 @@ export default function DocumentUploadPage() {
   const [backFile, setBackFile] = useState(null);
   const [backPreview, setBackPreview] = useState(null);
 
+  // AI Document Scanning State
+  const [isScanning, setIsScanning] = useState(false);
+  const [aiScanResult, setAiScanResult] = useState(null);
+  const [scanMessage, setScanMessage] = useState('');
+
   // Form Metadata
   const [formData, setFormData] = useState({
     title: preselectedTitle || '',
@@ -275,7 +280,85 @@ export default function DocumentUploadPage() {
     toast.success(`Configured preset for ${preset.label}!`);
   };
 
-  // Smart Filename Detection
+  // Automatic AI Document Scanner & Metadata Extraction
+  const triggerAIScan = async (fileToScan) => {
+    if (!fileToScan) return;
+    setIsScanning(true);
+    setScanMessage('AI is reading document & auto-detecting ID Number...');
+    try {
+      const scanData = new FormData();
+      scanData.append('file', fileToScan);
+      const res = await api.scanDocument(scanData);
+
+      if (res?.data) {
+        const data = res.data;
+        setAiScanResult(data);
+
+        // Map Category to one of our app categories
+        let targetCategory = formData.category;
+        if (data.category) {
+          if (data.category === 'Vehicle') targetCategory = 'Other';
+          else if (data.category === 'Financial' || data.category === 'Property & Legal') targetCategory = 'Bank & Property';
+          else if (categories.some((c) => c.id === data.category)) targetCategory = data.category;
+        }
+
+        // Auto-fill metadata into form
+        setFormData((prev) => {
+          const nextTitle = data.suggestedTitle || prev.title;
+          const nextDocNum = data.docNumber || prev.documentNumber;
+          const nextExpiry = data.expiryDate || prev.expiryDate;
+          const nextMember = data.matchedMemberId || prev.assignedMemberId;
+
+          // If blood group or emergency details found, add to notes
+          let nextNotes = prev.notes;
+          if (data.emergencyDetails?.bloodGroup && !nextNotes.includes('Blood Group')) {
+            nextNotes = `${nextNotes ? nextNotes + '\n' : ''}Blood Group: ${data.emergencyDetails.bloodGroup}`;
+          }
+          if (data.emergencyDetails?.tollFreeHelpLine && !nextNotes.includes('Helpline')) {
+            nextNotes = `${nextNotes ? nextNotes + '\n' : ''}Cashless Helpline: ${data.emergencyDetails.tollFreeHelpLine}`;
+          }
+
+          return {
+            ...prev,
+            title: nextTitle,
+            documentNumber: nextDocNum,
+            category: targetCategory,
+            expiryDate: nextExpiry,
+            assignedMemberId: nextMember,
+            notes: nextNotes,
+          };
+        });
+
+        // Trigger Indian preset highlight if applicable
+        const dType = (data.docType || '').toLowerCase();
+        if (dType.includes('aadhaar')) setActivePreset('aadhaar');
+        else if (dType.includes('pan')) setActivePreset('pan');
+        else if (dType.includes('license') || dType.includes('rc')) setActivePreset('vehicle');
+        else if (dType.includes('insurance')) setActivePreset('mediclaim');
+        else if (dType.includes('passport')) setActivePreset('passport');
+
+        if (data.docNumber) {
+          toast.success(`✨ Auto-detected ${data.docType}: ${data.docNumber}`);
+        } else if (data.aiEngine === 'heuristic_fallback') {
+          toast.info('💡 Tip: Gemini API Key add karein for 100% visual OCR text detection directly from photos!');
+        } else {
+          toast.success(`✨ Auto-detected: ${data.docType}`);
+        }
+      }
+    } catch (err) {
+      console.warn('AI Scan error:', err);
+      if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.status === 404)) {
+        toast.error('AI Scan Error: Backend server port 5000 par start nahi hai (npm run dev check karein).');
+      } else {
+        toast.error(err.message || 'AI document scan failed.');
+      }
+    } finally {
+      setIsScanning(false);
+      setScanMessage('');
+    }
+  };
+
+  // Smart Filename Detection & AI Auto-Scan
   const handleFileChange = (selectedFile) => {
     if (!selectedFile) return;
     if (selectedFile.size > 25 * 1024 * 1024) {
@@ -309,6 +392,16 @@ export default function DocumentUploadPage() {
     if (!formData.title) {
       setFormData((prev) => ({ ...prev, title: cleanName }));
     }
+
+    // Trigger AI Vision scan
+    triggerAIScan(selectedFile);
+  };
+
+  const handleFrontFileChange = (selectedFront) => {
+    if (!selectedFront) return;
+    setFrontFile(selectedFront);
+    // Trigger AI Vision scan on front side of ID card
+    triggerAIScan(selectedFront);
   };
 
   const handleDrop = (e) => {
@@ -925,6 +1018,7 @@ export default function DocumentUploadPage() {
                         onClick={() => {
                           setFile(null);
                           setPreviewUrl(null);
+                          setAiScanResult(null);
                         }}
                         className="px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 font-bold text-xs cursor-pointer"
                       >
@@ -970,7 +1064,10 @@ export default function DocumentUploadPage() {
                         <img src={frontPreview} alt="Front" className="h-32 w-auto mx-auto object-cover rounded-lg" />
                         <button
                           type="button"
-                          onClick={() => setFrontFile(null)}
+                          onClick={() => {
+                            setFrontFile(null);
+                            setAiScanResult(null);
+                          }}
                           className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-black"
                         >
                           <X size={12} />
@@ -983,7 +1080,7 @@ export default function DocumentUploadPage() {
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          onChange={(e) => setFrontFile(e.target.files[0])}
+                          onChange={(e) => handleFrontFileChange(e.target.files[0])}
                         />
                         <button
                           type="button"
@@ -1036,6 +1133,109 @@ export default function DocumentUploadPage() {
               </div>
             )}
 
+            {/* AI SCANNING STATUS & AUTO-DETECTION CARD */}
+            {isScanning && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-500/30 dark:border-[#3ECF8E]/30 relative overflow-hidden">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
+                    <Sparkles size={20} className="animate-spin" style={{ animationDuration: '3s' }} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
+                        AI Vision Scanning & OCR...
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#10B981] text-white">
+                        Live Auto-Detect
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
+                      Detecting Aadhaar / PAN / License / Insurance, extracting ID number & auto-assigning member...
+                    </p>
+                  </div>
+                </div>
+                {/* Animated scan indicator */}
+                <div className="mt-3 h-1.5 w-full bg-slate-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-transparent via-[#3ECF8E] to-transparent w-2/3 animate-pulse" />
+                </div>
+              </div>
+            )}
+
+            {aiScanResult && !isScanning && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/80 dark:bg-[#3ECF8E]/10 border border-emerald-300 dark:border-[#3ECF8E]/30 space-y-3 animate-fadeIn">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200/60 dark:border-[#3ECF8E]/20 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shrink-0 shadow-xs">
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs sm:text-sm font-extrabold text-emerald-950 dark:text-white">
+                          AI Auto-Detected: {aiScanResult.docType}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]">
+                          {Math.round((aiScanResult.confidence || 0.9) * 100)}% Confidence
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-emerald-700 dark:text-[#3ECF8E]/80 mt-0.5">
+                        Document ID, Title, and Family Member have been automatically filled!
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => triggerAIScan(uploadMode === 'twosided' ? frontFile : file)}
+                    className="self-start sm:self-center px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-[#3ECF8E]/30 bg-white dark:bg-[#1E1E22] hover:bg-emerald-50 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <RefreshCw size={12} />
+                    <span>Re-scan with AI</span>
+                  </button>
+                </div>
+
+                {/* Detected Details Badges */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                  {aiScanResult.docNumber && (
+                    <div className="px-3 py-2 rounded-xl bg-white dark:bg-[#18181B] border border-emerald-200 dark:border-[#3ECF8E]/20">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+                        Detected ID / Number
+                      </div>
+                      <div className="text-xs font-mono font-extrabold text-slate-900 dark:text-white mt-0.5">
+                        {aiScanResult.docNumber}
+                      </div>
+                    </div>
+                  )}
+
+                  {(aiScanResult.holderName || aiScanResult.matchedMemberName) && (
+                    <div className="px-3 py-2 rounded-xl bg-white dark:bg-[#18181B] border border-emerald-200 dark:border-[#3ECF8E]/20">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+                        Holder / Member
+                      </div>
+                      <div className="text-xs font-extrabold text-slate-900 dark:text-white mt-0.5 truncate">
+                        {aiScanResult.holderName || aiScanResult.matchedMemberName}
+                        {aiScanResult.matchedMemberName && (
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-[#3ECF8E] ml-1">
+                            (Auto-assigned)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {aiScanResult.category && (
+                    <div className="px-3 py-2 rounded-xl bg-white dark:bg-[#18181B] border border-emerald-200 dark:border-[#3ECF8E]/20">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+                        Category Binder
+                      </div>
+                      <div className="text-xs font-extrabold text-slate-900 dark:text-white mt-0.5 truncate">
+                        {formData.category}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Step 1 Actions */}
             <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-[#262626]">
               <button
@@ -1064,9 +1264,17 @@ export default function DocumentUploadPage() {
 
             {/* Family Member Selection Cards */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300">
-                Assign to Family Member *
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300">
+                  Assign to Family Member *
+                </label>
+                {aiScanResult?.matchedMemberName && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-[#3ECF8E]/20">
+                    <Sparkles size={11} />
+                    <span>AI Matched: {aiScanResult.holderName || aiScanResult.matchedMemberName}</span>
+                  </span>
+                )}
+              </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
                 {/* Whole Family Option */}
@@ -1144,9 +1352,16 @@ export default function DocumentUploadPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
               {/* Title */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300 mb-1.5">
-                  Document Title *
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300">
+                    Document Title *
+                  </label>
+                  {aiScanResult?.suggestedTitle && formData.title === aiScanResult.suggestedTitle && (
+                    <span className="text-[10px] font-bold text-emerald-700 dark:text-[#3ECF8E] flex items-center gap-1">
+                      <Sparkles size={11} /> Auto-titled by AI
+                    </span>
+                  )}
+                </div>
                 <input
                   type="text"
                   required
@@ -1164,9 +1379,15 @@ export default function DocumentUploadPage() {
                     <Hash size={13} />
                     <span>ID / Policy Number</span>
                   </label>
-                  <span className="text-[10px] font-bold text-emerald-700 dark:text-[#3ECF8E]">
-                    1-Tap Copy Enabled
-                  </span>
+                  {aiScanResult?.docNumber && formData.documentNumber === aiScanResult.docNumber ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-[#3ECF8E]">
+                      <Sparkles size={11} /> Auto-detected by AI
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-emerald-700 dark:text-[#3ECF8E]">
+                      1-Tap Copy Enabled
+                    </span>
+                  )}
                 </div>
                 <input
                   type="text"

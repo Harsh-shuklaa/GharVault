@@ -13,6 +13,7 @@ import { isConnected } from '../config/db.js';
 import { uploadDocument, createSignedUrl, deleteDocument } from '../services/supabaseStorage.js';
 import { recordAuditLog } from '../services/auditService.js';
 import { sendPushToFamily } from '../services/pushNotification.service.js';
+import { scanDocumentWithAI } from '../services/aiDocumentScanner.js';
 
 // Helper to reliably dispatch family in-app notification & phone push
 async function createVaultNotification({ familyId, userId = null, title, message, type = 'INFO', link = '/vault' }) {
@@ -360,6 +361,58 @@ router.get('/:id', async (req, res) => {
     console.error('[Document Details Error]', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// POST /api/documents/ai-scan (Instant AI Document Scanning & Metadata Detection)
+router.post('/ai-scan', (req, res, next) => {
+  upload.single('file')(req, res, async (uploadErr) => {
+    if (uploadErr) {
+      console.warn('[AI Scan Multer Error]:', uploadErr.message);
+      return res.status(400).json({ error: uploadErr.message || 'File upload error during scan' });
+    }
+
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'Please upload a document file to scan.' });
+      }
+
+      const familyId = req.familyId || req.user?.familyId;
+      let familyMembers = [];
+
+      if (familyId) {
+        if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
+          try {
+            const users = await User.find({ familyId }).select('_id name relationship role').lean();
+            familyMembers = users.map(u => ({ _id: u._id.toString(), name: u.name }));
+          } catch (e) {
+            console.warn('[AI Scan] Failed to load members from DB:', e.message);
+          }
+        } else if (memoryStore.users) {
+          familyMembers = memoryStore.users
+            .filter(u => u.familyId === familyId)
+            .map(u => ({ _id: u._id, name: u.name }));
+        }
+      }
+
+      const customApiKey = req.headers['x-gemini-api-key'] || req.body?.customApiKey || null;
+
+      const scanResult = await scanDocumentWithAI({
+        fileBuffer: req.file.buffer,
+        mimeType: req.file.mimetype,
+        fileName: req.file.originalname,
+        familyMembers,
+        customApiKey,
+      });
+
+      res.json({
+        success: true,
+        data: scanResult,
+      });
+    } catch (err) {
+      console.error('[AI Scan Route Error]:', err);
+      res.status(500).json({ error: 'AI document scanning failed: ' + err.message });
+    }
+  });
 });
 
 // POST /api/documents/upload
