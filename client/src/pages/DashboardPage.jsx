@@ -38,15 +38,27 @@ import {
   Box,
   X,
   ListChecks,
-  CheckCircle2
+  CheckCircle2,
+  Bell,
+  Smartphone
 } from 'lucide-react';
 import JoinFamilyModal from '../components/common/JoinFamilyModal';
 import PersonalKycPromptModal from '../components/common/PersonalKycPromptModal';
+import SendPushModal from '../components/common/SendPushModal';
+import DashboardSkeleton from '../components/common/DashboardSkeleton';
+import { usePushNotification } from '../context/PushNotificationContext';
 
 export default function DashboardPage() {
   const { user, family, setIsEmergencyModalOpen } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const {
+    isSupported,
+    permission,
+    isSubscribed,
+    loading: pushLoading,
+    requestPushPermission,
+  } = usePushNotification();
 
   const [familyData, setFamilyData] = useState(null);
   const [documents, setDocuments] = useState([]);
@@ -56,6 +68,7 @@ export default function DashboardPage() {
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isPersonalKycModalOpen, setIsPersonalKycModalOpen] = useState(false);
+  const [isPushModalOpen, setIsPushModalOpen] = useState(false);
 
   // Level 2 Interactive Filters & State
   const [selectedMemberId, setSelectedMemberId] = useState('ALL');
@@ -542,6 +555,10 @@ export default function DashboardPage() {
     };
   };
 
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 font-sans pb-24 lg:pb-8">
       {/* ================= 1. HEADER & PERSONA SWITCHER ================= */}
@@ -688,6 +705,46 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ================= PUSH NOTIFICATION OPT-IN PROMPT BANNER ================= */}
+      {isSupported && !isSubscribed && permission === 'default' && (
+        <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-slate-800 dark:text-neutral-200 animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#10B981]/20 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
+              <Smartphone size={18} />
+            </div>
+            <div>
+              <div className="text-xs sm:text-sm font-bold flex items-center gap-2">
+                <span>Phone Push Notifications Enable Karein 📲</span>
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold">
+                  Recommended
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-neutral-400 mt-0.5">
+                Naye family documents aur urgent updates aane par aapke phone screen par instant pop-up bajega.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={requestPushPermission}
+              disabled={pushLoading}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              {pushLoading ? (
+                <span>Connecting...</span>
+              ) : (
+                <>
+                  <Bell size={13} />
+                  <span>Allow Notifications</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ================= 2. UNIVERSAL FAST SEARCH BAR ================= */}
       <div className="relative">
@@ -1388,6 +1445,13 @@ export default function DashboardPage() {
         onJoined={async () => {
           await loadDashboard();
         }}
+      />
+
+      {/* Send Phone Push Notification Modal */}
+      <SendPushModal
+        isOpen={isPushModalOpen}
+        onClose={() => setIsPushModalOpen(false)}
+        members={members}
       />
     </div>
   );

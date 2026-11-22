@@ -31,15 +31,33 @@ import {
   Edit3,
   X,
   Lock,
+  Bell,
+  Send,
+  Sparkles,
 } from 'lucide-react';
 import { usePWAInstall } from '../context/PWAInstallContext';
+import { usePushNotification } from '../context/PushNotificationContext';
 import JoinFamilyModal from '../components/common/JoinFamilyModal';
+import SendPushModal from '../components/common/SendPushModal';
 
 export default function SettingsPage() {
   const { user, family, updateUser, updateFamily, openLogoutModal } = useAuth();
   const { theme, isDark, setTheme } = useTheme();
   const { toast } = useToast();
   const { isStandalone, isIOS, isAndroid, triggerNativeInstall } = usePWAInstall();
+  const {
+    isSubscribed: isPushSubscribed,
+    loading: pushLoading,
+    requestPushPermission,
+    testLocalNotification,
+  } = usePushNotification();
+
+  const [isPushModalOpen, setIsPushModalOpen] = useState(false);
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    api.getMembers().then(res => setMembers(res.members || [])).catch(() => {});
+  }, []);
 
   // Active Tab State (with hash sync)
   const [activeTab, setActiveTab] = useState(() => {
@@ -270,8 +288,8 @@ export default function SettingsPage() {
     },
     {
       id: 'app',
-      label: 'Mobile App',
-      desc: 'Install PWA on iPhone or Android',
+      label: 'Mobile App & Push Alerts',
+      desc: 'Install PWA & Family Push Notifications',
       icon: Smartphone,
       badge: isStandalone ? 'Installed' : 'PWA',
     },
@@ -1058,6 +1076,70 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
+
+              {/* Family Phone Push Notifications & Broadcast Card */}
+              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-100 dark:border-[#262626] space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                      <Bell size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                      <span>Family Phone Push Notifications</span>
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-medium ${
+                        isPushSubscribed
+                          ? 'bg-emerald-100 dark:bg-[#3ECF8E]/15 text-emerald-800 dark:text-[#3ECF8E]'
+                          : 'bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300'
+                      }`}>
+                        {isPushSubscribed ? 'Active on This Device' : 'Not Enabled on This Device'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed max-w-xl">
+                      Jab bhi koi parivaar ka member naya document upload ya update karega, system background me sabhi family phones par automatic pop-up notification bhej deta hai.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    {!isPushSubscribed ? (
+                      <button
+                        type="button"
+                        onClick={requestPushPermission}
+                        disabled={pushLoading}
+                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                      >
+                        <Bell size={14} />
+                        <span>{pushLoading ? 'Connecting...' : 'Allow Notifications'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={testLocalNotification}
+                        className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-xs font-bold text-slate-800 dark:text-neutral-200 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                        title="Test vibration and notification display on this screen"
+                      >
+                        <Sparkles size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                        <span>Test Phone Buzz 🔔</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setIsPushModalOpen(true)}
+                      className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                    >
+                      <Send size={13} />
+                      <span>Send Family Push Alert</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#262626] text-xs text-slate-600 dark:text-neutral-400 flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
+                    ✓
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    <strong>Auto-Sync Active:</strong> Documents upload hone par notification automatic jata hai. Agar aapko parivaar ko koi zaroori notice ya announcement bhejna ho (jaise <em>"Update aa gaye hain check kar"</em>), toh aap <strong>Send Family Push Alert</strong> button use kar sakte hain.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -1067,6 +1149,13 @@ export default function SettingsPage() {
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
         onJoined={() => window.location.reload()}
+      />
+
+      {/* Send Push Notification Modal */}
+      <SendPushModal
+        isOpen={isPushModalOpen}
+        onClose={() => setIsPushModalOpen(false)}
+        members={members}
       />
     </div>
   );

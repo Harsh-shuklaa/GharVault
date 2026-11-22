@@ -35,6 +35,7 @@ import {
   Edit3,
 } from 'lucide-react';
 import MpinModal from '../components/common/MpinModal';
+import VaultPageSkeleton from '../components/common/VaultPageSkeleton';
 import { useToast } from '../context/ToastContext';
 
 export default function VaultPage() {
@@ -533,6 +534,10 @@ export default function VaultPage() {
       toast.error('Failed to revoke link: ' + (err.message || 'Error'));
     }
   };
+
+  if (loading) {
+    return <VaultPageSkeleton />;
+  }
 
   return (
     <div className="max-w-[1380px] mx-auto p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6">

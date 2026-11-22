@@ -435,4 +435,41 @@ export const api = {
       body: JSON.stringify(data),
     });
   },
+
+  // Web Push Notifications
+  async getVapidPublicKey() {
+    return request(`${API_BASE}/push/public-key`, {
+      headers: getHeaders(),
+    });
+  },
+
+  async subscribePush(data = {}) {
+    return request(`${API_BASE}/push/subscribe`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+  },
+
+  async unsubscribePush(data = {}) {
+    return request(`${API_BASE}/push/unsubscribe`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+  },
+
+  async sendPushBroadcast(data = {}) {
+    return request(`${API_BASE}/push/send-broadcast`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getPushStatus() {
+    return request(`${API_BASE}/push/status`, {
+      headers: getHeaders(),
+    });
+  },
 };

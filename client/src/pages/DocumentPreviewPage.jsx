@@ -46,6 +46,7 @@ import {
   Box,
 } from 'lucide-react';
 import MpinModal from '../components/common/MpinModal';
+import VaultSecurityLoader from '../components/common/VaultSecurityLoader';
 import { useToast } from '../context/ToastContext';
 
 export default function DocumentPreviewPage() {
@@ -675,11 +676,12 @@ export default function DocumentPreviewPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] p-4">
-        <div className="text-center space-y-3">
-          <Loader2 size={36} className="text-[#10B981] dark:text-[#3ECF8E] animate-spin mx-auto" />
-          <p className="text-xs text-slate-500 dark:text-neutral-400 font-medium">Opening secure document preview...</p>
-        </div>
+      <div className="min-h-[60vh] flex items-center justify-center p-4">
+        <VaultSecurityLoader
+          message="Decrypting Document from Private Storage..."
+          subtitle="AES-256 GCM Cryptographic Verification Active"
+          fullScreen={false}
+        />
       </div>
     );
   }

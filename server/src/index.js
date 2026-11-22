@@ -27,6 +27,7 @@ import categoryRoutes from './routes/category.routes.js';
 import exportRoutes from './routes/export.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import userRoutes from './routes/user.routes.js';
+import pushRoutes from './routes/push.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -51,6 +52,7 @@ app.use('/api/break-glass', breakGlassRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/push', pushRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

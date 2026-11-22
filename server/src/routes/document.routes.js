@@ -12,8 +12,9 @@ import Notification from '../models/Notification.js';
 import { isConnected } from '../config/db.js';
 import { uploadDocument, createSignedUrl, deleteDocument } from '../services/supabaseStorage.js';
 import { recordAuditLog } from '../services/auditService.js';
+import { sendPushToFamily } from '../services/pushNotification.service.js';
 
-// Helper to reliably dispatch family in-app notification
+// Helper to reliably dispatch family in-app notification & phone push
 async function createVaultNotification({ familyId, userId = null, title, message, type = 'INFO', link = '/vault' }) {
   if (!familyId) return null;
   const notifObj = {
@@ -26,6 +27,17 @@ async function createVaultNotification({ familyId, userId = null, title, message
     isRead: false,
     createdAt: new Date(),
   };
+
+  // 1. Dispatch Web Push Notification to family members' phones
+  try {
+    sendPushToFamily(familyId, {
+      title,
+      body: message,
+      url: link || '/dashboard',
+    }, null).catch(e => console.warn('[Push Warning] createVaultNotification push failed:', e.message));
+  } catch (pushErr) {
+    // Non-blocking
+  }
 
   if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
     try {
@@ -563,6 +575,16 @@ router.post('/upload', (req, res, next) => {
           req,
         }).catch(e => console.warn('[Audit Warning] Upload log error:', e.message));
 
+        // Automatic Web Push Notification to family phones on upload!
+        const uploaderName = req.user?.name || 'Family Member';
+        createVaultNotification({
+          familyId: newDoc.familyId,
+          title: '📄 Naya Document Upload Hua!',
+          message: `${uploaderName} ne "${newDoc.title}" (${newDoc.category || 'Record'}) vault me add kiya hai. Abhi check karein!`,
+          type: 'INFO',
+          link: `/vault/documents/${newDoc._id}`,
+        }).catch(e => console.warn('[Auto-Push Error] Upload push notification failed:', e.message));
+
         return res.status(201).json({
           success: true,
           document: normalizedDoc,
@@ -619,6 +641,16 @@ router.post('/upload', (req, res, next) => {
       sha256ChainHash: sha256Hash,
       timestamp: new Date(),
     });
+
+    // Automatic Web Push Notification to family phones on upload!
+    const uploaderName = memoryStore.users?.[0]?.name || req.user?.name || 'Family Member';
+    createVaultNotification({
+      familyId: newDoc.familyId,
+      title: '📄 Naya Document Upload Hua!',
+      message: `${uploaderName} ne "${newDoc.title}" (${newDoc.category || 'Record'}) vault me add kiya hai. Abhi check karein!`,
+      type: 'INFO',
+      link: `/vault/documents/${newDoc._id}`,
+    }).catch(e => console.warn('[Auto-Push Error] Upload push notification failed:', e.message));
 
     res.status(201).json({
       success: true,
@@ -1074,6 +1106,16 @@ const handleUpdateDocument = async (req, res) => {
       details: { title: doc.title, documentNumber: doc.documentNumber, expiryDate: doc.expiryDate, category: doc.category, notes: doc.notes },
       req,
     }).catch(e => console.warn('[Audit Warning] Document update log error:', e.message));
+
+    // Auto-Push on document update
+    const editorName = req.user?.name || 'Family Member';
+    createVaultNotification({
+      familyId: doc.familyId || targetFamilyId,
+      title: '✏️ Document Update',
+      message: `${editorName} ne "${doc.title}" update kiya hai. Check karein!`,
+      type: 'INFO',
+      link: `/vault/documents/${doc._id}`,
+    }).catch(e => console.warn('[Auto-Push Error] Update push notification failed:', e.message));
 
     res.json({ success: true, document: doc });
   } catch (err) {
