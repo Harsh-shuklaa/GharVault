@@ -13,7 +13,8 @@ import { isConnected } from '../config/db.js';
 import { uploadDocument, createSignedUrl, deleteDocument } from '../services/supabaseStorage.js';
 import { recordAuditLog } from '../services/auditService.js';
 import { sendPushToFamily } from '../services/pushNotification.service.js';
-import { scanDocumentWithAI } from '../services/aiDocumentScanner.js';
+import { scanDocumentWithAI, generateSmartDocumentTitle } from '../services/aiDocumentScanner.js';
+import { askVaultAI } from '../services/vaultChatAssistant.js';
 
 // Helper to reliably dispatch family in-app notification & phone push
 async function createVaultNotification({ familyId, userId = null, title, message, type = 'INFO', link = '/vault' }) {
@@ -55,6 +56,75 @@ async function createVaultNotification({ familyId, userId = null, title, message
     _id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
     ...notifObj,
   });
+}
+
+// Auto-sync extracted medical credentials (blood group, insurance policy, TPA, allergies) to family member's profile
+async function autoSyncMedicalCredentialsToMember({ targetMemberId, category, title, documentNumber, emergencyDetails, notes }) {
+  if (!targetMemberId) return;
+
+  const isMedical = category === 'Medical & Health' || category === 'Health' || category === 'Medical' ||
+    (title && /insurance|mediclaim|health|ayushman|abha|hospital/i.test(title));
+
+  let parsedEmergency = null;
+  if (emergencyDetails) {
+    try {
+      parsedEmergency = typeof emergencyDetails === 'string' ? JSON.parse(emergencyDetails) : emergencyDetails;
+    } catch (e) {}
+  }
+
+  // Also check if notes contains blood group or helpline
+  let bloodGroup = parsedEmergency?.bloodGroup;
+  let policyNumber = parsedEmergency?.policyNumber || (isMedical ? documentNumber : null);
+  let tpaProvider = parsedEmergency?.tpaProvider;
+  let tollFreeHelpLine = parsedEmergency?.tollFreeHelpLine;
+  let allergies = parsedEmergency?.allergies;
+
+  if (notes && typeof notes === 'string') {
+    if (!bloodGroup) {
+      const bgMatch = notes.match(/Blood Group:\s*([A-Za-z0-9+-]+)/i);
+      if (bgMatch) bloodGroup = bgMatch[1].trim();
+    }
+    if (!tollFreeHelpLine) {
+      const hlMatch = notes.match(/(?:Cashless Helpline|Helpline):\s*([0-9-+\s]+)/i);
+      if (hlMatch) tollFreeHelpLine = hlMatch[1].trim();
+    }
+    if (!allergies) {
+      const alMatch = notes.match(/(?:Allergies|Allergy):\s*([^\n]+)/i);
+      if (alMatch) allergies = alMatch[1].trim();
+    }
+  }
+
+  const updateFields = {};
+  if (bloodGroup && bloodGroup !== 'Not specified' && bloodGroup !== 'null') {
+    updateFields.bloodGroup = bloodGroup.toUpperCase();
+  }
+  if (policyNumber && policyNumber !== 'null' && policyNumber !== 'undefined') {
+    updateFields.healthInsurancePolicy = policyNumber;
+  }
+  const combinedTpa = [tpaProvider, tollFreeHelpLine].filter(Boolean).join(' • ');
+  if (combinedTpa) {
+    updateFields.tpaNumber = combinedTpa;
+  }
+  if (allergies && allergies !== 'None reported' && allergies !== 'null') {
+    updateFields.allergies = allergies;
+  }
+
+  if (Object.keys(updateFields).length === 0) return;
+
+  try {
+    if (isConnected && mongoose.Types.ObjectId.isValid(targetMemberId)) {
+      await User.findByIdAndUpdate(targetMemberId, { $set: updateFields });
+      console.log(`[Auto-Sync Medical] Updated User ${targetMemberId}:`, updateFields);
+    } else {
+      const mem = (memoryStore.users || []).find(u => u._id.toString() === targetMemberId.toString());
+      if (mem) {
+        Object.assign(mem, updateFields);
+        console.log(`[Auto-Sync Medical Memory] Updated User ${targetMemberId}:`, updateFields);
+      }
+    }
+  } catch (err) {
+    console.warn('[Auto-Sync Medical Warning] Failed to update user medical credentials:', err.message);
+  }
 }
 
 const router = express.Router();
@@ -415,6 +485,64 @@ router.post('/ai-scan', (req, res, next) => {
   });
 });
 
+// POST /api/documents/ask-ai (Natural Language Question Answering over Family Vault)
+router.post('/ask-ai', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query || !query.trim()) {
+      return res.status(400).json({ error: 'Please provide a question to ask the vault AI.' });
+    }
+
+    const familyId = req.familyId || req.user?.familyId;
+    if (!familyId) {
+      return res.status(401).json({ error: 'Authentication required. Please sign in to ask Vault AI.' });
+    }
+
+    let familyMembers = [];
+    let documents = [];
+
+    if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
+      try {
+        const [users, docs] = await Promise.all([
+          User.find({ familyId }).select('_id name relationship role phone bloodGroup').lean(),
+          Document.find({ familyId, status: { $ne: 'ARCHIVED' } })
+            .select('_id title category documentNumber expiryDate notes isSensitive assignedMemberId ocrExtractedData')
+            .lean(),
+        ]);
+        familyMembers = users.map(u => ({ ...u, _id: u._id.toString() }));
+        documents = docs.map(d => ({ ...d, _id: d._id.toString() }));
+      } catch (dbErr) {
+        console.warn('[Vault AI Route] Mongo fetch error:', dbErr.message);
+      }
+    } else {
+      familyMembers = (memoryStore.users || [])
+        .filter(u => u.familyId?.toString() === familyId.toString())
+        .map(u => ({ ...u, _id: u._id.toString() }));
+      documents = (memoryStore.documents || [])
+        .filter(d => d.familyId?.toString() === familyId.toString() && d.status !== 'ARCHIVED')
+        .map(d => ({ ...d, _id: d._id.toString() }));
+    }
+
+    const customApiKey = req.headers['x-gemini-api-key'] || req.body?.customApiKey || null;
+
+    const result = await askVaultAI({
+      query: query.trim(),
+      familyMembers,
+      documents,
+      currentUser: req.user || { name: 'Family Member' },
+      customApiKey,
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    console.error('[Ask Vault AI Route Error]:', err);
+    res.status(500).json({ error: 'Vault AI query failed: ' + err.message });
+  }
+});
+
 // POST /api/documents/upload
 router.post('/upload', (req, res, next) => {
   upload.single('file')(req, res, (err) => {
@@ -487,6 +615,20 @@ router.post('/upload', (req, res, next) => {
     // 4. Auto-extract number if not provided
     const ocrData = simulateOCR(originalName, title || '', category);
     const finalDocNumber = documentNumber?.trim() || ocrData.documentNumber || '';
+
+    // Merge emergency medical details if passed from AI scan
+    let parsedEmergencyDetails = null;
+    if (req.body.emergencyDetails) {
+      try {
+        parsedEmergencyDetails = typeof req.body.emergencyDetails === 'string'
+          ? JSON.parse(req.body.emergencyDetails)
+          : req.body.emergencyDetails;
+      } catch (e) {}
+    }
+    const finalOcrData = {
+      ...ocrData,
+      emergencyDetails: parsedEmergencyDetails || ocrData.emergencyDetails || null,
+    };
 
     // Safe date parsing helper
     const parseSafeDate = (val) => {
@@ -578,6 +720,18 @@ router.post('/upload', (req, res, next) => {
       return mongoose.Types.ObjectId.isValid(val) ? val : null;
     };
 
+    // Auto-generate intelligent document title if left empty or default
+    const resolvedTitle = (title && title.trim())
+      ? title.trim()
+      : generateSmartDocumentTitle({
+          docType: ocrData?.type || category,
+          holderName: req.user?.name,
+          docNumber: finalDocNumber,
+          emergencyDetails: finalOcrData.emergencyDetails,
+          category,
+          originalFileName: originalName,
+        });
+
     let useMongo = isConnected && mongoose.connection.readyState === 1;
     let newDoc = null;
 
@@ -588,7 +742,7 @@ router.post('/upload', (req, res, next) => {
         const safeUploaderId = toSafeObjectId(uploaderId);
 
         newDoc = await Document.create({
-          title: title || originalName.replace(fileExt, ''),
+          title: resolvedTitle,
           originalFileName: originalName,
           mimeType,
           fileSize,
@@ -604,9 +758,19 @@ router.post('/upload', (req, res, next) => {
           tags: parsedTags,
           storagePath,
           sha256Hash,
-          ocrExtractedData: ocrData,
+          ocrExtractedData: finalOcrData,
           uploaderId: safeUploaderId,
         });
+
+        // Auto-sync medical credentials (blood group, insurance policy, TPA, allergies) to family member
+        autoSyncMedicalCredentialsToMember({
+          targetMemberId: safeMemberId || safeUploaderId,
+          category,
+          title: newDoc.title,
+          documentNumber: finalDocNumber,
+          emergencyDetails: finalOcrData.emergencyDetails,
+          notes: req.body.notes,
+        }).catch(e => console.warn('[Auto-Sync Error]:', e.message));
 
         const normalizedDoc = {
           ...(newDoc.toObject ? newDoc.toObject() : newDoc),
@@ -653,7 +817,7 @@ router.post('/upload', (req, res, next) => {
     // Memory Store: Tag with user's actual familyId and uploaderId!
     newDoc = {
       _id: 'doc_' + Date.now(),
-      title: title || originalName.replace(fileExt, ''),
+      title: resolvedTitle,
       originalFileName: originalName,
       mimeType,
       fileSize,
@@ -669,7 +833,7 @@ router.post('/upload', (req, res, next) => {
       tags: parsedTags,
       storagePath,
       sha256Hash,
-      ocrExtractedData: ocrData,
+      ocrExtractedData: finalOcrData,
       uploaderId: uploaderId || null,
       version: 1,
       createdAt: new Date(),
@@ -677,6 +841,16 @@ router.post('/upload', (req, res, next) => {
     };
 
     memoryStore.documents.unshift(newDoc);
+
+    // Auto-sync medical credentials in memory store
+    autoSyncMedicalCredentialsToMember({
+      targetMemberId: finalMemberId || uploaderId,
+      category,
+      title: newDoc.title,
+      documentNumber: finalDocNumber,
+      emergencyDetails: finalOcrData.emergencyDetails,
+      notes: req.body.notes,
+    }).catch(e => console.warn('[Auto-Sync Error]:', e.message));
 
     // Update family storage used
     if (memoryStore.families[0]) {
@@ -1148,6 +1322,16 @@ const handleUpdateDocument = async (req, res) => {
     if (isMongo && typeof doc.save === 'function') {
       await doc.save();
     }
+
+    // Auto-sync medical credentials upon edit/update
+    autoSyncMedicalCredentialsToMember({
+      targetMemberId: doc.assignedMemberId || doc.uploaderId,
+      category: doc.category,
+      title: doc.title,
+      documentNumber: doc.documentNumber,
+      emergencyDetails: doc.ocrExtractedData?.emergencyDetails,
+      notes: doc.notes,
+    }).catch(e => console.warn('[Auto-Sync Warning]:', e.message));
 
     recordAuditLog({
       familyId: doc.familyId || targetFamilyId,

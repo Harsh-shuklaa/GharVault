@@ -618,6 +618,11 @@ export default function DocumentUploadPage() {
         data.append('notes', formData.notes.trim());
       }
 
+      // Auto-sync emergency medical credentials from Gemini AI scan
+      if (aiScanResult?.emergencyDetails) {
+        data.append('emergencyDetails', JSON.stringify(aiScanResult.emergencyDetails));
+      }
+
       const res = await api.uploadDocument(data);
       toast.success(`"${cleanTitle}" saved and encrypted securely!`);
 
@@ -1230,6 +1235,32 @@ export default function DocumentUploadPage() {
                       <div className="text-xs font-extrabold text-slate-900 dark:text-white mt-0.5 truncate">
                         {formData.category}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Medical / Emergency Auto-Sync Banner */}
+                  {aiScanResult.emergencyDetails && (aiScanResult.emergencyDetails.bloodGroup || aiScanResult.emergencyDetails.tpaProvider || aiScanResult.emergencyDetails.policyNumber) && (
+                    <div className="col-span-1 sm:col-span-2 px-3.5 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-xs">
+                      <div className="flex items-center gap-1.5 font-bold text-red-700 dark:text-red-400">
+                        <span>🏥 Emergency Health Card Auto-Sync Ready</span>
+                      </div>
+                      <div className="text-[11px] text-red-600 dark:text-red-300 mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                        {aiScanResult.emergencyDetails.bloodGroup && (
+                          <span>• Blood Group: <strong>{aiScanResult.emergencyDetails.bloodGroup}</strong></span>
+                        )}
+                        {aiScanResult.emergencyDetails.tpaProvider && (
+                          <span>• TPA / Insurer: <strong>{aiScanResult.emergencyDetails.tpaProvider}</strong></span>
+                        )}
+                        {aiScanResult.emergencyDetails.policyNumber && (
+                          <span>• Policy #: <strong>{aiScanResult.emergencyDetails.policyNumber}</strong></span>
+                        )}
+                        {aiScanResult.emergencyDetails.tollFreeHelpLine && (
+                          <span>• Helpline: <strong>{aiScanResult.emergencyDetails.tollFreeHelpLine}</strong></span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-red-500 dark:text-red-400/80 mt-1">
+                        ✨ Save karne par ye details family member ke Hospital Ready Emergency Card me automatically update ho jayengi!
+                      </p>
                     </div>
                   )}
                 </div>

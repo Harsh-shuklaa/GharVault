@@ -237,6 +237,14 @@ export const api = {
     });
   },
 
+  async askVaultAI(query) {
+    return request(`${API_BASE}/documents/ask-ai`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ query }),
+    });
+  },
+
   async uploadDocument(formData) {
     return request(`${API_BASE}/documents/upload`, {
       method: 'POST',

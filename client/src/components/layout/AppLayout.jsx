@@ -23,6 +23,7 @@ import {
   Download,
   X,
   Palette,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -31,6 +32,8 @@ import GlobalSearchModal from '../common/GlobalSearchModal';
 import EmergencyCardModal from '../common/EmergencyCardModal';
 import LogoutModal from '../common/LogoutModal';
 import InstallAppModal from '../common/InstallAppModal';
+import AskVaultAIModal from '../common/AskVaultAIModal';
+import AskVaultAIFloatingButton from '../common/AskVaultAIFloatingButton';
 import NotificationsDropdown from '../common/NotificationsDropdown';
 import DastavejLogo from '../common/DastavejLogo';
 import { api } from '../../lib/api';
@@ -59,6 +62,7 @@ export default function AppLayout() {
     dismissBanner,
   } = usePWAInstall();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAskAIOpen, setIsAskAIOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const location = useLocation();
 
@@ -450,6 +454,23 @@ export default function AppLayout() {
 
           {/* Topbar Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Ask Vault AI Trigger Button in Topbar */}
+            <button
+              type="button"
+              onClick={() => setIsAskAIOpen(true)}
+              title="Ask Vault AI (Gemini Assistant)"
+              className={`h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+                isBlue
+                  ? 'border-blue-400/40 bg-blue-50/80 hover:bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:hover:bg-blue-500/25 dark:text-blue-300'
+                  : 'border-emerald-300/80 bg-emerald-50/80 hover:bg-emerald-100 text-emerald-800 dark:bg-[#3ECF8E]/15 dark:hover:bg-[#3ECF8E]/25 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/30'
+              }`}
+            >
+              <Sparkles size={14} className="animate-pulse" />
+              <span className="text-[11px] font-extrabold hidden md:inline">
+                Ask AI
+              </span>
+            </button>
+
             {/* Theme Accent Toggle: Emerald Green vs Stitch Royal Blue */}
             <button
               type="button"
@@ -682,6 +703,8 @@ export default function AppLayout() {
       </nav>
 
       {/* Global Modals */}
+      <AskVaultAIFloatingButton onClick={() => setIsAskAIOpen(true)} />
+      <AskVaultAIModal isOpen={isAskAIOpen} onClose={() => setIsAskAIOpen(false)} />
       <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <EmergencyCardModal isOpen={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} />
       <InstallAppModal isOpen={isInstallModalOpen} onClose={closeInstallModal} />

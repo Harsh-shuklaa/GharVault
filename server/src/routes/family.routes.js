@@ -220,24 +220,46 @@ router.get('/emergency-card', async (req, res) => {
       return res.json({ familyName: 'Family Vault', members: [], medicalDocs: [] });
     }
 
-    const emergencyRoster = members.map(m => ({
-      id: m._id,
-      _id: m._id,
-      name: m.name,
-      relation: m.relationship || 'Member',
-      relationship: m.relationship || 'Member',
-      avatar: m.avatar,
-      avatarUrl: m.avatar,
-      dob: m.dateOfBirth || '',
-      dateOfBirth: m.dateOfBirth || '',
-      phone: m.phone || 'Not set',
-      bloodGroup: m.bloodGroup || 'Not specified',
-      emergencyContactPhone: m.emergencyContactPhone || m.phone || 'Not set',
-      healthInsurancePolicy: m.healthInsurancePolicy || 'Not set',
-      tpaNumber: m.tpaNumber || 'Not set',
-      allergies: m.allergies || 'None reported',
-      isEmergencyContact: Boolean(m.isEmergencyContact),
-    }));
+    const emergencyRoster = members.map(m => {
+      // Find assigned medical doc for this member to auto-fill any missing emergency credentials
+      const memberMedicalDoc = medicalDocs.find(d => d.assignedMemberId?.toString() === m._id.toString());
+      const docEmergency = memberMedicalDoc?.ocrExtractedData?.emergencyDetails || {};
+
+      const bloodGroup = (m.bloodGroup && m.bloodGroup !== 'Not specified')
+        ? m.bloodGroup
+        : (docEmergency.bloodGroup || 'Not specified');
+
+      const healthInsurancePolicy = (m.healthInsurancePolicy && m.healthInsurancePolicy !== 'Not set')
+        ? m.healthInsurancePolicy
+        : (docEmergency.policyNumber || memberMedicalDoc?.documentNumber || 'Not set');
+
+      const tpaNumber = (m.tpaNumber && m.tpaNumber !== 'Not set')
+        ? m.tpaNumber
+        : ([docEmergency.tpaProvider, docEmergency.tollFreeHelpLine].filter(Boolean).join(' • ') || 'Not set');
+
+      const allergies = (m.allergies && m.allergies !== 'None reported')
+        ? m.allergies
+        : (docEmergency.allergies || 'None reported');
+
+      return {
+        id: m._id,
+        _id: m._id,
+        name: m.name,
+        relation: m.relationship || 'Member',
+        relationship: m.relationship || 'Member',
+        avatar: m.avatar,
+        avatarUrl: m.avatar,
+        dob: m.dateOfBirth || '',
+        dateOfBirth: m.dateOfBirth || '',
+        phone: m.phone || 'Not set',
+        bloodGroup,
+        emergencyContactPhone: m.emergencyContactPhone || m.phone || 'Not set',
+        healthInsurancePolicy,
+        tpaNumber,
+        allergies,
+        isEmergencyContact: Boolean(m.isEmergencyContact),
+      };
+    });
 
     res.json({
       familyName: family.name,

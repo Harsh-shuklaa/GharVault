@@ -48,6 +48,7 @@ import JoinFamilyModal from '../components/common/JoinFamilyModal';
 import PersonalKycPromptModal from '../components/common/PersonalKycPromptModal';
 import SendPushModal from '../components/common/SendPushModal';
 import DashboardSkeleton from '../components/common/DashboardSkeleton';
+import EmergencyHealthCardWidget from '../components/common/EmergencyHealthCardWidget';
 import { usePushNotification } from '../context/PushNotificationContext';
 
 export default function DashboardPage() {
@@ -764,6 +765,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* ================= 2.5 1-TAP EMERGENCY HEALTH CARD (HOSPITAL READY & GEMINI AUTO-SYNCED) ================= */}
+      <EmergencyHealthCardWidget onOpenFullModal={() => setIsEmergencyModalOpen(true)} />
 
       {/* ================= 3. 4 BIG VISUAL FAMILY CATEGORIES (STITCH DESIGN SYSTEM) ================= */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">

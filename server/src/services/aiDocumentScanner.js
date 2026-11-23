@@ -81,6 +81,89 @@ function findBestMemberMatch(extractedName, members = []) {
 }
 
 /**
+ * Generates an intelligent, human-readable document title adhering to:
+ * [Document Type] [Optional Context/Last4] — [Member First Name]
+ * Examples:
+ * - "PAN Card — Aditya"
+ * - "Aadhaar Card — Harsh"
+ * - "Star Health Mediclaim (2026) — Aditya"
+ * - "Vehicle RC (1234) — Harsh"
+ */
+export function generateSmartDocumentTitle({
+  docType,
+  holderName = '',
+  matchedMemberName = '',
+  docNumber = '',
+  emergencyDetails = null,
+  category = '',
+  originalFileName = '',
+}) {
+  let cleanType = (docType || 'Document').trim();
+
+  // Normalize common types to standard title format
+  if (/aadhaar|adhar|uidai/i.test(cleanType) || /aadhaar|adhar/i.test(originalFileName)) {
+    cleanType = 'Aadhaar Card';
+  } else if (/pan\b|incometax|nsdl/i.test(cleanType) || /pan\b/i.test(originalFileName)) {
+    cleanType = 'PAN Card';
+  } else if (/driving|license|licence|\bdl\b/i.test(cleanType) || /license|driving/i.test(originalFileName)) {
+    cleanType = 'Driving License';
+  } else if (/passport/i.test(cleanType) || /passport/i.test(originalFileName)) {
+    cleanType = 'Passport';
+  } else if (/ayushman|abha/i.test(cleanType) || /ayushman|abha/i.test(originalFileName)) {
+    cleanType = 'Ayushman / ABHA Card';
+  } else if (/insurance|mediclaim|health|medical|hospital/i.test(cleanType) || category === 'Medical & Health' || /insurance|health|mediclaim/i.test(originalFileName)) {
+    if (emergencyDetails?.tpaProvider && emergencyDetails.tpaProvider !== 'Health Insurance TPA') {
+      cleanType = `${emergencyDetails.tpaProvider} Mediclaim`;
+    } else {
+      cleanType = 'Health Insurance';
+    }
+  } else if (/\brc\b|registration|vehicle/i.test(cleanType) || category === 'Vehicle' || /\brc\b/i.test(originalFileName)) {
+    cleanType = 'Vehicle RC';
+  } else if (/voter|epic/i.test(cleanType) || /voter/i.test(originalFileName)) {
+    cleanType = 'Voter ID';
+  } else if (/birth/i.test(cleanType) || /birth/i.test(originalFileName)) {
+    cleanType = 'Birth Certificate';
+  } else if (/marksheet|degree|diploma|certificate/i.test(cleanType) || /marksheet|degree/i.test(originalFileName)) {
+    cleanType = 'Education Certificate';
+  }
+
+  // Extract clean First Name of member
+  const rawName = (matchedMemberName || holderName || '').trim();
+  let firstName = '';
+  if (rawName) {
+    const rawFirst = rawName.split(/[\s_.-]+/)[0];
+    if (rawFirst && rawFirst.length > 1) {
+      firstName = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1).toLowerCase();
+    }
+  }
+
+  // Contextual Short Differentiator
+  let contextSuffix = '';
+  const cleanDoc = (docNumber || '').trim();
+
+  if (cleanType === 'Vehicle RC' && cleanDoc) {
+    const last4 = cleanDoc.replace(/[^0-9]/g, '').slice(-4);
+    if (last4) contextSuffix = ` (${last4})`;
+  } else if (cleanType === 'Passport' && cleanDoc) {
+    contextSuffix = ` (${cleanDoc.slice(0, 1).toUpperCase()}${cleanDoc.slice(-3)})`;
+  } else if (cleanType.includes('Mediclaim') || cleanType === 'Health Insurance') {
+    const polNum = emergencyDetails?.policyNumber || cleanDoc;
+    if (polNum && polNum.length >= 4) {
+      const polShort = polNum.replace(/[^A-Za-z0-9]/g, '').slice(-4);
+      if (polShort) contextSuffix = ` (${polShort})`;
+    }
+  }
+
+  // Assemble Title
+  if (firstName) {
+    return `${cleanType}${contextSuffix} — ${firstName}`;
+  } else if (contextSuffix) {
+    return `${cleanType}${contextSuffix}`;
+  }
+  return cleanType;
+}
+
+/**
  * Heuristic fallback parser when AI is unavailable or offline
  */
 function fallbackHeuristicScanner(fileName = '', originalText = '', members = []) {
@@ -116,10 +199,12 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     suggestedTitle = 'Passport';
     const m = text.match(/\b([A-PR-WYa-pr-wy][1-9]\d\s?\d{4}[1-9])\b/i);
     if (m) docNumber = m[1].toUpperCase();
-  } else if (text.includes('insurance') || text.includes('policy') || text.includes('health') || text.includes('mediclaim')) {
-    docType = 'Health Insurance';
+  } else if (text.includes('insurance') || text.includes('policy') || text.includes('health') || text.includes('mediclaim') || text.includes('medical') || text.includes('hospital') || text.includes('ayushman') || text.includes('abha')) {
+    docType = text.includes('ayushman') || text.includes('abha') ? 'Ayushman / ABHA Health Card' : 'Health Insurance';
     category = 'Medical & Health';
-    suggestedTitle = 'Health Insurance Policy';
+    suggestedTitle = docType;
+    const m = text.match(/\b([A-Z0-9\/-]{7,24})\b/i);
+    if (m) docNumber = m[1].toUpperCase();
   } else if (text.includes('rc') || text.includes('registration') || text.includes('vehicle')) {
     docType = 'Vehicle RC';
     category = 'Vehicle';
@@ -140,6 +225,41 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     }
   }
 
+  // Extract emergency medical details for Medical & Health or Driving License
+  let emergencyDetails = null;
+  const bgMatch = text.match(/\b(A|B|AB|O)\s*([+-]|POS(?:ITIVE)?|NEG(?:ATIVE)?)\b/i);
+  const bloodGroup = bgMatch ? `${bgMatch[1].toUpperCase()}${bgMatch[2].startsWith('N') || bgMatch[2] === '-' ? '-' : '+'}` : null;
+  
+  const tpaMatch = text.match(/\b(Medi\s*Assist|Star\s*Health|Care\s*Health|HDFC\s*ERGO|Niva\s*Bupa|Vidal\s*Health|Paramount|United\s*India|New\s*India|National\s*Insurance|Bajaj\s*Allianz|ICICI\s*Lombard|Max\s*Bupa|Ayushman\s*Bharat|ABHA)\b/i);
+  const tpaProvider = tpaMatch ? tpaMatch[1] : null;
+
+  const hlMatch = text.match(/\b(1800[-\s]?\d{3}[-\s]?\d{3,4}|(?:\+91|0)?[6-9]\d{9})\b/);
+  const tollFreeHelpLine = hlMatch ? hlMatch[1] : null;
+
+  const allergyMatch = text.match(/\b(?:allergy|allergic\s*to|chronic|condition|diabetic|asthma|hypertension)[:\s]*([^\n,.;]+)/i);
+  const allergies = allergyMatch ? allergyMatch[1].trim() : null;
+
+  if (category === 'Medical & Health' || bloodGroup || tpaProvider) {
+    emergencyDetails = {
+      bloodGroup: bloodGroup || null,
+      tpaProvider: tpaProvider || (category === 'Medical & Health' ? 'Health Insurance TPA' : null),
+      policyNumber: docNumber || null,
+      tollFreeHelpLine: tollFreeHelpLine || null,
+      allergies: allergies || null,
+      emergencyContactPhone: null,
+    };
+  }
+
+  const smartTitle = generateSmartDocumentTitle({
+    docType,
+    holderName: matchedMember?.name || '',
+    matchedMemberName: matchedMember?.name || '',
+    docNumber,
+    emergencyDetails,
+    category,
+    originalFileName: fileName,
+  });
+
   return {
     docType,
     category,
@@ -147,8 +267,8 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     holderName: matchedMember?.name || '',
     dob: null,
     expiryDate,
-    suggestedTitle: matchedMember?.name ? `${docType} — ${matchedMember.name.split(' ')[0]}` : suggestedTitle,
-    emergencyDetails: null,
+    suggestedTitle: smartTitle,
+    emergencyDetails,
     matchedMemberId: matchedMember?._id || null,
     matchedMemberName: matchedMember?.name || '',
     confidence: docNumber ? 0.75 : 0.5,
@@ -162,9 +282,16 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
 export async function scanDocumentWithAI({ fileBuffer, mimeType, fileName, familyMembers = [], customApiKey = null }) {
   const apiKey = customApiKey || process.env.GEMINI_API_KEY;
 
+  let fallbackText = '';
+  if (fileBuffer) {
+    try {
+      fallbackText = fileBuffer.toString('utf8', 0, Math.min(fileBuffer.length, 5000));
+    } catch (e) {}
+  }
+
   if (!apiKey) {
     console.log('[AI Scanner] No GEMINI_API_KEY configured. Using intelligent heuristic scanner.');
-    return fallbackHeuristicScanner(fileName, '', familyMembers);
+    return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
   }
 
   try {
@@ -199,11 +326,13 @@ Extract the following information with maximum accuracy:
 5. "dob": Date of birth in YYYY-MM-DD format if found, else null.
 6. "expiryDate": Expiry or valid-till date in YYYY-MM-DD format if applicable, else null.
 7. "category": One of ['ID Cards', 'Medical & Health', 'Vehicle', 'Financial', 'Property & Legal', 'Education', 'Personal'].
-8. "emergencyDetails": If this is a Health Insurance Card, Driving License, or Medical Report:
-   - "bloodGroup": Blood group if printed (e.g. "O+", "B+", "AB+", "A-", etc.) or null.
-   - "tpaProvider": Third Party Administrator (TPA) name (e.g. "Medi Assist", "Vidal Health", "Paramount", "Star Health") or null.
-   - "policyNumber": Insurance policy number or null.
-   - "tollFreeHelpLine": Hospital cashless helpline phone number or null.
+8. "emergencyDetails": If this is a Health Insurance Card, Driving License, Ayushman Card, or Medical/Lab Report:
+   - "bloodGroup": Blood group if printed (e.g. "O+", "B+", "AB+", "A+", "O-", "A-", "B-", "AB-") or null.
+   - "tpaProvider": Third Party Administrator (TPA) or insurer name (e.g. "Medi Assist", "Star Health", "Care Health", "HDFC ERGO", "Niva Bupa", "Vidal Health", "Paramount", "ICICI Lombard", "Bajaj Allianz") or null.
+   - "policyNumber": Insurance policy or cashless member ID number or null.
+   - "tollFreeHelpLine": Hospital cashless claim or 24x7 toll-free emergency helpline phone number or null.
+   - "allergies": Critical allergies (e.g. "Penicillin", "Sulfa", "Peanuts") or chronic medical conditions (e.g. "Diabetic Type 2", "Asthma", "Hypertension") or null.
+   - "emergencyContactPhone": Emergency contact phone number if listed, else null.
    - "sumInsured": Sum insured amount if visible or null.
 
 Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\`\`json code blocks.`;
@@ -264,14 +393,14 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
 
     if (!result) {
       console.warn('[AI Scanner] All Gemini models failed or unavailable. Falling back to heuristic.');
-      return fallbackHeuristicScanner(fileName, '', familyMembers);
+      return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
     }
 
     const rawJsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawJsonText) {
       console.warn('[AI Scanner] No text content returned from Gemini.');
-      return fallbackHeuristicScanner(fileName, '', familyMembers);
+      return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
     }
 
     // Clean potential markdown quotes
@@ -281,9 +410,15 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
     // Auto-match with family members
     const matched = findBestMemberMatch(parsedData.holderName, familyMembers);
 
-    const docType = parsedData.docType || 'Document';
-    const holderFirstName = parsedData.holderName ? parsedData.holderName.split(' ')[0] : (matched?.memberName?.split(' ')[0] || '');
-    const suggestedTitle = holderFirstName ? `${docType} — ${holderFirstName}` : docType;
+    const smartTitle = generateSmartDocumentTitle({
+      docType: parsedData.docType,
+      holderName: parsedData.holderName,
+      matchedMemberName: matched?.memberName,
+      docNumber: parsedData.docNumber,
+      emergencyDetails: parsedData.emergencyDetails,
+      category: parsedData.category,
+      originalFileName: fileName,
+    });
 
     return {
       docType: parsedData.docType || 'Other',
@@ -293,7 +428,7 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
       fatherOrSpouseName: parsedData.fatherOrSpouseName || null,
       dob: parsedData.dob || null,
       expiryDate: parsedData.expiryDate || null,
-      suggestedTitle,
+      suggestedTitle: smartTitle,
       emergencyDetails: parsedData.emergencyDetails || null,
       matchedMemberId: matched?.memberId || null,
       matchedMemberName: matched?.memberName || '',
@@ -302,6 +437,6 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
     };
   } catch (error) {
     console.error('[AI Scanner Error]:', error);
-    return fallbackHeuristicScanner(fileName, '', familyMembers);
+    return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
   }
 }
