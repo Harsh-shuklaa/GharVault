@@ -291,7 +291,9 @@ export default function DashboardPage() {
 
     const hasLicenseOrVoter = targetDocs.some(d => {
       const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return text.includes('driving') || text.includes('license') || text.includes('dl') || text.includes('voter') || text.includes('election') || text.includes('rc');
+      const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|mediclaim|ayushman|abha)\b/i.test(text);
+      if (isMed) return false;
+      return text.includes('voter') || text.includes('election') || /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc)\b/i.test(text);
     });
 
     const hasHealth = targetDocs.some(d => {
@@ -386,7 +388,9 @@ export default function DashboardPage() {
 
     const hasLicenseOrVoter = myDocs.some((d) => {
       const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return text.includes('driving') || text.includes('license') || text.includes('dl') || text.includes('voter') || text.includes('election') || text.includes('rc');
+      const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|mediclaim|ayushman|abha)\b/i.test(text);
+      if (isMed) return false;
+      return text.includes('voter') || text.includes('election') || /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc)\b/i.test(text);
     });
 
     const hasHealth = myDocs.some((d) => {
@@ -512,11 +516,13 @@ export default function DashboardPage() {
     });
     const hasDl = memberDocs.some((d) => {
       const t = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return t.includes('driving') || t.includes('license') || t.includes('dl') || t.includes('voter') || t.includes('rc');
+      const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|mediclaim|ayushman|abha)\b/i.test(t);
+      if (isMed) return false;
+      return t.includes('voter') || /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc)\b/i.test(t);
     });
     const hasHealth = memberDocs.some((d) => {
       const t = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return t.includes('health') || t.includes('ayushman') || t.includes('mediclaim') || t.includes('abha');
+      return t.includes('health') || t.includes('ayushman') || t.includes('mediclaim') || t.includes('abha') || t.includes('prescription') || t.includes('doctor');
     });
     return hasAadhaar && hasPan && hasDl && hasHealth;
   };
@@ -524,6 +530,8 @@ export default function DashboardPage() {
   // Card theme helper
   const getCardTheme = (doc) => {
     const text = `${doc.title || ''} ${doc.category || ''} ${doc.tags?.join(' ') || ''}`.toLowerCase();
+    const isMed = /\b(prescription|hospital|clinic|doctor|dr\.|medicine|dawai|parchi|parcha|discharge|health|medical|insurance|mediclaim|ayushman|abha|opd|rx)\b/i.test(text);
+
     if (text.includes('aadhaar') || text.includes('adhar') || text.includes('uid')) {
       return {
         type: 'aadhaar',
@@ -546,18 +554,7 @@ export default function DashboardPage() {
         stripe: 'h-1 bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-400',
       };
     }
-    if (text.includes('driving') || text.includes('license') || text.includes('dl') || text.includes('rc') || text.includes('vehicle')) {
-      return {
-        type: 'vehicle',
-        badge: '🚗 TRANSPORT DEPT • DL / RC',
-        dept: 'Ministry of Road Transport & Highways',
-        gradient: 'from-amber-500/15 via-amber-400/5 to-yellow-600/10',
-        border: 'border-amber-500/30 hover:border-amber-500/60',
-        accentPill: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30',
-        stripe: 'h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-500',
-      };
-    }
-    if (text.includes('health') || text.includes('medical') || text.includes('insurance') || text.includes('ayushman') || text.includes('abha')) {
+    if (isMed || text.includes('health') || text.includes('medical') || text.includes('insurance') || text.includes('ayushman') || text.includes('abha')) {
       return {
         type: 'health',
         badge: '🏥 HEALTH & AYUSHMAN',
@@ -566,6 +563,17 @@ export default function DashboardPage() {
         border: isBlue ? 'border-blue-500/30 hover:border-blue-500/60' : 'border-emerald-500/30 hover:border-[#3ECF8E]/60',
         accentPill: isBlue ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30' : 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/30',
         stripe: isBlue ? 'h-1 bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-400' : 'h-1 bg-gradient-to-r from-emerald-600 via-[#3ECF8E] to-teal-400',
+      };
+    }
+    if (!isMed && (/\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc|vehicle|car|bike)\b/i.test(text) && !/\b(parchi|parcha|march|research)\b/i.test(text))) {
+      return {
+        type: 'vehicle',
+        badge: '🚗 TRANSPORT DEPT • DL / RC',
+        dept: 'Ministry of Road Transport & Highways',
+        gradient: 'from-amber-500/15 via-amber-400/5 to-yellow-600/10',
+        border: 'border-amber-500/30 hover:border-amber-500/60',
+        accentPill: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30',
+        stripe: 'h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-500',
       };
     }
     if (text.includes('passport') || text.includes('visa')) {

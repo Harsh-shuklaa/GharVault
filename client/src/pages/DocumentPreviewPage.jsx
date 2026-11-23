@@ -44,6 +44,15 @@ import {
   Calendar,
   Hash,
   Box,
+  Compass,
+  Zap,
+  MapPin,
+  Building,
+  Stethoscope,
+  GraduationCap,
+  ArrowUp,
+  ArrowDown,
+  ArrowRight,
 } from 'lucide-react';
 import MpinModal from '../components/common/MpinModal';
 import VaultSecurityLoader from '../components/common/VaultSecurityLoader';
@@ -89,6 +98,30 @@ export default function DocumentPreviewPage() {
 
   // Privacy Masking for Document ID
   const [isNumberUnmasked, setIsNumberUnmasked] = useState(false);
+  const [copiedSnippet, setCopiedSnippet] = useState(null);
+
+  const handleCopySnippet = (val, label = 'Copied') => {
+    if (!val) return;
+    navigator.clipboard.writeText(val);
+    setCopiedSnippet(val);
+    toast.success(`${label} copied to clipboard!`);
+    setTimeout(() => setCopiedSnippet(null), 2000);
+  };
+
+  const getDueStatus = (dueDateStr) => {
+    if (!dueDateStr) return null;
+    const due = new Date(dueDateStr);
+    if (isNaN(due.getTime())) return null;
+    const now = new Date();
+    const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) {
+      return { text: `Overdue (${Math.abs(diffDays)}d ago)`, color: 'text-red-600 bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20' };
+    }
+    if (diffDays === 0) {
+      return { text: 'Due Today', color: 'text-amber-600 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20' };
+    }
+    return { text: `Due in ${diffDays} day${diffDays > 1 ? 's' : ''}`, color: 'text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 border-emerald-200 dark:border-[#3ECF8E]/20' };
+  };
 
   // Sibling navigation
   const [siblingDocs, setSiblingDocs] = useState({ prev: null, next: null });
@@ -171,12 +204,29 @@ export default function DocumentPreviewPage() {
       };
     }
     if (
-      text.includes('rc') ||
-      text.includes('vehicle') ||
-      text.includes('car') ||
-      text.includes('bike') ||
-      text.includes('driving') ||
-      text.includes('license')
+      text.includes('health') ||
+      text.includes('medical') ||
+      text.includes('insurance') ||
+      text.includes('mediclaim') ||
+      text.includes('hospital') ||
+      text.includes('prescription') ||
+      text.includes('parchi') ||
+      text.includes('parcha') ||
+      text.includes('doctor')
+    ) {
+      return {
+        type: 'medical',
+        label: text.includes('insurance') || text.includes('mediclaim') ? 'Health Insurance' : 'Medical Record',
+        strip: 'from-rose-600 via-red-600 to-rose-700',
+        tagStyle: 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200/80 dark:border-red-500/30',
+        badgeEmoji: '🏥',
+      };
+    }
+    const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|insurance|mediclaim)\b/i.test(text);
+    if (
+      !isMed &&
+      (/\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc|vehicle|car|bike)\b/i.test(text) &&
+        !/\b(parchi|parcha|march|research)\b/i.test(text))
     ) {
       return {
         type: 'vehicle',
@@ -186,32 +236,34 @@ export default function DocumentPreviewPage() {
         badgeEmoji: '🚗',
       };
     }
-    if (
-      text.includes('health') ||
-      text.includes('medical') ||
-      text.includes('insurance') ||
-      text.includes('mediclaim') ||
-      text.includes('hospital')
-    ) {
+    if (/\b(bijli|electricity|water|pani|bill|utility|power|uppcl|bses|tata power|jal board|igl|indane)\b/i.test(text)) {
       return {
-        type: 'medical',
-        label: 'Mediclaim',
-        strip: 'from-rose-600 via-red-600 to-rose-700',
-        tagStyle: 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200/80 dark:border-red-500/30',
-        badgeEmoji: '🏥',
+        type: 'utility_bill',
+        label: text.includes('bijli') || text.includes('electricity') ? 'Electricity Bill' : text.includes('water') || text.includes('pani') ? 'Water Bill' : text.includes('gas') ? 'Gas Bill' : 'Utility Bill',
+        strip: 'from-amber-500 via-orange-500 to-yellow-600',
+        tagStyle: 'bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-500/30',
+        badgeEmoji: '⚡',
       };
     }
     if (
       text.includes('property') ||
       text.includes('registry') ||
+      text.includes('bainama') ||
+      text.includes('khasra') ||
+      text.includes('khatauni') ||
+      text.includes('jamabandi') ||
+      text.includes('fard') ||
+      text.includes('chauhaddi') ||
       text.includes('flat') ||
       text.includes('deed') ||
       text.includes('will') ||
-      text.includes('tax')
+      text.includes('tax') ||
+      text.includes('plot') ||
+      text.includes('zameen')
     ) {
       return {
         type: 'property',
-        label: 'Property Deed',
+        label: text.includes('khasra') || text.includes('khatauni') || text.includes('jamabandi') ? 'Khasra-Khatauni' : 'Land Registry / Deed',
         strip: 'from-amber-600 via-yellow-600 to-amber-700',
         tagStyle: 'bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-500/30',
         badgeEmoji: '📜',
@@ -280,6 +332,185 @@ export default function DocumentPreviewPage() {
     } finally {
       setSharingLoading(false);
     }
+  };
+
+  // Official Indian Portals & Renewal Metadata
+  const getOfficialRenewalInfo = (d) => {
+    if (!d) return null;
+    const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+
+    if (/\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b)\b/i.test(text)) {
+      return {
+        type: 'DRIVING_LICENSE',
+        portalName: 'Parivahan Sarathi',
+        url: 'https://sarathi.parivahan.gov.in/sarathiservice/stateSelection.do',
+        badge: '🚗 Parivahan RTO (MoRTH)',
+        actionLabel: 'Renew on Parivahan',
+        authority: 'Ministry of Road Transport & Highways',
+      };
+    }
+    if (/\b(puc|pollution|emission)\b/i.test(text)) {
+      return {
+        type: 'PUC',
+        portalName: 'Parivahan PUC Portal',
+        url: 'https://vahan.parivahan.gov.in/puc/',
+        badge: '🌿 Parivahan PUC',
+        actionLabel: 'Check & Renew PUC',
+        authority: 'Central Motor Vehicles Rules (CMVR)',
+      };
+    }
+    if (/\b(rc|vehicle rc|fitness|road tax|chassis)\b/i.test(text) && !/\b(parchi|parcha|march|research)\b/i.test(text)) {
+      return {
+        type: 'VEHICLE_RC',
+        portalName: 'Parivahan Vahan',
+        url: 'https://vahan.parivahan.gov.in/vahaneservice/',
+        badge: '🚘 Parivahan Vahan',
+        actionLabel: 'Renew RC / Fitness',
+        authority: 'National Register of Vehicles (MoRTH)',
+      };
+    }
+    if (text.includes('passport')) {
+      return {
+        type: 'PASSPORT',
+        portalName: 'Passport Seva Kendra',
+        url: 'https://www.passportindia.gov.in/AppOnlineProject/welcomeLink',
+        badge: '✈️ Passport Seva',
+        actionLabel: 'Re-issue on Passport Seva',
+        authority: 'Ministry of External Affairs, Govt of India',
+      };
+    }
+    if (text.includes('insurance') || text.includes('mediclaim') || text.includes('policy')) {
+      return {
+        type: 'INSURANCE',
+        portalName: 'Insurance Renewal',
+        url: 'https://www.policybazaar.com/',
+        badge: '🛡️ Policy Renewal',
+        actionLabel: 'Renew Policy Online',
+        authority: 'IRDAI Registered Insurer Portal',
+      };
+    }
+    if (/\b(bijli|electricity|water|pani|bill|utility|power|uppcl|bses|tata power|jal board|gas)\b/i.test(text)) {
+      return {
+        type: 'UTILITY_BILL',
+        portalName: 'Bharat BillPay (BBPS)',
+        url: 'https://www.bharatbillpay.com/',
+        badge: '⚡ BBPS BillPay',
+        actionLabel: 'Pay via BBPS Gateway',
+        authority: 'National Payments Corporation of India (NPCI)',
+      };
+    }
+
+    return {
+      type: 'GENERAL',
+      portalName: 'National Services Portal',
+      url: 'https://services.india.gov.in/',
+      badge: '🏛️ National Services',
+      actionLabel: 'Official Renewal Link',
+      authority: 'Government of India',
+    };
+  };
+
+  // 1-Tap WhatsApp Expiry & Renewal Alert for Family Members
+  const handleWhatsAppExpiryAlert = (renewalInfo) => {
+    if (!doc.expiryDate) return;
+    const d = new Date(doc.expiryDate);
+    const diffDays = Math.ceil((d - new Date()) / (1000 * 60 * 60 * 24));
+    const memberName = doc.assignedMember?.name || 'Family Member';
+    const isExpired = diffDays <= 0;
+    const statusLine = isExpired
+      ? `🚨 *EXPIRED* (${Math.abs(diffDays)} days ago)`
+      : `⏳ *Expires in ${diffDays} day${diffDays > 1 ? 's' : ''}*`;
+
+    const text = [
+      `⚠️ *Dastavej Vault Expiry & Renewal Reminder* ⏰`,
+      ``,
+      `📌 *Document:* ${doc.title}`,
+      `👤 *Member:* ${memberName}`,
+      doc.documentNumber ? `🔢 *ID / Policy Number:* ${doc.documentNumber}` : null,
+      `📅 *Validity Date:* ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`,
+      `📢 *Current Status:* ${statusLine}`,
+      ``,
+      `🔗 *Official Government / Online Renewal Link:*`,
+      renewalInfo.url,
+      ``,
+      `_Saved & tracked in GharVault Family Vault_ 🛡️`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    toast.success('WhatsApp Expiry & Renewal message ready to send!');
+  };
+
+  // 1-Tap Google Calendar Reminder
+  const handleAddToGoogleCalendar = (renewalInfo) => {
+    if (!doc.expiryDate) return;
+    const d = new Date(doc.expiryDate);
+    const dateStr = d.toISOString().split('T')[0].replace(/-/g, '');
+    const nextDate = new Date(d.getTime() + 24 * 60 * 60 * 1000);
+    const nextDateStr = nextDate.toISOString().split('T')[0].replace(/-/g, '');
+    const memberName = doc.assignedMember?.name || 'Family';
+
+    const title = encodeURIComponent(`Renewal Reminder: ${doc.title} (${memberName})`);
+    const details = encodeURIComponent(
+      `Statutory validity reminder for ${doc.title}.\nHolder: ${memberName}\nDocument ID: ${doc.documentNumber || 'N/A'}\nOfficial Renewal Link: ${renewalInfo.url}\nVault Record: ${window.location.href}`
+    );
+    const location = encodeURIComponent(renewalInfo.portalName);
+
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${nextDateStr}&details=${details}&location=${location}`;
+    window.open(gcalUrl, '_blank', 'noopener,noreferrer');
+    toast.success('Opened Google Calendar to schedule reminder!');
+  };
+
+  // 1-Tap Download .ics (Apple Calendar, Outlook, Android)
+  const handleDownloadIcsCalendar = (renewalInfo) => {
+    if (!doc.expiryDate) return;
+    const d = new Date(doc.expiryDate);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const memberName = doc.assignedMember?.name || 'Family';
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Dastavej Family Vault//Smart Renewal Reminder//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:dastavej-renewal-${doc._id || Date.now()}@gharvault.app`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART;VALUE=DATE:${y}${m}${day}`,
+      `DTEND;VALUE=DATE:${y}${m}${day}`,
+      `SUMMARY:⚠️ Renewal Due: ${doc.title} (${memberName})`,
+      `DESCRIPTION:Official renewal reminder for ${doc.title}.\\nOfficial Renewal Portal: ${renewalInfo.url}\\nID: ${doc.documentNumber || 'N/A'}`,
+      `URL:${renewalInfo.url}`,
+      `LOCATION:${renewalInfo.portalName}`,
+      'BEGIN:VALARM',
+      'TRIGGER:-P7D',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:Reminder: ${doc.title} expires in 7 days!`,
+      'END:VALARM',
+      'BEGIN:VALARM',
+      'TRIGGER:-P1D',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:Urgent: ${doc.title} expires tomorrow!`,
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${(doc.title || 'document').replace(/[^a-zA-Z0-9_-]/g, '_')}_Renewal.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    toast.success('Downloaded .ics event for Apple & Outlook Calendar!');
   };
 
   const handleOpenEdit = () => {
@@ -1384,6 +1615,578 @@ export default function DocumentPreviewPage() {
         <div className={`lg:col-span-5 xl:col-span-5 h-full min-h-0 space-y-2.5 lg:overflow-y-auto lg:pr-1 custom-scrollbar ${
           mobileTab === 'DETAILS' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
         }`}>
+          {/* Intelligence Bento 0: Smart Statutory Expiry & Official Renewal Sentinel */}
+          {(() => {
+            if (!doc.expiryDate) return null;
+            const expDate = new Date(doc.expiryDate);
+            if (isNaN(expDate.getTime())) return null;
+
+            const now = new Date();
+            const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+            const isExpired = diffDays <= 0;
+            const isExpiringSoon = diffDays > 0 && diffDays <= 30;
+            const renewalInfo = getOfficialRenewalInfo(doc);
+            if (!renewalInfo) return null;
+
+            const cardGradient = isExpired
+              ? 'from-red-500/15 via-red-500/5 to-rose-500/10 border-red-300/80 dark:border-red-500/30'
+              : isExpiringSoon
+              ? 'from-amber-500/15 via-orange-500/5 to-yellow-500/10 border-amber-300/80 dark:border-amber-500/30'
+              : 'from-emerald-500/10 via-teal-500/5 to-emerald-500/5 border-emerald-200/80 dark:border-[#3ECF8E]/20';
+
+            const statusBadgeColor = isExpired
+              ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/30'
+              : isExpiringSoon
+              ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-500/30'
+              : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] border-emerald-200 dark:border-emerald-500/30';
+
+            return (
+              <div className={`bg-gradient-to-br ${cardGradient} rounded-2xl p-3 sm:p-3.5 border shadow-xs space-y-2.5 transition-colors shrink-0`}>
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs border ${
+                      isExpired
+                        ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-red-300/50'
+                        : isExpiringSoon
+                        ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300/50'
+                        : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] border-emerald-300/50'
+                    }`}>
+                      <Clock size={15} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>Smart Expiry & Renewal Sentinel</span>
+                        {isExpiringSoon && (
+                          <span className="flex h-2 w-2 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-[10px] text-slate-500 dark:text-neutral-400">
+                        {renewalInfo.authority}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusBadgeColor}`}>
+                    {isExpired
+                      ? `⚠️ Expired (${Math.abs(diffDays)}d ago)`
+                      : isExpiringSoon
+                      ? `⏳ ${diffDays} days left`
+                      : `✅ Valid (${diffDays}d left)`}
+                  </span>
+                </div>
+
+                {/* Expiry Banner */}
+                <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#18181B]/80 border border-slate-200/60 dark:border-[#262626] flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Validity Due Date</span>
+                    <span className="font-mono font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                      {expDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Official Portal</span>
+                    <span className="text-[11px] font-bold text-[#10B981] dark:text-[#3ECF8E] truncate block max-w-[140px]">
+                      {renewalInfo.portalName}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Buttons Grid */}
+                <div className="space-y-1.5">
+                  {/* Primary: Direct Online Renewal */}
+                  <a
+                    href={renewalInfo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>{renewalInfo.actionLabel}</span>
+                    <ExternalLink size={13} />
+                  </a>
+
+                  {/* Secondary Actions: 1-Tap WhatsApp Family Alert & Calendar Sync */}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleWhatsAppExpiryAlert(renewalInfo)}
+                      className="py-1.5 px-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-emerald-500/30 text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      title="Send pre-filled expiry reminder to family on WhatsApp"
+                    >
+                      <MessageCircle size={12} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                      <span>WhatsApp Alert</span>
+                    </button>
+
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleAddToGoogleCalendar(renewalInfo)}
+                        className="flex-1 py-1.5 px-1.5 rounded-xl bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 dark:hover:bg-[#303030] text-slate-700 dark:text-neutral-200 border border-slate-200 dark:border-[#333333] text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                        title="Add reminder to Google Calendar"
+                      >
+                        <Calendar size={11} className="text-blue-500" />
+                        <span>Google Cal</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadIcsCalendar(renewalInfo)}
+                        className="py-1.5 px-2 rounded-xl bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 dark:hover:bg-[#303030] text-slate-700 dark:text-neutral-200 border border-slate-200 dark:border-[#333333] text-[10px] font-bold transition-all flex items-center justify-center gap-0.5 cursor-pointer"
+                        title="Download .ics invite for Apple/Outlook Calendar"
+                      >
+                        <Download size={11} className="text-slate-500 dark:text-neutral-400" />
+                        <span>.ics</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Intelligence Bento A: Land Deed & Registry Intelligence Card (Bainama / Khasra-Khatauni / Chauhaddi) */}
+          {(() => {
+            const ocr = doc.ocrExtractedData || {};
+            const prop = ocr.propertyDetails || {};
+            const hasProp = Boolean(
+              prop.khasraNumber ||
+              prop.ownerName ||
+              prop.sellerName ||
+              prop.plotOrHouseNumber ||
+              prop.area ||
+              prop.locality ||
+              prop.deedNumber ||
+              (prop.chauhaddi && (prop.chauhaddi.north || prop.chauhaddi.south || prop.chauhaddi.east || prop.chauhaddi.west)) ||
+              (doc.category === 'Bank & Property' && ocr.summary)
+            );
+            if (!hasProp) return null;
+
+            const c = prop.chauhaddi || {};
+            const hasChauhaddi = Boolean(c.north || c.south || c.east || c.west);
+            const bullets = Array.isArray(ocr.executiveSummary) && ocr.executiveSummary.length > 0
+              ? ocr.executiveSummary
+              : null;
+
+            return (
+              <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-emerald-500/10 rounded-2xl p-3 sm:p-3.5 border border-amber-300/60 dark:border-amber-500/30 shadow-xs space-y-2.5 transition-colors shrink-0">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold text-xs border border-amber-300/50 dark:border-amber-500/30">
+                      <Compass size={15} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xs text-amber-950 dark:text-amber-200 flex items-center gap-1.5">
+                        <span>Land Deed & Registry Intelligence</span>
+                      </h3>
+                      <p className="text-[10px] text-amber-800/80 dark:text-amber-400/80">
+                        जमीन रजिस्ट्री, खसरा-खतौनी व चौहद्दी
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 text-[10px] font-bold border border-amber-300/60 dark:border-amber-500/30">
+                    {prop.propertyType || 'Sale Deed (बैनामा)'}
+                  </span>
+                </div>
+
+                {/* 3-Bullet Executive Summary (if present) */}
+                {bullets && (
+                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#18181B]/80 border border-amber-200/70 dark:border-amber-500/20 space-y-1">
+                    <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                      <Sparkles size={11} className="text-amber-500" />
+                      <span>Executive Summary (सार)</span>
+                    </div>
+                    <ul className="space-y-1 text-xs text-slate-800 dark:text-neutral-200">
+                      {bullets.map((b, i) => (
+                        <li key={i} className="flex items-start gap-1.5 leading-snug">
+                          <span className="text-[#10B981] dark:text-[#3ECF8E] font-bold text-xs shrink-0 mt-0.5">✓</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Key Deed Metrics Grid */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {/* Khasra / Khatauni Number */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626] flex items-center justify-between">
+                    <div className="min-w-0 pr-1">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Khasra / खसरा नं.</span>
+                      <span className="font-mono font-bold text-emerald-700 dark:text-[#3ECF8E] truncate block text-[13px]">
+                        {prop.khasraNumber || doc.documentNumber || 'N/A'}
+                      </span>
+                    </div>
+                    {(prop.khasraNumber || doc.documentNumber) && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopySnippet(prop.khasraNumber || doc.documentNumber, 'Khasra Number')}
+                        className="p-1 rounded bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 text-slate-700 dark:text-neutral-300 cursor-pointer shrink-0"
+                        title="Copy Khasra Number"
+                      >
+                        {copiedSnippet === (prop.khasraNumber || doc.documentNumber) ? <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={12} />}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Rakba / Area */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626]">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Rakba / Area (रकबा)</span>
+                    <span className="font-semibold text-slate-900 dark:text-white truncate block text-[13px]">
+                      {prop.area || 'As per deed'}
+                    </span>
+                  </div>
+
+                  {/* Owner (Krayakarta) */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626]">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Owner / क्रेता (खरीदार)</span>
+                    <span className="font-semibold text-slate-900 dark:text-white truncate block">
+                      {prop.ownerName || doc.assignedMember?.name || 'Self / Family'}
+                    </span>
+                  </div>
+
+                  {/* Seller (Vikreta) */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626]">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Seller / विक्रेता</span>
+                    <span className="font-semibold text-slate-900 dark:text-white truncate block">
+                      {prop.sellerName || 'Recorded in deed'}
+                    </span>
+                  </div>
+
+                  {/* Plot / Flat No */}
+                  {prop.plotOrHouseNumber && (
+                    <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626]">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Plot / Flat No.</span>
+                      <span className="font-semibold text-slate-900 dark:text-white truncate block">
+                        {prop.plotOrHouseNumber}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Locality / Mauza */}
+                  {prop.locality && (
+                    <div className={`p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626] ${!prop.plotOrHouseNumber ? 'col-span-2' : ''}`}>
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Mauza / Locality (मौजा)</span>
+                      <span className="font-semibold text-slate-900 dark:text-white truncate block">
+                        {prop.locality}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4-Direction Chauhaddi (चौहद्दी) Compass Map Widget */}
+                {hasChauhaddi && (
+                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#141414] border border-amber-200/70 dark:border-[#262626] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1">
+                        <MapPin size={11} className="text-amber-600 dark:text-amber-400" />
+                        <span>Chauhaddi Boundaries (चौहद्दी नक्शा)</span>
+                      </span>
+                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 font-mono">4-Way Surroundings</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                      {/* North (Uttar) */}
+                      <div className="p-1.5 rounded-lg bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20">
+                        <div className="flex items-center gap-1 font-bold text-[10px] text-amber-900 dark:text-amber-300">
+                          <ArrowUp size={11} className="text-emerald-600 dark:text-[#3ECF8E]" />
+                          <span>Uttar (उत्तर / North)</span>
+                        </div>
+                        <div className="text-slate-800 dark:text-neutral-200 font-medium pl-4 truncate" title={c.north}>
+                          {c.north || 'Not specified'}
+                        </div>
+                      </div>
+
+                      {/* East (Purav) */}
+                      <div className="p-1.5 rounded-lg bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20">
+                        <div className="flex items-center gap-1 font-bold text-[10px] text-amber-900 dark:text-amber-300">
+                          <ArrowRight size={11} className="text-emerald-600 dark:text-[#3ECF8E]" />
+                          <span>Purav (पूरब / East)</span>
+                        </div>
+                        <div className="text-slate-800 dark:text-neutral-200 font-medium pl-4 truncate" title={c.east}>
+                          {c.east || 'Not specified'}
+                        </div>
+                      </div>
+
+                      {/* West (Paschim) */}
+                      <div className="p-1.5 rounded-lg bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20">
+                        <div className="flex items-center gap-1 font-bold text-[10px] text-amber-900 dark:text-amber-300">
+                          <ArrowLeft size={11} className="text-emerald-600 dark:text-[#3ECF8E]" />
+                          <span>Paschim (पश्चिम / West)</span>
+                        </div>
+                        <div className="text-slate-800 dark:text-neutral-200 font-medium pl-4 truncate" title={c.west}>
+                          {c.west || 'Not specified'}
+                        </div>
+                      </div>
+
+                      {/* South (Dakshin) */}
+                      <div className="p-1.5 rounded-lg bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20">
+                        <div className="flex items-center gap-1 font-bold text-[10px] text-amber-900 dark:text-amber-300">
+                          <ArrowDown size={11} className="text-emerald-600 dark:text-[#3ECF8E]" />
+                          <span>Dakshin (दक्षिण / South)</span>
+                        </div>
+                        <div className="text-slate-800 dark:text-neutral-200 font-medium pl-4 truncate" title={c.south}>
+                          {c.south || 'Not specified'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Intelligence Bento B: Utility Bill & Smart Payment Card (Bijli / Pani / Gas) */}
+          {(() => {
+            const ocr = doc.ocrExtractedData || {};
+            const util = ocr.utilityBillDetails || {};
+            const hasUtil = Boolean(
+              util.consumerNumber ||
+              util.serviceProvider ||
+              util.billAmount ||
+              util.billDueDate ||
+              util.meterNumber ||
+              (/\b(bijli|electricity|water|pani|bill|utility|power|uppcl|bses|tata power)\b/i.test(`${doc.title} ${doc.category}`))
+            );
+            if (!hasUtil) return null;
+
+            const dueStatus = getDueStatus(util.billDueDate || doc.expiryDate);
+            const caNum = util.consumerNumber || doc.documentNumber || '';
+
+            return (
+              <div className="bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 rounded-2xl p-3 sm:p-3.5 border border-emerald-300/60 dark:border-[#3ECF8E]/30 shadow-xs space-y-2.5 transition-colors shrink-0">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] flex items-center justify-center font-bold text-xs border border-emerald-300/50 dark:border-[#3ECF8E]/30">
+                      <Zap size={15} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>Utility Bill & Payment Intelligence</span>
+                      </h3>
+                      <p className="text-[10px] text-slate-500 dark:text-neutral-400">
+                        {util.billType || 'Electricity'} Bill • {util.serviceProvider || 'Provider'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-900 dark:text-[#3ECF8E] text-[10px] font-bold border border-emerald-300/60 dark:border-[#3ECF8E]/30">
+                    {util.serviceProvider || 'BBPS / Bill'}
+                  </span>
+                </div>
+
+                {/* Hero Consumer / CA Number Banner */}
+                <div className="p-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-emerald-200/60 dark:border-[#262626] flex items-center justify-between shadow-2xs">
+                  <div className="min-w-0 pr-2">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">
+                      Consumer / CA Number (उपभोक्ता संख्या)
+                    </span>
+                    <span className="font-mono font-extrabold text-sm sm:text-base text-slate-900 dark:text-white tracking-wider truncate block">
+                      {caNum || 'N/A'}
+                    </span>
+                  </div>
+                  {caNum && (
+                    <button
+                      type="button"
+                      onClick={() => handleCopySnippet(caNum, 'Consumer / CA Number')}
+                      className="px-2.5 py-1.5 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 text-white dark:text-[#121212] font-bold text-xs flex items-center gap-1 shadow-xs transition-colors cursor-pointer shrink-0"
+                      title="1-Tap Copy CA Number"
+                    >
+                      {copiedSnippet === caNum ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedSnippet === caNum ? 'Copied' : 'Copy CA'}</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Bill Amount & Due Date Strip */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {/* Bill Amount */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/60 dark:border-[#262626]">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Bill Amount (देय राशि)</span>
+                    <span className="font-extrabold text-emerald-700 dark:text-[#3ECF8E] text-sm truncate block">
+                      {util.billAmount || '₹--'}
+                    </span>
+                  </div>
+
+                  {/* Due Date & Pill */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/60 dark:border-[#262626]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Due Date (अंतिम तिथि)</span>
+                      {dueStatus && (
+                        <span className={`px-1.5 py-0.2 rounded-full text-[8px] font-bold border ${dueStatus.color}`}>
+                          {dueStatus.text}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-semibold text-slate-900 dark:text-white truncate block text-xs">
+                      {util.billDueDate || (doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString() : 'N/A')}
+                    </span>
+                  </div>
+
+                  {/* Meter No. */}
+                  {util.meterNumber && (
+                    <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/60 dark:border-[#262626]">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Meter No. (मीटर सं.)</span>
+                      <span className="font-mono text-xs font-semibold text-slate-800 dark:text-neutral-200 truncate block">
+                        {util.meterNumber}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Registered Name */}
+                  <div className={`p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/60 dark:border-[#262626] ${!util.meterNumber ? 'col-span-2' : ''}`}>
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Consumer Name (नाम)</span>
+                    <span className="text-xs font-semibold text-slate-800 dark:text-neutral-200 truncate block">
+                      {util.registeredName || doc.assignedMember?.name || 'Self'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Intelligence Bento C: Medical Prescription & Health Card (If Medical Doc) */}
+          {(() => {
+            const ocr = doc.ocrExtractedData || {};
+            const med = ocr.medicalDetails || {};
+            const hasMed = Boolean(
+              med.doctorName ||
+              med.hospitalOrClinic ||
+              med.diagnosis ||
+              med.medicines
+            );
+            if (!hasMed) return null;
+
+            return (
+              <div className="bg-gradient-to-br from-rose-500/10 via-red-500/5 to-pink-500/10 rounded-2xl p-3 sm:p-3.5 border border-rose-300/60 dark:border-rose-500/30 shadow-xs space-y-2 transition-colors shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
+                      <Stethoscope size={15} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xs text-rose-950 dark:text-rose-200">
+                        Medical & Prescription Intelligence
+                      </h3>
+                      <p className="text-[10px] text-rose-800/80 dark:text-rose-400/80">डॉक्टर पर्ची व दवाई विवरण</p>
+                    </div>
+                  </div>
+                  {med.hospitalOrClinic && (
+                    <span className="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-900 dark:text-rose-300 text-[10px] font-bold truncate max-w-[120px]">
+                      {med.hospitalOrClinic}
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#18181B] border border-rose-200/60 dark:border-rose-500/20 space-y-1.5 text-xs">
+                  {med.doctorName && (
+                    <div>
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Doctor</span>
+                      <span className="font-semibold text-slate-900 dark:text-white block">{med.doctorName}</span>
+                    </div>
+                  )}
+                  {med.diagnosis && (
+                    <div>
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Diagnosis / Illness</span>
+                      <span className="font-semibold text-slate-900 dark:text-white block">{med.diagnosis}</span>
+                    </div>
+                  )}
+                  {med.medicines && (
+                    <div className="pt-1 border-t border-slate-100 dark:border-[#262626]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] uppercase font-bold text-emerald-700 dark:text-[#3ECF8E] block">
+                          Prescribed Medicines (दवाई)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopySnippet(med.medicines, 'Prescribed Medicines')}
+                          className="text-[10px] text-emerald-700 dark:text-[#3ECF8E] font-bold hover:underline flex items-center gap-0.5 cursor-pointer"
+                        >
+                          {copiedSnippet === med.medicines ? <Check size={10} /> : <Copy size={10} />}
+                          <span>{copiedSnippet === med.medicines ? 'Copied' : 'Copy'}</span>
+                        </button>
+                      </div>
+                      <p className="font-medium text-slate-800 dark:text-neutral-200 mt-0.5 leading-snug">
+                        {med.medicines}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Intelligence Bento D: Academic & Degree Intelligence Card (If Education Doc) */}
+          {(() => {
+            const ocr = doc.ocrExtractedData || {};
+            const acad = ocr.academicDetails || {};
+            const hasAcad = Boolean(
+              acad.institution ||
+              acad.courseOrDegree ||
+              acad.marksOrGrade ||
+              acad.certificateTitle
+            );
+            if (!hasAcad) return null;
+
+            return (
+              <div className="bg-gradient-to-br from-indigo-500/10 via-blue-500/5 to-sky-500/10 rounded-2xl p-3 sm:p-3.5 border border-indigo-300/60 dark:border-indigo-500/30 shadow-xs space-y-2 transition-colors shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
+                      <GraduationCap size={15} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xs text-indigo-950 dark:text-indigo-200">
+                        Academic & Degree Intelligence
+                      </h3>
+                      <p className="text-[10px] text-indigo-800/80 dark:text-indigo-400/80">शिक्षा डिग्री व प्रमाण-पत्र</p>
+                    </div>
+                  </div>
+                  {acad.courseOrDegree && (
+                    <span className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-900 dark:text-indigo-300 text-[10px] font-bold truncate max-w-[120px]">
+                      {acad.courseOrDegree}
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#18181B] border border-indigo-200/60 dark:border-indigo-500/20 grid grid-cols-2 gap-2 text-xs">
+                  {acad.institution && (
+                    <div className="col-span-2">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Institution / University</span>
+                      <span className="font-semibold text-slate-900 dark:text-white block">{acad.institution}</span>
+                    </div>
+                  )}
+                  {acad.courseOrDegree && (
+                    <div>
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Degree / Course</span>
+                      <span className="font-semibold text-slate-900 dark:text-white block">{acad.courseOrDegree}</span>
+                    </div>
+                  )}
+                  {acad.semesterOrYear && (
+                    <div>
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Semester / Year</span>
+                      <span className="font-semibold text-slate-900 dark:text-white block">{acad.semesterOrYear}</span>
+                    </div>
+                  )}
+                  {acad.marksOrGrade && (
+                    <div>
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Marks / CGPA</span>
+                      <span className="font-bold text-emerald-700 dark:text-[#3ECF8E] block">{acad.marksOrGrade}</span>
+                    </div>
+                  )}
+                  {acad.certificateTitle && (
+                    <div className="col-span-2">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Award / Certificate</span>
+                      <span className="font-semibold text-slate-900 dark:text-white block">{acad.certificateTitle}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Bento 1: Physical Paper Locator Card (Almirah / Locker Tag) */}
           <div className="bg-amber-50/70 dark:bg-amber-500/10 rounded-2xl p-3 sm:p-3.5 border border-amber-200/80 dark:border-amber-500/25 shadow-xs space-y-1.5 transition-colors shrink-0">
             <div className="flex items-center justify-between">

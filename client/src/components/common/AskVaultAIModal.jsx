@@ -45,6 +45,8 @@ export default function AskVaultAIModal({ isOpen, onClose }) {
   // Quick suggestion prompts
   const suggestionChips = [
     { label: "💳 Papa ka PAN number", text: "Papa ka PAN card number kya hai?" },
+    { label: "🏡 Khasra & Chauhaddi", text: "Khet ka Khasra number aur plot ki chauhaddi kya hai?" },
+    { label: "⚡ Bijli Bill & CA No", text: "Bijli ke bill ka CA number aur due date kya hai?" },
     { label: "🏥 Hospital & Dawai", text: "Doctor ne kaunsi dawai likhi thi aur hospital ke documents dikhao" },
     { label: "🎓 College & Marksheets", text: "BCA / University ke saare semester ke marksheets aur certificates dikhao" },
     { label: "🚗 Car Insurance Expiry", text: "Car insurance kab expire ho rahi hai aur policy number kya hai?" },

@@ -16,7 +16,136 @@ import { sendPushToFamily } from '../services/pushNotification.service.js';
 import { scanDocumentWithAI, generateSmartDocumentTitle } from '../services/aiDocumentScanner.js';
 import { askVaultAI } from '../services/vaultChatAssistant.js';
 
-// Helper to reliably dispatch family in-app notification & phone push
+// Multi-Tier Heuristic Duplicate Detection Engine (Feature E)
+export function detectHeuristicDuplicate({
+  fileSha256,
+  scanDocNumber,
+  scanDocType,
+  suggestedTitle,
+  fileName,
+  matchedMemberId,
+  existingDocs = [],
+  familyMembers = [],
+}) {
+  const resolveMemberName = (doc) => {
+    const memberObj = doc.assignedMemberId;
+    if (memberObj && typeof memberObj === 'object' && memberObj.name) {
+      return memberObj.name + (memberObj.relationship ? ` (${memberObj.relationship})` : '');
+    }
+    if (doc.assignedMemberId) {
+      const found = familyMembers.find(m => (m._id || m.id)?.toString() === doc.assignedMemberId?.toString());
+      if (found?.name) return found.name + (found.relationship ? ` (${found.relationship})` : '');
+    }
+    return 'Family Member';
+  };
+
+  const formatDate = (dateVal) => {
+    if (!dateVal) return 'Earlier';
+    try {
+      return new Date(dateVal).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch (e) {
+      return 'Earlier';
+    }
+  };
+
+  // Tier 1: Exact Binary Content Match (SHA-256) — 100% Zero-AI
+  if (fileSha256) {
+    const exactMatch = existingDocs.find(d => d.sha256Hash && d.sha256Hash === fileSha256);
+    if (exactMatch) {
+      const memberName = resolveMemberName(exactMatch);
+      const uploadDate = formatDate(exactMatch.createdAt);
+      return {
+        isDuplicate: true,
+        existingDocId: (exactMatch._id || exactMatch.id).toString(),
+        existingDocTitle: exactMatch.title,
+        assignedMemberName: memberName,
+        uploadDate,
+        matchType: 'EXACT_FILE',
+        confidence: 1.0,
+        documentNumber: exactMatch.documentNumber,
+        message: `Yeh exact photo/file pehle se ${memberName} ke folder me saved hai (Title: "${exactMatch.title}", Uploaded: ${uploadDate}).`,
+      };
+    }
+  }
+
+  // Tier 2: Semantic Document ID Number Match (Offline Regex & OCR)
+  const cleanScanDocNum = (scanDocNumber || '').replace(/[\s\-_/]/g, '').toUpperCase();
+  if (cleanScanDocNum.length >= 5) {
+    const docNumMatch = existingDocs.find(d => {
+      const cleanExisting = (d.documentNumber || '').replace(/[\s\-_/]/g, '').toUpperCase();
+      return cleanExisting.length >= 5 && cleanExisting === cleanScanDocNum;
+    });
+    if (docNumMatch) {
+      const memberName = resolveMemberName(docNumMatch);
+      const uploadDate = formatDate(docNumMatch.createdAt);
+      const docTypeLabel = scanDocType || 'Document';
+      return {
+        isDuplicate: true,
+        existingDocId: (docNumMatch._id || docNumMatch.id).toString(),
+        existingDocTitle: docNumMatch.title,
+        assignedMemberName: memberName,
+        uploadDate,
+        matchType: 'ID_NUMBER',
+        confidence: 0.95,
+        documentNumber: scanDocNumber || docNumMatch.documentNumber,
+        message: `Yeh ${docTypeLabel} (${scanDocNumber || docNumMatch.documentNumber}) pehle se ${memberName} ke folder me saved hai (Title: "${docNumMatch.title}", Uploaded: ${uploadDate}).`,
+      };
+    }
+  }
+
+  // Tier 3: Heuristic Title & Filename Token Similarity (Fuzzy Keyword Matching)
+  const normalizeTokens = (str) => {
+    if (!str) return [];
+    return str
+      .toLowerCase()
+      .replace(/\.[^/.]+$/, '')
+      .replace(/['’]s\b/g, '') // strip possessives like papa's -> papa
+      .replace(/[^a-z0-9]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length >= 3 && !['copy', 'final', 'new', 'scan', 'file', 'photo', 'jpeg', 'image'].includes(w));
+  };
+
+  const candidateTokens = new Set([
+    ...normalizeTokens(suggestedTitle),
+    ...normalizeTokens(fileName),
+  ]);
+
+  if (candidateTokens.size >= 2) {
+    for (const doc of existingDocs) {
+      const existingTokens = normalizeTokens(doc.title);
+      if (existingTokens.length < 2) continue;
+
+      const matchCount = existingTokens.filter(t => candidateTokens.has(t)).length;
+      const minLen = Math.min(candidateTokens.size, existingTokens.length);
+      const overlapRatio = matchCount / minLen;
+
+      const docMemberId = doc.assignedMemberId?._id || doc.assignedMemberId;
+      const sameMember = Boolean(
+        matchedMemberId &&
+        docMemberId &&
+        docMemberId.toString() === matchedMemberId.toString()
+      );
+
+      if (overlapRatio >= 0.75 || (sameMember && overlapRatio >= 0.6)) {
+        const memberName = resolveMemberName(doc);
+        const uploadDate = formatDate(doc.createdAt);
+        return {
+          isDuplicate: true,
+          existingDocId: (doc._id || doc.id).toString(),
+          existingDocTitle: doc.title,
+          assignedMemberName: memberName,
+          uploadDate,
+          matchType: 'HEURISTIC_TITLE_MATCH',
+          confidence: Math.round(overlapRatio * 100) / 100,
+          documentNumber: doc.documentNumber,
+          message: `Aapke vault me ${memberName} ke folder me milta-julta document saved hai: "${doc.title}" (${uploadDate}).`,
+        };
+      }
+    }
+  }
+
+  return null;
+}
 async function createVaultNotification({ familyId, userId = null, title, message, type = 'INFO', link = '/vault' }) {
   if (!familyId) return null;
   const notifObj = {
@@ -58,8 +187,8 @@ async function createVaultNotification({ familyId, userId = null, title, message
   });
 }
 
-// Auto-sync extracted medical credentials (blood group, insurance policy, TPA, allergies) to family member's profile
-async function autoSyncMedicalCredentialsToMember({ targetMemberId, category, title, documentNumber, emergencyDetails, notes }) {
+// Auto-sync extracted medical & identity credentials (blood group, DOB, insurance policy, TPA, allergies) to family member's profile
+async function autoSyncMedicalCredentialsToMember({ targetMemberId, category, title, documentNumber, emergencyDetails, notes, dob, syncMemberProfile }) {
   if (!targetMemberId) return;
 
   const isMedical = category === 'Medical & Health' || category === 'Health' || category === 'Medical' ||
@@ -72,17 +201,22 @@ async function autoSyncMedicalCredentialsToMember({ targetMemberId, category, ti
     } catch (e) {}
   }
 
-  // Also check if notes contains blood group or helpline
+  // Also check if notes contains blood group, helpline, or DOB
   let bloodGroup = parsedEmergency?.bloodGroup;
   let policyNumber = parsedEmergency?.policyNumber || (isMedical ? documentNumber : null);
   let tpaProvider = parsedEmergency?.tpaProvider;
   let tollFreeHelpLine = parsedEmergency?.tollFreeHelpLine;
   let allergies = parsedEmergency?.allergies;
+  let detectedDob = dob || parsedEmergency?.dob;
 
   if (notes && typeof notes === 'string') {
     if (!bloodGroup) {
       const bgMatch = notes.match(/Blood Group:\s*([A-Za-z0-9+-]+)/i);
       if (bgMatch) bloodGroup = bgMatch[1].trim();
+    }
+    if (!detectedDob) {
+      const dobMatch = notes.match(/(?:DOB|Date of Birth|Birth Date):\s*([^\n]+)/i);
+      if (dobMatch) detectedDob = dobMatch[1].trim();
     }
     if (!tollFreeHelpLine) {
       const hlMatch = notes.match(/(?:Cashless Helpline|Helpline):\s*([0-9-+\s]+)/i);
@@ -94,19 +228,41 @@ async function autoSyncMedicalCredentialsToMember({ targetMemberId, category, ti
     }
   }
 
+  let existingUser = null;
+  try {
+    if (isConnected && mongoose.Types.ObjectId.isValid(targetMemberId)) {
+      existingUser = await User.findById(targetMemberId);
+    } else {
+      existingUser = (memoryStore.users || []).find(u => u._id.toString() === targetMemberId.toString());
+    }
+  } catch (e) {}
+
   const updateFields = {};
   if (bloodGroup && bloodGroup !== 'Not specified' && bloodGroup !== 'null') {
-    updateFields.bloodGroup = bloodGroup.toUpperCase();
+    if (syncMemberProfile || !existingUser?.bloodGroup || existingUser.bloodGroup === 'Not specified') {
+      updateFields.bloodGroup = bloodGroup.toUpperCase();
+    }
+  }
+  if (detectedDob && detectedDob !== 'null' && detectedDob !== 'undefined') {
+    if (syncMemberProfile || !existingUser?.dateOfBirth) {
+      updateFields.dateOfBirth = detectedDob.trim();
+    }
   }
   if (policyNumber && policyNumber !== 'null' && policyNumber !== 'undefined') {
-    updateFields.healthInsurancePolicy = policyNumber;
+    if (syncMemberProfile || !existingUser?.healthInsurancePolicy) {
+      updateFields.healthInsurancePolicy = policyNumber;
+    }
   }
   const combinedTpa = [tpaProvider, tollFreeHelpLine].filter(Boolean).join(' • ');
   if (combinedTpa) {
-    updateFields.tpaNumber = combinedTpa;
+    if (syncMemberProfile || !existingUser?.tpaNumber) {
+      updateFields.tpaNumber = combinedTpa;
+    }
   }
   if (allergies && allergies !== 'None reported' && allergies !== 'null') {
-    updateFields.allergies = allergies;
+    if (syncMemberProfile || !existingUser?.allergies) {
+      updateFields.allergies = allergies;
+    }
   }
 
   if (Object.keys(updateFields).length === 0) return;
@@ -114,16 +270,16 @@ async function autoSyncMedicalCredentialsToMember({ targetMemberId, category, ti
   try {
     if (isConnected && mongoose.Types.ObjectId.isValid(targetMemberId)) {
       await User.findByIdAndUpdate(targetMemberId, { $set: updateFields });
-      console.log(`[Auto-Sync Medical] Updated User ${targetMemberId}:`, updateFields);
+      console.log(`[Auto-Sync Profile] Updated User ${targetMemberId}:`, updateFields);
     } else {
       const mem = (memoryStore.users || []).find(u => u._id.toString() === targetMemberId.toString());
       if (mem) {
         Object.assign(mem, updateFields);
-        console.log(`[Auto-Sync Medical Memory] Updated User ${targetMemberId}:`, updateFields);
+        console.log(`[Auto-Sync Profile Memory] Updated User ${targetMemberId}:`, updateFields);
       }
     }
   } catch (err) {
-    console.warn('[Auto-Sync Medical Warning] Failed to update user medical credentials:', err.message);
+    console.warn('[Auto-Sync Profile Warning] Failed to update user credentials:', err.message);
   }
 }
 
@@ -167,7 +323,7 @@ const simulateOCR = (fileName, title, category) => {
   } else if (lower.includes('pan')) {
     extracted.type = 'PAN';
     extracted.documentNumber = 'ABCPS' + Math.floor(1000 + Math.random() * 9000) + 'D';
-  } else if (lower.includes('licence') || lower.includes('license')) {
+  } else if (!/(medical|doctor|council|practitioner|hospital|clinic|prescription|parchi|parcha)/i.test(lower) && (lower.includes('driving') || /\bdl\b/i.test(lower) || ((lower.includes('licence') || lower.includes('license')) && !lower.includes('medical')))) {
     extracted.type = 'DRIVING_LICENCE';
     extracted.documentNumber = 'MH-02-' + Math.floor(1000000 + Math.random() * 9000000);
     extracted.expiryDate = new Date(Date.now() + 5 * 365 * 86400000).toISOString().split('T')[0];
@@ -446,8 +602,10 @@ router.post('/ai-scan', (req, res, next) => {
         return res.status(400).json({ error: 'Please upload a document file to scan.' });
       }
 
-      const familyId = req.familyId || req.user?.familyId;
+      const familyId = req.familyId || req.user?.familyId || req.headers['x-family-id'] || req.body?.familyId;
       let familyMembers = [];
+
+      console.log(`[AI Scan] Processing file: "${req.file.originalname}" (${(req.file.size / 1024).toFixed(1)} KB), mime: ${req.file.mimetype}`);
 
       if (familyId) {
         if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
@@ -474,6 +632,44 @@ router.post('/ai-scan', (req, res, next) => {
         customApiKey,
       });
 
+      // Smart Duplicate Detection across the Family Vault (Feature E)
+      let duplicateWarning = null;
+      if (familyId) {
+        try {
+          const fileSha256 = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
+
+          let existingDocs = [];
+          if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
+            existingDocs = await Document.find({
+              familyId,
+              status: { $ne: 'ARCHIVED' },
+            })
+              .select('_id title category documentNumber sha256Hash assignedMemberId createdAt')
+              .populate('assignedMemberId', 'name relationship')
+              .lean();
+          } else if (memoryStore.documents) {
+            existingDocs = memoryStore.documents.filter(
+              d => d.familyId?.toString() === familyId.toString() && d.status !== 'ARCHIVED'
+            );
+          }
+
+          duplicateWarning = detectHeuristicDuplicate({
+            fileSha256,
+            scanDocNumber: scanResult.docNumber,
+            scanDocType: scanResult.docType,
+            suggestedTitle: scanResult.suggestedTitle,
+            fileName: req.file.originalname,
+            matchedMemberId: scanResult.matchedMemberId,
+            existingDocs,
+            familyMembers,
+          });
+        } catch (dupErr) {
+          console.warn('[AI Scan] Duplicate check error:', dupErr.message);
+        }
+      }
+
+      scanResult.duplicateWarning = duplicateWarning;
+
       res.json({
         success: true,
         data: scanResult,
@@ -493,7 +689,7 @@ router.post('/ask-ai', async (req, res) => {
       return res.status(400).json({ error: 'Please provide a question to ask the vault AI.' });
     }
 
-    const familyId = req.familyId || req.user?.familyId;
+    const familyId = req.familyId || req.user?.familyId || req.headers['x-family-id'] || req.body?.familyId;
     if (!familyId) {
       return res.status(401).json({ error: 'Authentication required. Please sign in to ask Vault AI.' });
     }
@@ -522,6 +718,8 @@ router.post('/ask-ai', async (req, res) => {
         .filter(d => d.familyId?.toString() === familyId.toString() && d.status !== 'ARCHIVED')
         .map(d => ({ ...d, _id: d._id.toString() }));
     }
+
+    console.log(`[Vault AI Query] familyId: ${familyId}, query: "${query}", docs fetched: ${documents.length}`);
 
     const customApiKey = req.headers['x-gemini-api-key'] || req.body?.customApiKey || null;
 
@@ -762,7 +960,7 @@ router.post('/upload', (req, res, next) => {
           uploaderId: safeUploaderId,
         });
 
-        // Auto-sync medical credentials (blood group, insurance policy, TPA, allergies) to family member
+        // Auto-sync credentials (blood group, DOB, insurance policy, TPA, allergies) to family member
         autoSyncMedicalCredentialsToMember({
           targetMemberId: safeMemberId || safeUploaderId,
           category,
@@ -770,6 +968,8 @@ router.post('/upload', (req, res, next) => {
           documentNumber: finalDocNumber,
           emergencyDetails: finalOcrData.emergencyDetails,
           notes: req.body.notes,
+          dob: finalOcrData.dob || req.body.dob,
+          syncMemberProfile: req.body.syncMemberProfile === 'true' || req.body.syncMemberProfile === true,
         }).catch(e => console.warn('[Auto-Sync Error]:', e.message));
 
         const normalizedDoc = {
@@ -842,7 +1042,7 @@ router.post('/upload', (req, res, next) => {
 
     memoryStore.documents.unshift(newDoc);
 
-    // Auto-sync medical credentials in memory store
+    // Auto-sync credentials in memory store
     autoSyncMedicalCredentialsToMember({
       targetMemberId: finalMemberId || uploaderId,
       category,
@@ -850,6 +1050,8 @@ router.post('/upload', (req, res, next) => {
       documentNumber: finalDocNumber,
       emergencyDetails: finalOcrData.emergencyDetails,
       notes: req.body.notes,
+      dob: finalOcrData.dob || req.body.dob,
+      syncMemberProfile: req.body.syncMemberProfile === 'true' || req.body.syncMemberProfile === true,
     }).catch(e => console.warn('[Auto-Sync Error]:', e.message));
 
     // Update family storage used

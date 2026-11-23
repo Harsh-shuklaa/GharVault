@@ -26,6 +26,12 @@ const notificationSchema = new mongoose.Schema({
   link: {
     type: String,
   },
+  renewalLink: {
+    type: String,
+  },
+  actionType: {
+    type: String,
+  },
   isRead: {
     type: Boolean,
     default: false,

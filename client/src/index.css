@@ -990,3 +990,59 @@ html.theme-blue.dark[data-dark-style="obsidian"] .dark\:border-\[\#262626\],
 html.theme-blue.dark[data-dark-style="obsidian"] .dark\:border-\[\#27272A\] {
   border-color: #212838 !important;
 }
+
+/* ================= FUTURISTIC AI LASER SCANNER HUD ANIMATIONS ================= */
+@keyframes laserScanBeam {
+  0% {
+    top: 4%;
+    opacity: 0.3;
+  }
+  15% {
+    opacity: 1;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 4%;
+    opacity: 0.3;
+  }
+}
+
+.animate-laser-beam {
+  animation: laserScanBeam 2.2s ease-in-out infinite;
+}
+
+@keyframes hudPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+}
+
+.animate-hud-pulse {
+  animation: hudPulse 2s ease-in-out infinite;
+}
+
+@keyframes tagPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-tag-pop {
+  animation: tagPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

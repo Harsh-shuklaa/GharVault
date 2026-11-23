@@ -25,6 +25,8 @@ export const ToastProvider = ({ children }) => {
     success: (msg, duration) => showToast(msg, 'success', duration),
     error: (msg, duration) => showToast(msg, 'error', duration),
     info: (msg, duration) => showToast(msg, 'info', duration),
+    warning: (msg, duration) => showToast(msg, 'warning', duration),
+    warn: (msg, duration) => showToast(msg, 'warning', duration),
   };
 
   return (
@@ -35,6 +37,7 @@ export const ToastProvider = ({ children }) => {
         {toasts.map((t) => {
           const isSuccess = t.type === 'success';
           const isError = t.type === 'error';
+          const isWarning = t.type === 'warning';
 
           return (
             <div
@@ -48,7 +51,10 @@ export const ToastProvider = ({ children }) => {
                 {isError && (
                   <AlertTriangle size={16} className="text-red-500" />
                 )}
-                {!isSuccess && !isError && (
+                {isWarning && (
+                  <AlertTriangle size={16} className="text-amber-500" />
+                )}
+                {!isSuccess && !isError && !isWarning && (
                   <Info size={16} className="text-blue-500" />
                 )}
               </div>

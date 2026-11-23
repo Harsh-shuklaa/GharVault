@@ -10,6 +10,8 @@ import {
   ShieldAlert,
   CheckCircle2,
   ArrowRight,
+  ExternalLink,
+  MessageCircle,
 } from 'lucide-react';
 
 export default function NotificationsPage() {
@@ -158,15 +160,46 @@ export default function NotificationsPage() {
                 </div>
               </div>
 
-              {n.link && (
-                <Link
-                  to={n.link}
-                  className="self-start sm:self-center px-4 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs transition-colors shrink-0 flex items-center gap-1 shadow-sm shadow-[#3ECF8E]/20"
-                >
-                  <span>View Details</span>
-                  <ArrowRight size={13} />
-                </Link>
-              )}
+              <div className="flex items-center gap-2 self-start sm:self-center shrink-0 flex-wrap sm:flex-nowrap">
+                {n.renewalLink && (
+                  <a
+                    href={n.renewalLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold text-xs transition-colors flex items-center gap-1"
+                  >
+                    <span>Renew Online</span>
+                    <ExternalLink size={12} />
+                  </a>
+                )}
+
+                {n.renewalLink && (
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                      `⚠️ *Dastavej Expiry Alert* ⏰\n\n${n.message}\n🔗 Official Renewal Link: ${n.renewalLink}\n\n_Protected by Dastavej Family Vault_`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-[#3ECF8E] border border-emerald-500/20 font-bold text-xs transition-colors flex items-center gap-1"
+                    title="Send WhatsApp Reminder to family"
+                  >
+                    <MessageCircle size={12} />
+                    <span>WhatsApp</span>
+                  </a>
+                )}
+
+                {n.link && (
+                  <Link
+                    to={n.link}
+                    className="px-4 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs transition-colors flex items-center gap-1 shadow-sm shadow-[#3ECF8E]/20"
+                  >
+                    <span>View Details</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                )}
+              </div>
             </div>
           ))
         )}

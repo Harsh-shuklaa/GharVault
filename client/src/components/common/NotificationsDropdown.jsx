@@ -11,6 +11,7 @@ import {
   Info,
   ArrowRight,
   ExternalLink,
+  MessageCircle,
 } from 'lucide-react';
 
 export default function NotificationsDropdown({
@@ -182,16 +183,47 @@ export default function NotificationsDropdown({
                   {n.message}
                 </p>
 
-                {n.link && (
-                  <Link
-                    to={n.link}
-                    onClick={() => onClose()}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#10B981] dark:text-[#3ECF8E] hover:underline mt-1.5"
-                  >
-                    <span>View details</span>
-                    <ArrowRight size={11} />
-                  </Link>
-                )}
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                  {n.link && (
+                    <Link
+                      to={n.link}
+                      onClick={() => onClose()}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#10B981] dark:text-[#3ECF8E] hover:underline"
+                    >
+                      <span>View details</span>
+                      <ArrowRight size={11} />
+                    </Link>
+                  )}
+
+                  {n.renewalLink && (
+                    <a
+                      href={n.renewalLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline"
+                    >
+                      <span>Renew Online</span>
+                      <ExternalLink size={10} />
+                    </a>
+                  )}
+
+                  {n.renewalLink && (
+                    <a
+                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                        `⚠️ *Dastavej Expiry Alert* ⏰\n\n${n.message}\n🔗 Renewal Link: ${n.renewalLink}\n\n_Protected by Dastavej Family Vault_`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-[#3ECF8E] hover:underline"
+                      title="Share alert on WhatsApp"
+                    >
+                      <MessageCircle size={10} />
+                      <span>WhatsApp Alert</span>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           ))

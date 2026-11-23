@@ -89,20 +89,46 @@ function findBestMemberMatch(extractedName, members = []) {
  * - "Star Health Mediclaim (2026) — Aditya"
  * - "Vehicle RC (1234) — Harsh"
  */
-export function generateSmartDocumentTitle({
-  docType,
-  holderName = '',
-  matchedMemberName = '',
-  docNumber = '',
-  emergencyDetails = null,
-  academicDetails = null,
-  medicalDetails = null,
-  category = '',
-  originalFileName = '',
-}) {
+export function generateSmartDocumentTitle(params = {}) {
+  const extracted = params.extractedData || params.ocrData || {};
+  const docType = params.docType || extracted.docType;
+  const holderName = params.holderName || extracted.holderName || '';
+  const matchedMemberName = params.matchedMemberName || params.assignedMemberName || extracted.matchedMemberName || '';
+  const docNumber = params.docNumber || extracted.docNumber || '';
+  const emergencyDetails = params.emergencyDetails || extracted.emergencyDetails || null;
+  const academicDetails = params.academicDetails || extracted.academicDetails || null;
+  const medicalDetails = params.medicalDetails || extracted.medicalDetails || null;
+  const propertyDetails = params.propertyDetails || extracted.propertyDetails || null;
+  const utilityBillDetails = params.utilityBillDetails || extracted.utilityBillDetails || null;
+  const category = params.category || extracted.category || '';
+  const originalFileName = params.originalFileName || '';
+
   let cleanType = (docType || 'Document').trim();
 
-  // 1. Academic Certificate / Degree / Semester DMC Title logic
+  // 1. Property Sale Deed & Khasra-Khatauni Title logic
+  if (propertyDetails) {
+    if (propertyDetails.khasraNumber) {
+      cleanType = `Sale Deed (Khasra ${propertyDetails.khasraNumber})`;
+    } else if (propertyDetails.plotOrHouseNumber) {
+      cleanType = `Property Deed (${propertyDetails.plotOrHouseNumber})`;
+    } else if (propertyDetails.area) {
+      cleanType = `Sale Deed (${propertyDetails.area})`;
+    } else if (propertyDetails.propertyType) {
+      cleanType = `${propertyDetails.propertyType} Deed`;
+    } else {
+      cleanType = 'Property Sale Deed';
+    }
+  }
+
+  // 2. Utility Bill Title logic (Electricity, Water, Gas)
+  if (utilityBillDetails) {
+    const prov = utilityBillDetails.serviceProvider || '';
+    const bType = utilityBillDetails.billType || 'Electricity Bill';
+    const amt = utilityBillDetails.billAmount ? ` (${utilityBillDetails.billAmount})` : '';
+    cleanType = prov ? `${prov} ${bType}${amt}` : `${bType}${amt}`;
+  }
+
+  // 3. Academic Certificate / Degree / Semester DMC Title logic
   if (academicDetails) {
     if (academicDetails.certificateTitle) {
       cleanType = academicDetails.certificateTitle.trim();
@@ -113,7 +139,7 @@ export function generateSmartDocumentTitle({
     }
   }
 
-  // 2. Doctor Prescription / Clinic Slip / Medical Report Title logic
+  // 4. Doctor Prescription / Clinic Slip / Medical Report Title logic
   if (medicalDetails) {
     if (medicalDetails.doctorName && medicalDetails.hospitalOrClinic) {
       cleanType = `Prescription (${medicalDetails.doctorName} • ${medicalDetails.hospitalOrClinic})`;
@@ -126,12 +152,15 @@ export function generateSmartDocumentTitle({
     }
   }
 
-  // 3. Normalize common standard types
+  // 5. Normalize common standard types
+  const isPrescriptionOrSlip = /prescription|parchi|parcha|rx|dawai|doctor|clinic/i.test(cleanType + ' ' + originalFileName);
+  const isMedicalContext = /medical|hospital|clinic|doctor|prescription|parchi|parcha|ayushman|abha|mediclaim|health|insurance/i.test(cleanType + ' ' + originalFileName);
+
   if (/aadhaar|adhar|uidai/i.test(cleanType) || /aadhaar|adhar/i.test(originalFileName)) {
     cleanType = 'Aadhaar Card';
-  } else if (/pan\b|incometax|nsdl/i.test(cleanType) || /pan\b/i.test(originalFileName)) {
+  } else if (/pan\b|incometax|nsdl/i.test(cleanType) || /\bpan\b/i.test(originalFileName)) {
     cleanType = 'PAN Card';
-  } else if (/driving|license|licence|\bdl\b/i.test(cleanType) || /license|driving/i.test(originalFileName)) {
+  } else if (!isMedicalContext && (/\b(driving licen[cs]e|driver licen[cs]e|driving)\b/i.test(cleanType) || (/\b(driving licen[cs]e|driving)\b/i.test(originalFileName)))) {
     cleanType = 'Driving License';
   } else if (/passport/i.test(cleanType) || /passport/i.test(originalFileName)) {
     cleanType = 'Passport';
@@ -143,8 +172,14 @@ export function generateSmartDocumentTitle({
     } else {
       cleanType = 'Health Insurance';
     }
-  } else if (/\brc\b|registration|vehicle/i.test(cleanType) || category === 'Vehicle' || /\brc\b/i.test(originalFileName)) {
+  } else if (!isMedicalContext && (/\b(vehicle\s*rc|car\s*rc|bike\s*rc)\b/i.test(cleanType) || (category === 'Vehicle' && !isMedicalContext) || (/\b(rc|vehicle)\b/i.test(originalFileName) && !/parchi|parcha|march|research/i.test(originalFileName)))) {
     cleanType = 'Vehicle RC';
+  } else if (!propertyDetails && (/\b(sale deed|bainama|bai-nama|registry)\b/i.test(cleanType) || /\b(registry|bainama|sale_deed)\b/i.test(originalFileName))) {
+    cleanType = 'Property Sale Deed';
+  } else if (!propertyDetails && (/\b(khasra|khatauni|jamabandi|fard)\b/i.test(cleanType) || /\b(khasra|khatauni)\b/i.test(originalFileName))) {
+    cleanType = 'Khasra-Khatauni';
+  } else if (!utilityBillDetails && (/\b(electricity bill|bijli bill|power bill)\b/i.test(cleanType) || /\b(bijli|electricity_bill)\b/i.test(originalFileName))) {
+    cleanType = 'Electricity Bill';
   } else if (/voter|epic/i.test(cleanType) || /voter/i.test(originalFileName)) {
     cleanType = 'Voter ID';
   } else if (/birth/i.test(cleanType) || /birth/i.test(originalFileName)) {
@@ -192,13 +227,15 @@ export function generateSmartDocumentTitle({
 /**
  * Heuristic fallback parser when AI is unavailable or offline
  */
-function fallbackHeuristicScanner(fileName = '', originalText = '', members = []) {
+export function fallbackHeuristicScanner(fileName = '', originalText = '', members = []) {
   const text = (fileName + ' ' + (originalText || '')).toLowerCase();
   let docType = 'Other';
   let category = 'ID Cards';
   let docNumber = '';
   let expiryDate = null;
   let suggestedTitle = fileName.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+
+  const isMedicalCandidate = /\b(prescription|hospital|clinic|doctor|dr\.|medicine|dawai|parchi|parcha|discharge|medical|mediclaim|ayushman|abha|opd|rx|health|lab report|blood test|tablet)\b/i.test(text);
 
   if (text.includes('aadhaar') || text.includes('adhar') || text.includes('uidai')) {
     docType = 'Aadhaar Card';
@@ -213,7 +250,13 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     suggestedTitle = 'PAN Card';
     const m = text.match(/\b([A-Z]{5}[0-9]{4}[A-Z]{1})\b/i);
     if (m) docNumber = m[1].toUpperCase();
-  } else if (text.includes('license') || text.includes('licence') || text.includes('dl') || text.includes('driving')) {
+  } else if (isMedicalCandidate || text.includes('insurance') || text.includes('policy') || text.includes('health') || text.includes('mediclaim') || text.includes('ayushman') || text.includes('abha')) {
+    docType = text.includes('ayushman') || text.includes('abha') ? 'Ayushman / ABHA Health Card' : (text.includes('prescription') || text.includes('parchi') || text.includes('parcha') || text.includes('doctor') || text.includes('dr.') ? 'Doctor Prescription' : (text.includes('insurance') || text.includes('mediclaim') ? 'Health Insurance' : 'Medical Record'));
+    category = 'Medical & Health';
+    suggestedTitle = docType;
+    const m = text.match(/\b([A-Z0-9\/-]{7,24})\b/i);
+    if (m) docNumber = m[1].toUpperCase();
+  } else if (!isMedicalCandidate && (/\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b)\b/i.test(text) && !/\b(medical licen[cs]e|council licen[cs]e|doctor licen[cs]e)\b/i.test(text))) {
     docType = 'Driving License';
     category = 'Vehicle';
     suggestedTitle = 'Driving License';
@@ -225,13 +268,7 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     suggestedTitle = 'Passport';
     const m = text.match(/\b([A-PR-WYa-pr-wy][1-9]\d\s?\d{4}[1-9])\b/i);
     if (m) docNumber = m[1].toUpperCase();
-  } else if (text.includes('insurance') || text.includes('policy') || text.includes('health') || text.includes('mediclaim') || text.includes('medical') || text.includes('hospital') || text.includes('ayushman') || text.includes('abha')) {
-    docType = text.includes('ayushman') || text.includes('abha') ? 'Ayushman / ABHA Health Card' : 'Health Insurance';
-    category = 'Medical & Health';
-    suggestedTitle = docType;
-    const m = text.match(/\b([A-Z0-9\/-]{7,24})\b/i);
-    if (m) docNumber = m[1].toUpperCase();
-  } else if (text.includes('rc') || text.includes('registration') || text.includes('vehicle')) {
+  } else if (!isMedicalCandidate && (/\b(vehicle\s*rc|car\s*rc|bike\s*rc|\brc\b)\b/i.test(text) && !/\b(parchi|parcha|march|research)\b/i.test(text))) {
     docType = 'Vehicle RC';
     category = 'Vehicle';
     suggestedTitle = 'Vehicle RC';
@@ -253,8 +290,17 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
 
   // Extract emergency medical details for Medical & Health or Driving License
   let emergencyDetails = null;
-  const bgMatch = text.match(/\b(A|B|AB|O)\s*([+-]|POS(?:ITIVE)?|NEG(?:ATIVE)?)\b/i);
-  const bloodGroup = bgMatch ? `${bgMatch[1].toUpperCase()}${bgMatch[2].startsWith('N') || bgMatch[2] === '-' ? '-' : '+'}` : null;
+  const bgExplicitMatch = text.match(/(?:blood\s*group|blood|bg)[:\s]*([ABOab0]{1,2}\s*[+-]|(?:A|B|AB|O)\s*(?:POS(?:ITIVE)?|NEG(?:ATIVE)?))/i);
+  const bgMatch = bgExplicitMatch || text.match(/\b(A|B|AB|O)\s*([+-]|POS(?:ITIVE)?|NEG(?:ATIVE)?)(?!\w)/i);
+  let bloodGroup = null;
+  if (bgMatch) {
+    const rawBg = (bgMatch[1] + (bgMatch[2] || '')).toUpperCase().replace(/\s+/g, '');
+    if (rawBg.includes('NEG') || rawBg.includes('-')) {
+      bloodGroup = rawBg.replace(/NEG(?:ATIVE)?|-/g, '') + '-';
+    } else {
+      bloodGroup = rawBg.replace(/POS(?:ITIVE)?|\+/g, '') + '+';
+    }
+  }
   
   const tpaMatch = text.match(/\b(Medi\s*Assist|Star\s*Health|Care\s*Health|HDFC\s*ERGO|Niva\s*Bupa|Vidal\s*Health|Paramount|United\s*India|New\s*India|National\s*Insurance|Bajaj\s*Allianz|ICICI\s*Lombard|Max\s*Bupa|Ayushman\s*Bharat|ABHA)\b/i);
   const tpaProvider = tpaMatch ? tpaMatch[1] : null;
@@ -278,7 +324,8 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
 
   // Academic & Degree Extraction in Heuristic
   let academicDetails = null;
-  const isAcademic = text.includes('degree') || text.includes('marksheet') || text.includes('dmc') || text.includes('semester') || text.includes('sem') || text.includes('bca') || text.includes('mca') || text.includes('btech') || text.includes('b.tech') || text.includes('university') || text.includes('college') || text.includes('innovator') || text.includes('certificate');
+  const isCivilOrVehicleCert = /\b(registration certificate|vehicle rc|vehicle|birth certificate|death certificate|caste certificate|income certificate|medical certificate)\b/i.test(text);
+  const isAcademic = !isCivilOrVehicleCert && category !== 'Vehicle' && (text.includes('degree') || text.includes('marksheet') || text.includes('dmc') || text.includes('semester') || /\bsem\b/i.test(text) || /\b(bca|mca|btech|b\.tech|mtech|mbbs|ba|bcom|bsc|ma|mcom|msc)\b/i.test(text) || text.includes('university') || text.includes('college') || text.includes('innovator') || (text.includes('certificate') && (text.includes('merit') || text.includes('hackathon') || text.includes('course') || text.includes('training') || text.includes('education') || text.includes('student'))));
   
   if (isAcademic) {
     category = 'Education';
@@ -345,6 +392,137 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     };
   }
 
+  // Property Sale Deed, Khasra-Khatauni, Land Registry Extraction in Heuristic
+  let propertyDetails = null;
+  const isPropertyDoc = /\b(registry|bainama|bai-nama|sale deed|khasra|khatauni|jamabandi|fard|plot|land|rakba|chauhaddi|mauza|pargana|tehsil)\b/i.test(text);
+
+  if (isPropertyDoc) {
+    category = 'Bank & Property';
+    docType = text.includes('khasra') || text.includes('khatauni') || text.includes('jamabandi') || text.includes('fard') ? 'Khasra / Khatauni' : 'Property Sale Deed';
+
+    const khasraMatch = text.match(/(?:खसरा\s*(?:संख्या|सं\.?|no\.?|number)?|khasra\s*(?:no\.?|number)?|survey\s*(?:no\.?|number)?|khasra)\s*(?:\([^)]*\))?[:\s]*([0-9\/-]+)/i);
+    const khatauniMatch = text.match(/(?:खतौनी\s*(?:संख्या|सं\.?|no\.?|number)?|khatauni\s*(?:no\.?|number)?|khata\s*(?:no\.?|number)?)\s*(?:\([^)]*\))?[:\s]*([0-9\/-]+)/i);
+    const plotMatch = text.match(/(?:प्लाट|plot\s*(?:no\.?|number)?|flat\s*(?:no\.?|number)?|house\s*(?:no\.?|number)?|makan\s*no\.?)\s*(?:\([^)]*\))?[:\s]*([A-Za-z0-9\/-]+)/i);
+    const rakbaMatch = text.match(/(?:रकबा|rakba|area|size|measuring)\s*(?:\([^)]*\))?[:\s]*([0-9]+(?:\.[0-9]+)?\s*(?:gaj|गज|sq\.?\s*yards?|sq\.?\s*ft|bigha|बीघा|वर्ग\s*गज|acre|hectare|sqm))/i) ||
+      text.match(/\b([0-9]+(?:\.[0-9]+)?\s*(?:gaj|गज|sq\.?\s*yards?|sq\.?\s*ft|bigha|बीघा))\b/i);
+
+    const northMatch = text.match(/(?:उत्तर|north|uttar)[:\s]*([^\n,;]+)/i);
+    const southMatch = text.match(/(?:दक्षिण|south|dakshin)[:\s]*([^\n,;]+)/i);
+    const eastMatch = text.match(/(?:पूरब|पूर्व|east|purav|poorav)[:\s]*([^\n,;]+)/i);
+    const westMatch = text.match(/(?:पश्चिम|west|paschim)[:\s]*([^\n,;]+)/i);
+
+    const ownerMatch = text.match(/(?:क्रेता|खरीदार|krayakarta|buyer|owner|purchaser|in favour of)\s*(?:\([^)]*\))?[:\s]*([^\n,;]+)/i);
+    const sellerMatch = text.match(/(?:विक्रेता|बेचने\s*वाला|vikreta|seller|vendor|executed by)\s*(?:\([^)]*\))?[:\s]*([^\n,;]+)/i);
+    const deedMatch = text.match(/(?:पंजीकरण|रजिस्ट्री|bahi|book|deed|zild|reg(?:istration)?\s*no\.?)\s*(?:संख्या|सं\.?|no\.?)?[:\s]*([A-Za-z0-9\/-]+)/i);
+    const localityMatch = text.match(/(?:मौजा|mauza|गाँव|village|locality|तहसील|tehsil|जिला|district)\s*(?:\([^)]*\))?[:\s]*([^\n,;]+)/i);
+
+    const cleanKhasra = khasraMatch ? khasraMatch[1].trim() : null;
+    const cleanPlot = plotMatch ? plotMatch[1].trim() : null;
+    if (cleanKhasra) docNumber = `Khasra #${cleanKhasra}`;
+    else if (cleanPlot) docNumber = `Plot #${cleanPlot}`;
+
+    propertyDetails = {
+      propertyType: text.includes('khet') || text.includes('krishi') || text.includes('agricultural') ? 'Agricultural Land' : 'Residential Plot',
+      ownerName: ownerMatch ? ownerMatch[1].trim() : (matchedMember?.name || null),
+      sellerName: sellerMatch ? sellerMatch[1].trim() : null,
+      khasraNumber: cleanKhasra,
+      khatauniNumber: khatauniMatch ? khatauniMatch[1].trim() : null,
+      plotOrHouseNumber: cleanPlot,
+      area: rakbaMatch ? rakbaMatch[1].trim() : null,
+      locality: localityMatch ? localityMatch[1].trim() : null,
+      registrationDate: null,
+      deedNumber: deedMatch ? deedMatch[1].trim() : null,
+      stampDutyOrAmount: null,
+      chauhaddi: (northMatch || southMatch || eastMatch || westMatch) ? {
+        north: northMatch ? northMatch[1].trim() : null,
+        south: southMatch ? southMatch[1].trim() : null,
+        east: eastMatch ? eastMatch[1].trim() : null,
+        west: westMatch ? westMatch[1].trim() : null,
+      } : null,
+    };
+  }
+
+  // Utility Bills (Electricity, Water, Gas) Extraction in Heuristic
+  let utilityBillDetails = null;
+  const isUtilityBill = /\b(electricity|bijli|power|uppcl|bses|tata power|jal board|water bill|piped gas|igl|indane|bill)\b/i.test(text) &&
+    /\b(consumer|ca\s*no|k\s*no|due date|units|meter|payable|amount)\b/i.test(text);
+
+  if (isUtilityBill) {
+    category = 'Financial';
+    const isWater = text.includes('water') || text.includes('jal');
+    const isGas = text.includes('gas') || text.includes('igl') || text.includes('indane');
+    docType = isWater ? 'Water Bill' : (isGas ? 'Piped Gas Bill' : 'Electricity Bill');
+
+    const caMatch = text.match(/(?:उपभोक्ता\s*(?:खाता|संख्या)?|खाता\s*संख्या|consumer\s*(?:account|number|no\.?|id)?|ca\s*(?:number|no\.?|id)?|k\s*(?:number|no\.?))\s*(?:\([^)]*\))?[:\s]*([A-Za-z0-9\/-]+)/i);
+    const amtMatch = text.match(/(?:देय\s*राशि|कुल\s*देय|total\s*payable|amount\s*payable|bill\s*amount|amount|deya\s*rashi)[:\s]*(?:₹|rs\.?)?\s*([0-9,]+(?:\.[0-9]{2})?)/i) ||
+      text.match(/(?:₹|rs\.?)\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+    const dueDateMatch = text.match(/(?:अंतिम\s*(?:भुगतान\s*)?तिथि|देय\s*तिथि|due\s*date|antim\s*tithi|pay\s*by)[:\s]*([0-3]?[0-9][\/\-\.][0-1]?[0-9][\/\-\.][12][90]\d{2})/i);
+    const mtrMatch = text.match(/(?:मीटर\s*(?:संख्या|सं\.?|no\.?|number)?|meter\s*(?:no\.?|number)?)[:\s]*([A-Za-z0-9-]+)/i);
+
+    let provider = null;
+    const provMatch = text.match(/\b(uppcl|bses|tata\s*power|delhi\s*jal\s*board|igl|indane|mahadiscom|torrent|adani\s*electricity)\b/i);
+    if (provMatch) provider = provMatch[1].toUpperCase();
+
+    const cleanAmt = amtMatch ? `₹${amtMatch[1].replace(/,/g, '')}` : null;
+    const cleanDueDate = dueDateMatch ? dueDateMatch[1].replace(/[\.\-]/g, '/') : null;
+    let cleanCa = caMatch ? caMatch[1].trim() : null;
+    if (cleanCa && ['no', 'id', 'num', 'number'].includes(cleanCa.toLowerCase())) {
+      const fallbackCa = text.match(/(?:ca|consumer|खाता)[^0-9]*([0-9]{8,16})/i);
+      cleanCa = fallbackCa ? fallbackCa[1].trim() : null;
+    }
+
+    if (cleanDueDate) {
+      try {
+        const parts = cleanDueDate.split('/');
+        if (parts.length === 3) {
+          expiryDate = new Date(`${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`);
+        }
+      } catch (e) {}
+    }
+
+    if (cleanCa) docNumber = cleanCa;
+
+    utilityBillDetails = {
+      serviceProvider: provider || 'Electricity Board',
+      billType: docType,
+      consumerNumber: cleanCa,
+      meterNumber: mtrMatch ? mtrMatch[1].trim() : null,
+      billAmount: cleanAmt,
+      billDueDate: cleanDueDate,
+      billingCycle: null,
+      registeredName: matchedMember?.name || null,
+    };
+  }
+
+  // 3-Bullet Executive Summary
+  let executiveSummary = [];
+  if (propertyDetails) {
+    const pOwner = propertyDetails.ownerName || matchedMember?.name || 'Family Member';
+    const pArea = propertyDetails.area ? ` (${propertyDetails.area})` : '';
+    executiveSummary.push(`Property ${pOwner} ke naam par registered hai${pArea}.`);
+    if (propertyDetails.khasraNumber || propertyDetails.plotOrHouseNumber) {
+      executiveSummary.push(`Khasra / Plot: ${[propertyDetails.khasraNumber && `Khasra No. ${propertyDetails.khasraNumber}`, propertyDetails.plotOrHouseNumber && `Plot ${propertyDetails.plotOrHouseNumber}`].filter(Boolean).join(' • ')}`);
+    }
+    if (propertyDetails.chauhaddi) {
+      const c = propertyDetails.chauhaddi;
+      const bText = [c.north && `Uttar: ${c.north}`, c.east && `Purav: ${c.east}`, c.south && `Dakshin: ${c.south}`, c.west && `Paschim: ${c.west}`].filter(Boolean).join(', ');
+      if (bText) executiveSummary.push(`Chauhaddi: ${bText}`);
+    }
+  } else if (utilityBillDetails) {
+    executiveSummary.push(`${utilityBillDetails.serviceProvider} ${utilityBillDetails.billType}${utilityBillDetails.billAmount ? `: ${utilityBillDetails.billAmount}` : ''}`);
+    if (utilityBillDetails.consumerNumber) {
+      executiveSummary.push(`Consumer CA Number: ${utilityBillDetails.consumerNumber}`);
+    }
+    if (utilityBillDetails.billDueDate) {
+      executiveSummary.push(`Due Date: ${utilityBillDetails.billDueDate}`);
+    }
+  }
+
+  let detectedDob = null;
+  const dobMatch = text.match(/\b(?:dob|d\.o\.b\.?|date of birth|birth date|born|janm)[:\s]*([0-3]?[0-9][\/\-\.][0-1]?[0-9][\/\-\.][12][90]\d{2})\b/i) ||
+    text.match(/\b([0-3]?[0-9][\/\-\.][0-1]?[0-9][\/\-\.](?:19\d{2}|20[0-2]\d))\b/);
+  if (dobMatch) detectedDob = dobMatch[1].replace(/[\.\-]/g, '/');
+
   const smartTitle = generateSmartDocumentTitle({
     docType,
     holderName: matchedMember?.name || '',
@@ -353,6 +531,8 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     emergencyDetails,
     academicDetails,
     medicalDetails,
+    propertyDetails,
+    utilityBillDetails,
     category,
     originalFileName: fileName,
   });
@@ -362,17 +542,25 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     category,
     docNumber,
     holderName: matchedMember?.name || '',
-    dob: null,
+    dob: detectedDob,
     expiryDate,
     suggestedTitle: smartTitle,
     emergencyDetails,
     academicDetails,
     medicalDetails,
-    summary: `${docType} for ${matchedMember?.name || 'family member'}${academicDetails?.institution ? ` from ${academicDetails.institution}` : ''}${medicalDetails?.hospitalOrClinic ? ` at ${medicalDetails.hospitalOrClinic}` : ''}`,
-    searchKeywords: [docType, category, matchedMember?.name, academicDetails?.institution, medicalDetails?.hospitalOrClinic, medicalDetails?.doctorName].filter(Boolean),
+    propertyDetails,
+    utilityBillDetails,
+    executiveSummary,
+    summary: `${docType} for ${matchedMember?.name || 'family member'}${propertyDetails?.khasraNumber ? ` (Khasra ${propertyDetails.khasraNumber})` : ''}${utilityBillDetails?.billAmount ? ` of ${utilityBillDetails.billAmount}` : ''}${academicDetails?.institution ? ` from ${academicDetails.institution}` : ''}${medicalDetails?.hospitalOrClinic ? ` at ${medicalDetails.hospitalOrClinic}` : ''}`,
+    searchKeywords: [docType, category, matchedMember?.name, propertyDetails?.khasraNumber, propertyDetails?.area, utilityBillDetails?.consumerNumber, academicDetails?.institution, medicalDetails?.hospitalOrClinic, medicalDetails?.doctorName].filter(Boolean),
     matchedMemberId: matchedMember?._id || null,
     matchedMemberName: matchedMember?.name || '',
-    confidence: docNumber || academicDetails || medicalDetails ? 0.75 : 0.5,
+    confidence: docNumber || academicDetails || medicalDetails || propertyDetails || utilityBillDetails ? 0.75 : 0.5,
+    qualityAssessment: {
+      isBlurry: false,
+      clarityScore: 'GOOD',
+      issueFeedback: null,
+    },
     aiEngine: 'heuristic_fallback',
   };
 }
@@ -410,16 +598,16 @@ Important matching rule:
       : '';
 
     const prompt = `You are an expert Indian Document Intelligence System for a secure family vault app called "Dastavej".
-Analyze the attached Indian official document (could be an Aadhaar Card, PAN Card, Driving License, Passport, Vehicle RC, Health Insurance Policy/TPA card, Doctor Prescription, Clinic Slip, Medical/Lab Report, Education Degree, Semester Marksheet/DMC, Competition/Innovators Certificate, Voter ID, Birth Certificate, or other family record).
+Analyze the attached Indian official document (could be an Aadhaar Card, PAN Card, Driving License, Passport, Vehicle RC, Health Insurance Policy/TPA card, Doctor Prescription, Clinic Slip, Medical/Lab Report, Property Sale Deed / Registry (Bainama), Khasra-Khatauni (Jamabandi/Fard), Electricity / Water / Gas Utility Bill, Education Degree, Semester Marksheet/DMC, Competition/Innovators Certificate, Voter ID, Birth Certificate, or other family record).
 ${memberListText}
 
 Extract the following information with maximum accuracy:
-1. "docType": One of ['Aadhaar Card', 'PAN Card', 'Driving License', 'Passport', 'Vehicle RC', 'Vehicle Insurance', 'Health Insurance', 'Doctor Prescription', 'Medical Lab Report', 'Hospital Discharge Summary', 'Education Degree', 'Marksheet / DMC', 'Competition Certificate', 'Bank Passbook / Statement', 'Voter ID', 'Birth Certificate', 'Property Deed', 'Tax Invoice', 'Other']
-2. "docNumber": Clean primary ID, roll number, policy number, or certificate registration number.
-3. "holderName": Full legal name of the candidate/patient/holder (do NOT confuse with father's name or Doctor/Authority name).
+1. "docType": One of ['Aadhaar Card', 'PAN Card', 'Driving License', 'Passport', 'Vehicle RC', 'Vehicle Insurance', 'Health Insurance', 'Doctor Prescription', 'Medical Lab Report', 'Hospital Discharge Summary', 'Property Sale Deed / Registry', 'Khasra / Khatauni', 'Electricity Bill', 'Water Bill', 'Piped Gas Bill', 'Education Degree', 'Marksheet / DMC', 'Competition Certificate', 'Bank Passbook / Statement', 'Voter ID', 'Birth Certificate', 'Tax Invoice', 'Other']
+2. "docNumber": Clean primary ID, roll number, policy number, Khasra number, Consumer CA number, or certificate registration number.
+3. "holderName": Full legal name of the candidate/patient/holder/owner (do NOT confuse with father's name, seller, or Doctor/Authority name).
 4. "fatherOrSpouseName": Father's or spouse's name if clearly listed, else null.
 5. "dob": Date of birth in YYYY-MM-DD format if found, else null.
-6. "expiryDate": Expiry or valid-till date in YYYY-MM-DD format if applicable, else null.
+6. "expiryDate": Expiry or valid-till date or Bill Due Date in YYYY-MM-DD format if applicable, else null.
 7. "category": One of ['ID Cards', 'Medical & Health', 'Vehicle', 'Financial', 'Property & Legal', 'Education', 'Personal'].
 8. "academicDetails": If this is a Degree, Marksheet/DMC, Diploma, Certificate, or Award:
    - "institution": Name of School, College, University, Board, or Organization (e.g. "Delhi University", "AKTU", "CBSE", "IIT Delhi") or null.
@@ -441,10 +629,47 @@ Extract the following information with maximum accuracy:
    - "allergies": Critical allergies or chronic conditions or null.
    - "emergencyContactPhone": Emergency contact phone number if listed, else null.
    - "sumInsured": Sum insured amount if visible or null.
-11. "summary": A crisp 1 to 2 sentence summary of what this document is, who it is for, and key details (e.g. "Apollo Hospital prescription by Dr. Sharma for Aditya with Paracetamol & Pantocid" or "6th Semester BCA Marks Certificate issued by Delhi University with 8.4 CGPA").
-12. "searchKeywords": Array of 5 to 8 search keywords for fast lookup (e.g. ["apollo", "dr sharma", "paracetamol", "viral fever", "prescription"]).
+11. "propertyDetails": If this is a Property Sale Deed (Bainama / रजिस्ट्री), Land Registry, Khasra-Khatauni, Jamabandi, Fard, or Plot Deed:
+   - "propertyType": "Residential Plot", "Agricultural Land / Khet", "Commercial Shop", or "Flat/Apartment".
+   - "ownerName": Full legal name of buyer / owner / krayakarta.
+   - "sellerName": Full legal name of seller / vendor / vikreta.
+   - "khasraNumber": Khasra or survey number (e.g. "452/12").
+   - "khatauniNumber": Khatauni or jamabandi number if listed.
+   - "plotOrHouseNumber": Plot or flat/house number if listed.
+   - "area": Total area / Rakba in Gaj, Sq. Yards, Sq. Ft, Bigha, or Hectares (e.g. "200 Gaj", "1800 Sq. Ft").
+   - "locality": Village/Mauza, Tehsil, and District.
+   - "registrationDate": Registration date in YYYY-MM-DD if found.
+   - "deedNumber": Deed number, Bahi number, or Zild number.
+   - "stampDutyOrAmount": Sale consideration amount (Mubligh) or Stamp duty paid.
+   - "chauhaddi": Object containing four boundaries:
+     - "north": Uttar boundary / road / adjacent owner.
+     - "south": Dakshin boundary.
+     - "east": Purav boundary.
+     - "west": Paschim boundary.
+12. "utilityBillDetails": If this is an Electricity, Water, Piped Gas, or Utility Bill:
+   - "serviceProvider": Utility provider name (e.g. "UPPCL", "BSES Yamuna", "Tata Power", "Delhi Jal Board", "IGL Gas").
+   - "billType": "Electricity Bill", "Water Bill", "Gas Bill", or "Utility Bill".
+   - "consumerNumber": Consumer Account (CA) number, K-Number, or service connection ID.
+   - "meterNumber": Meter serial number.
+   - "billAmount": Total payable amount (e.g. "₹2,450").
+   - "billDueDate": Due date in YYYY-MM-DD.
+   - "billingCycle": Month or billing period.
+   - "registeredName": Name of the registered consumer.
+13. "executiveSummary": An array of 2 to 3 concise, highly readable bullet points in clear Hinglish:
+   - For Property: Bullet 1: Owner & area. Bullet 2: Khasra No & registration date. Bullet 3: Key boundaries (Chauhaddi: Purav/Uttar).
+   - For Utility Bills: Bullet 1: Provider & bill amount. Bullet 2: Consumer CA number. Bullet 3: Due date alert.
+   - For other documents: 2 concise takeaways.
+14. "summary": A crisp 1 to 2 sentence summary of what this document is, who it is for, and key details.
+15. "searchKeywords": Array of 5 to 8 search keywords for fast lookup (e.g. ["khasra 452", "uppcl", "sale deed", "chauhaddi"]).
+16. "qualityAssessment": Visual quality assessment of the document image:
+   - "isBlurry": boolean (true if image is out of focus, motion-blurred, low resolution, or key text is unreadable).
+   - "clarityScore": "GOOD", "FAIR", or "POOR".
+   - "issueFeedback": Concise, friendly advice in Hinglish if blurry, dark, cut-off, or glary (e.g. "Photo bohot dhundhli hai aur text saaf nahi dikh raha hai. Behtar results ke liye achhi roshni me dobara click karein"), else null.
 
-Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\`\`json code blocks.`;
+COMPACT INFERENCE DIRECTIVE:
+Only include sub-objects (e.g. propertyDetails, utilityBillDetails, medicalDetails, academicDetails, emergencyDetails) that match this detected document. Omit or set irrelevant sub-objects to null to keep the JSON concise and fast.
+
+Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown code blocks.`;
 
     const requestBody = {
       contents: [
@@ -466,42 +691,71 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
       },
     };
 
-    // Multimodal models in priority order (gemini-3.5-flash is currently live & active)
-    const modelsToTry = [
-      'gemini-3.5-flash',
-      'gemini-flash-latest',
-      'gemini-2.5-flash',
+    // Parallel Model Racing: Fire both models simultaneously with 45s safety timeout
+    // Whichever model responds first with valid data wins the race!
+    const modelsToRace = [
       'gemini-3.8-flash',
+      'gemini-3.5-flash',
     ];
+
+    const abortControllers = modelsToRace.map(() => new AbortController());
+    const overallTimeoutId = setTimeout(() => {
+      abortControllers.forEach(c => {
+        try { c.abort('Overall scan timeout (45s)'); } catch (e) {}
+      });
+    }, 45000);
 
     let result = null;
     let successfulModel = null;
 
-    for (const modelName of modelsToTry) {
-      try {
+    try {
+      const racePromises = modelsToRace.map(async (modelName, idx) => {
+        const controller = abortControllers[idx];
+        const t0 = Date.now();
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
+          signal: controller.signal,
         });
 
         if (response.ok) {
-          result = await response.json();
-          successfulModel = modelName;
-          console.log(`[AI Scanner] Successfully scanned using model: ${modelName}`);
-          break;
-        } else {
-          const errText = await response.text();
-          console.warn(`[AI Scanner] Model ${modelName} returned status ${response.status}:`, errText.slice(0, 160));
+          const data = await response.json();
+          const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawText && rawText.trim()) {
+            console.log(`[AI Scanner] ⚡ Race WON by: ${modelName} in ${Date.now() - t0}ms!`);
+            // Abort competitors to free up network
+            abortControllers.forEach((c, cIdx) => {
+              if (cIdx !== idx) {
+                try { c.abort('Competitor model won'); } catch (e) {}
+              }
+            });
+            return { model: modelName, data };
+          }
         }
-      } catch (reqErr) {
-        console.warn(`[AI Scanner] Request to ${modelName} failed:`, reqErr.message);
-      }
+
+        const errStatus = response.status;
+        if (errStatus === 429) {
+          console.warn(`[AI Scanner] Daily/RPM Quota limit reached on ${modelName} (429).`);
+        } else {
+          console.warn(`[AI Scanner] ${modelName} returned status ${errStatus}`);
+        }
+        throw new Error(`${modelName} status ${errStatus}`);
+      });
+
+      const winner = await Promise.any(racePromises);
+      result = winner.data;
+      successfulModel = winner.model;
+    } catch (raceErr) {
+      console.warn('[AI Scanner] Both raced Gemini models failed or timed out:', raceErr.message);
+    } finally {
+      clearTimeout(overallTimeoutId);
     }
 
     if (!result) {
-      console.warn('[AI Scanner] All Gemini models failed or unavailable. Falling back to heuristic.');
+      console.log('[AI Scanner] Cloud models unavailable (quota/load). Scanning seamlessly via local Heuristic Intelligence.');
       return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
     }
 
@@ -527,6 +781,8 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
       emergencyDetails: parsedData.emergencyDetails,
       academicDetails: parsedData.academicDetails,
       medicalDetails: parsedData.medicalDetails,
+      propertyDetails: parsedData.propertyDetails,
+      utilityBillDetails: parsedData.utilityBillDetails,
       category: parsedData.category,
       originalFileName: fileName,
     });
@@ -543,11 +799,19 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
       emergencyDetails: parsedData.emergencyDetails || null,
       academicDetails: parsedData.academicDetails || null,
       medicalDetails: parsedData.medicalDetails || null,
+      propertyDetails: parsedData.propertyDetails || null,
+      utilityBillDetails: parsedData.utilityBillDetails || null,
+      executiveSummary: Array.isArray(parsedData.executiveSummary) ? parsedData.executiveSummary : (parsedData.summary ? [parsedData.summary] : []),
       summary: parsedData.summary || null,
       searchKeywords: Array.isArray(parsedData.searchKeywords) ? parsedData.searchKeywords : [],
       matchedMemberId: matched?.memberId || null,
       matchedMemberName: matched?.memberName || '',
       confidence: matched ? 0.95 : 0.9,
+      qualityAssessment: parsedData.qualityAssessment || {
+        isBlurry: false,
+        clarityScore: 'GOOD',
+        issueFeedback: null,
+      },
       aiEngine: successfulModel || 'gemini',
     };
   } catch (error) {

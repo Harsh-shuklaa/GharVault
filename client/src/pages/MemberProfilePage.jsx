@@ -191,7 +191,18 @@ export default function MemberProfilePage() {
         badgeEmoji: '✈️',
       };
     }
-    if (text.includes('rc') || text.includes('vehicle') || text.includes('car') || text.includes('bike') || text.includes('driving') || text.includes('license')) {
+    if (text.includes('health') || text.includes('medical') || text.includes('insurance') || text.includes('mediclaim') || text.includes('hospital') || text.includes('prescription') || text.includes('parchi') || text.includes('parcha') || text.includes('doctor')) {
+      return {
+        type: 'health',
+        label: text.includes('insurance') || text.includes('mediclaim') ? 'Health Insurance' : 'Medical Record',
+        strip: 'from-rose-600 via-red-600 to-rose-700',
+        tagStyle: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200/80 dark:border-rose-500/30',
+        iconBoxBg: 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200/80 dark:border-rose-500/30',
+        badgeEmoji: '🏥',
+      };
+    }
+    const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|insurance|mediclaim)\b/i.test(text);
+    if (!isMed && (/\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc|vehicle|car|bike)\b/i.test(text) && !/\b(parchi|parcha|march|research)\b/i.test(text))) {
       return {
         type: 'vehicle',
         label: text.includes('driving') || text.includes('license') ? 'Driving License' : 'Vehicle RC',
@@ -199,16 +210,6 @@ export default function MemberProfilePage() {
         tagStyle: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-[#3ECF8E] border-emerald-200/80 dark:border-[#3ECF8E]/30',
         iconBoxBg: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-[#3ECF8E] border-emerald-200/80 dark:border-[#3ECF8E]/30',
         badgeEmoji: '🚗',
-      };
-    }
-    if (text.includes('health') || text.includes('medical') || text.includes('insurance') || text.includes('mediclaim') || text.includes('hospital')) {
-      return {
-        type: 'medical',
-        label: 'Mediclaim',
-        strip: 'from-rose-600 via-red-600 to-rose-700',
-        tagStyle: 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200/80 dark:border-red-500/30',
-        iconBoxBg: 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200/80 dark:border-red-500/30',
-        badgeEmoji: '🏥',
       };
     }
     if (text.includes('property') || text.includes('registry') || text.includes('flat') || text.includes('deed') || text.includes('will') || text.includes('tax')) {
@@ -402,13 +403,13 @@ export default function MemberProfilePage() {
     if (type === 'vehicle_or_travel') {
       const doc = assignedDocs.find((d) => {
         const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+        const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|insurance|mediclaim|ayushman|abha)\b/i.test(text);
+        if (isMed) return false;
         return (
           text.includes('passport') ||
-          text.includes('driving') ||
-          text.includes('license') ||
-          text.includes('rc') ||
+          text.includes('visa') ||
           text.includes('voter') ||
-          text.includes('dl')
+          /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc|vehicle|car|bike)\b/i.test(text)
         );
       });
       return { present: Boolean(doc), doc };
@@ -529,13 +530,12 @@ export default function MemberProfilePage() {
       id: 'Vehicle',
       label: 'Vehicle & Travel',
       count: assignedDocs.filter((d) => {
-        const text = `${d.title || ''} ${d.category || ''}`.toLowerCase();
+        const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+        const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|insurance|mediclaim)\b/i.test(text);
+        if (isMed) return false;
         return (
           d.category?.includes('Vehicle') ||
-          text.includes('rc') ||
-          text.includes('license') ||
-          text.includes('car') ||
-          text.includes('bike')
+          /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc|vehicle|car|bike)\b/i.test(text)
         );
       }).length,
     },
@@ -600,12 +600,11 @@ export default function MemberProfilePage() {
       );
     }
     if (activeCategory === 'Vehicle') {
+      const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|insurance|mediclaim)\b/i.test(text);
+      if (isMed) return false;
       return (
         d.category?.includes('Vehicle') ||
-        text.includes('rc') ||
-        text.includes('license') ||
-        text.includes('car') ||
-        text.includes('bike')
+        /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc|vehicle|car|bike)\b/i.test(text)
       );
     }
     if (activeCategory === 'Property') {
