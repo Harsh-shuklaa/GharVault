@@ -45,10 +45,10 @@ export default function AskVaultAIModal({ isOpen, onClose }) {
   // Quick suggestion prompts
   const suggestionChips = [
     { label: "💳 Papa ka PAN number", text: "Papa ka PAN card number kya hai?" },
-    { label: "🚗 Car Insurance Expiry", text: "Car insurance kab expire ho rahi hai?" },
-    { label: "🏥 Mediclaim Helpline", text: "Mediclaim policy aur cashless hospital helpline number kya hai?" },
-    { label: "🪪 Mummy ka Aadhaar", text: "Mummy ka Aadhaar card number kya hai?" },
-    { label: "🩸 Family Blood Groups", text: "Family members ke blood groups kya hain?" },
+    { label: "🏥 Hospital & Dawai", text: "Doctor ne kaunsi dawai likhi thi aur hospital ke documents dikhao" },
+    { label: "🎓 College & Marksheets", text: "BCA / University ke saare semester ke marksheets aur certificates dikhao" },
+    { label: "🚗 Car Insurance Expiry", text: "Car insurance kab expire ho rahi hai aur policy number kya hai?" },
+    { label: "🩸 Family Blood Groups", text: "Family members ke blood groups aur emergency numbers kya hain?" },
   ];
 
   useEffect(() => {
@@ -97,6 +97,7 @@ export default function AskVaultAIModal({ isOpen, onClose }) {
         copyableValue: data.copyableValue || null,
         sourceDocId: data.sourceDocId || null,
         sourceDocTitle: data.sourceDocTitle || null,
+        matchedDocs: Array.isArray(data.matchedDocs) ? data.matchedDocs : [],
         suggestedAction: data.suggestedAction || null,
         category: data.category || null,
         engine: data.engine || 'gemini',
@@ -246,7 +247,7 @@ export default function AskVaultAIModal({ isOpen, onClose }) {
                   )}
 
                   {/* Source Document Jump Card */}
-                  {msg.sourceDocId && (
+                  {msg.sourceDocId && (!msg.matchedDocs || msg.matchedDocs.length <= 1) && (
                     <div className="pt-1 border-t border-slate-200/60 dark:border-[#282830] flex items-center justify-between">
                       <button
                         type="button"
@@ -260,6 +261,45 @@ export default function AskVaultAIModal({ isOpen, onClose }) {
                         <span>Open "{msg.sourceDocTitle || 'Document'}"</span>
                         <ExternalLink size={11} className="opacity-70" />
                       </button>
+                    </div>
+                  )}
+
+                  {/* Multi-Document Match Cards (e.g. "Iss hospital ke saare documents", "University DMC") */}
+                  {msg.matchedDocs && msg.matchedDocs.length > 0 && (
+                    <div className="pt-2 border-t border-slate-200/60 dark:border-[#282830] space-y-1.5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+                        Related Documents ({msg.matchedDocs.length}):
+                      </div>
+                      <div className="grid grid-cols-1 gap-1.5 max-h-48 overflow-y-auto no-scrollbar">
+                        {msg.matchedDocs.map((doc, dIdx) => (
+                          <button
+                            key={dIdx}
+                            type="button"
+                            onClick={() => {
+                              onClose();
+                              navigate(`/vault/documents/${doc.id || doc._id}`);
+                            }}
+                            className="w-full flex items-center justify-between p-2 rounded-xl bg-white dark:bg-[#25252B] hover:bg-emerald-50 dark:hover:bg-[#3ECF8E]/10 border border-slate-200/80 dark:border-[#333] text-left transition-all cursor-pointer group shadow-2xs"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] flex items-center justify-center shrink-0 text-xs font-bold">
+                                {doc.category?.includes('Medical') ? '🏥' : (doc.category?.includes('Education') ? '🎓' : '📄')}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-[11px] font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-700 dark:group-hover:text-[#3ECF8E]">
+                                  {doc.title}
+                                </div>
+                                {doc.institutionOrDoctor && (
+                                  <div className="text-[10px] text-slate-500 dark:text-neutral-400 truncate">
+                                    {doc.institutionOrDoctor}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <ExternalLink size={12} className="text-slate-400 group-hover:text-emerald-600 shrink-0 ml-2" />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

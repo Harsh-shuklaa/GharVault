@@ -95,12 +95,38 @@ export function generateSmartDocumentTitle({
   matchedMemberName = '',
   docNumber = '',
   emergencyDetails = null,
+  academicDetails = null,
+  medicalDetails = null,
   category = '',
   originalFileName = '',
 }) {
   let cleanType = (docType || 'Document').trim();
 
-  // Normalize common types to standard title format
+  // 1. Academic Certificate / Degree / Semester DMC Title logic
+  if (academicDetails) {
+    if (academicDetails.certificateTitle) {
+      cleanType = academicDetails.certificateTitle.trim();
+    } else if (academicDetails.semesterOrYear && academicDetails.courseOrDegree) {
+      cleanType = `${academicDetails.semesterOrYear} DMC (${academicDetails.courseOrDegree})`;
+    } else if (academicDetails.courseOrDegree) {
+      cleanType = `${academicDetails.courseOrDegree} Degree`;
+    }
+  }
+
+  // 2. Doctor Prescription / Clinic Slip / Medical Report Title logic
+  if (medicalDetails) {
+    if (medicalDetails.doctorName && medicalDetails.hospitalOrClinic) {
+      cleanType = `Prescription (${medicalDetails.doctorName} • ${medicalDetails.hospitalOrClinic})`;
+    } else if (medicalDetails.doctorName) {
+      cleanType = `Prescription (${medicalDetails.doctorName})`;
+    } else if (medicalDetails.hospitalOrClinic) {
+      cleanType = `Medical Slip (${medicalDetails.hospitalOrClinic})`;
+    } else if (medicalDetails.diagnosis) {
+      cleanType = `Medical Report (${medicalDetails.diagnosis})`;
+    }
+  }
+
+  // 3. Normalize common standard types
   if (/aadhaar|adhar|uidai/i.test(cleanType) || /aadhaar|adhar/i.test(originalFileName)) {
     cleanType = 'Aadhaar Card';
   } else if (/pan\b|incometax|nsdl/i.test(cleanType) || /pan\b/i.test(originalFileName)) {
@@ -111,7 +137,7 @@ export function generateSmartDocumentTitle({
     cleanType = 'Passport';
   } else if (/ayushman|abha/i.test(cleanType) || /ayushman|abha/i.test(originalFileName)) {
     cleanType = 'Ayushman / ABHA Card';
-  } else if (/insurance|mediclaim|health|medical|hospital/i.test(cleanType) || category === 'Medical & Health' || /insurance|health|mediclaim/i.test(originalFileName)) {
+  } else if (!medicalDetails && (/insurance|mediclaim|health|medical|hospital/i.test(cleanType) || category === 'Medical & Health' || /insurance|health|mediclaim/i.test(originalFileName))) {
     if (emergencyDetails?.tpaProvider && emergencyDetails.tpaProvider !== 'Health Insurance TPA') {
       cleanType = `${emergencyDetails.tpaProvider} Mediclaim`;
     } else {
@@ -123,7 +149,7 @@ export function generateSmartDocumentTitle({
     cleanType = 'Voter ID';
   } else if (/birth/i.test(cleanType) || /birth/i.test(originalFileName)) {
     cleanType = 'Birth Certificate';
-  } else if (/marksheet|degree|diploma|certificate/i.test(cleanType) || /marksheet|degree/i.test(originalFileName)) {
+  } else if (!academicDetails && (/marksheet|degree|diploma|certificate/i.test(cleanType) || /marksheet|degree/i.test(originalFileName))) {
     cleanType = 'Education Certificate';
   }
 
@@ -250,12 +276,83 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     };
   }
 
+  // Academic & Degree Extraction in Heuristic
+  let academicDetails = null;
+  const isAcademic = text.includes('degree') || text.includes('marksheet') || text.includes('dmc') || text.includes('semester') || text.includes('sem') || text.includes('bca') || text.includes('mca') || text.includes('btech') || text.includes('b.tech') || text.includes('university') || text.includes('college') || text.includes('innovator') || text.includes('certificate');
+  
+  if (isAcademic) {
+    category = 'Education';
+    let courseOrDegree = null;
+    if (text.includes('bca')) courseOrDegree = 'BCA';
+    else if (text.includes('mca')) courseOrDegree = 'MCA';
+    else if (text.includes('btech') || text.includes('b.tech')) courseOrDegree = 'B.Tech';
+    else if (text.includes('10th') || text.includes('matric')) courseOrDegree = 'Class 10';
+    else if (text.includes('12th') || text.includes('inter')) courseOrDegree = 'Class 12';
+
+    let semesterOrYear = null;
+    const semMatch = text.match(/\b([1-8](?:st|nd|rd|th)?\s*(?:sem|semester))\b/i);
+    if (semMatch) semesterOrYear = semMatch[1].toUpperCase();
+
+    let certificateTitle = null;
+    if (text.includes('innovator')) certificateTitle = 'Innovators Certificate';
+    else if (text.includes('hackathon')) certificateTitle = 'Hackathon Winner';
+    else if (text.includes('merit')) certificateTitle = 'Certificate of Merit';
+
+    let institution = null;
+    const instMatch = text.match(/\b(delhi\s*university|aktu|cbse|iit|nit|ignou|du)\b/i);
+    if (instMatch) institution = instMatch[1].toUpperCase();
+
+    docType = certificateTitle ? certificateTitle : (semesterOrYear ? `${semesterOrYear} Marksheet` : (courseOrDegree ? `${courseOrDegree} Degree` : 'Education Certificate'));
+
+    academicDetails = {
+      institution,
+      courseOrDegree,
+      semesterOrYear,
+      certificateTitle,
+      marksOrGrade: null,
+    };
+  }
+
+  // Doctor Prescription & Medical Slips Extraction in Heuristic
+  let medicalDetails = null;
+  const isPrescription = text.includes('dr.') || text.includes('doctor') || text.includes('prescription') || text.includes('clinic') || text.includes('hospital') || text.includes('dawai') || text.includes('rx') || text.includes('tablet') || text.includes('apollo') || text.includes('max') || text.includes('fortis') || text.includes('paracetamol');
+
+  if (isPrescription) {
+    category = 'Medical & Health';
+    docType = text.includes('lab') || text.includes('blood test') || text.includes('report') ? 'Medical Lab Report' : 'Doctor Prescription';
+
+    let doctorName = null;
+    const drMatch = text.match(/\b(dr\.?\s+[a-z]+(?:\s+[a-z]+)?)\b/i);
+    if (drMatch) doctorName = drMatch[1];
+
+    let hospitalOrClinic = null;
+    const hospMatch = text.match(/\b(apollo|max\s*hospital|max\s*healthcare|fortis|aiims|dr\.?\s*lal\s*pathlabs|pathlabs|medanta)\b/i);
+    if (hospMatch) hospitalOrClinic = hospMatch[1];
+
+    let diagnosis = null;
+    const diagMatch = text.match(/\b(fever|viral|typhoid|dengue|cough|cold|infection|thyroid|diabetes|bp|migraine|arthritis)\b/i);
+    if (diagMatch) diagnosis = diagMatch[1];
+
+    const medMatch = text.match(/\b(paracetamol|dolo|azithromycin|pantocid|amoxicillin|augmentin|crocin|combiflam)\b/gi);
+    const medicines = medMatch ? medMatch.join(', ') : null;
+
+    medicalDetails = {
+      doctorName,
+      hospitalOrClinic,
+      diagnosis,
+      medicines,
+      consultationDate: null,
+    };
+  }
+
   const smartTitle = generateSmartDocumentTitle({
     docType,
     holderName: matchedMember?.name || '',
     matchedMemberName: matchedMember?.name || '',
     docNumber,
     emergencyDetails,
+    academicDetails,
+    medicalDetails,
     category,
     originalFileName: fileName,
   });
@@ -269,9 +366,13 @@ function fallbackHeuristicScanner(fileName = '', originalText = '', members = []
     expiryDate,
     suggestedTitle: smartTitle,
     emergencyDetails,
+    academicDetails,
+    medicalDetails,
+    summary: `${docType} for ${matchedMember?.name || 'family member'}${academicDetails?.institution ? ` from ${academicDetails.institution}` : ''}${medicalDetails?.hospitalOrClinic ? ` at ${medicalDetails.hospitalOrClinic}` : ''}`,
+    searchKeywords: [docType, category, matchedMember?.name, academicDetails?.institution, medicalDetails?.hospitalOrClinic, medicalDetails?.doctorName].filter(Boolean),
     matchedMemberId: matchedMember?._id || null,
     matchedMemberName: matchedMember?.name || '',
-    confidence: docNumber ? 0.75 : 0.5,
+    confidence: docNumber || academicDetails || medicalDetails ? 0.75 : 0.5,
     aiEngine: 'heuristic_fallback',
   };
 }
@@ -309,31 +410,39 @@ Important matching rule:
       : '';
 
     const prompt = `You are an expert Indian Document Intelligence System for a secure family vault app called "Dastavej".
-Analyze the attached Indian official document (could be an Aadhaar Card, PAN Card, Driving License, Passport, Vehicle RC, Health Insurance Policy/TPA card, Voter ID, Birth Certificate, or other family record).
+Analyze the attached Indian official document (could be an Aadhaar Card, PAN Card, Driving License, Passport, Vehicle RC, Health Insurance Policy/TPA card, Doctor Prescription, Clinic Slip, Medical/Lab Report, Education Degree, Semester Marksheet/DMC, Competition/Innovators Certificate, Voter ID, Birth Certificate, or other family record).
 ${memberListText}
 
 Extract the following information with maximum accuracy:
-1. "docType": One of ['Aadhaar Card', 'PAN Card', 'Driving License', 'Passport', 'Vehicle RC', 'Vehicle Insurance', 'Health Insurance', 'Voter ID', 'Birth Certificate', 'Property Deed', 'Education Certificate', 'Other']
-2. "docNumber": The clean primary ID or Policy or Registration number without punctuation mistakes. 
-   - Aadhaar: format as "XXXX XXXX XXXX" (12 digits, or masked "XXXX XXXX 1234" if masked).
-   - PAN: 10 chars uppercase (e.g. "ABCDE1234F").
-   - Driving License: State code + number (e.g. "DL-0420110012345").
-   - Passport: e.g. "Z1234567".
-   - Vehicle RC: e.g. "DL01AB1234".
-   - Health Insurance: policy or member ID number.
-3. "holderName": Full legal name of the person on the document (do NOT confuse with father's name or Government header).
+1. "docType": One of ['Aadhaar Card', 'PAN Card', 'Driving License', 'Passport', 'Vehicle RC', 'Vehicle Insurance', 'Health Insurance', 'Doctor Prescription', 'Medical Lab Report', 'Hospital Discharge Summary', 'Education Degree', 'Marksheet / DMC', 'Competition Certificate', 'Bank Passbook / Statement', 'Voter ID', 'Birth Certificate', 'Property Deed', 'Tax Invoice', 'Other']
+2. "docNumber": Clean primary ID, roll number, policy number, or certificate registration number.
+3. "holderName": Full legal name of the candidate/patient/holder (do NOT confuse with father's name or Doctor/Authority name).
 4. "fatherOrSpouseName": Father's or spouse's name if clearly listed, else null.
 5. "dob": Date of birth in YYYY-MM-DD format if found, else null.
 6. "expiryDate": Expiry or valid-till date in YYYY-MM-DD format if applicable, else null.
 7. "category": One of ['ID Cards', 'Medical & Health', 'Vehicle', 'Financial', 'Property & Legal', 'Education', 'Personal'].
-8. "emergencyDetails": If this is a Health Insurance Card, Driving License, Ayushman Card, or Medical/Lab Report:
-   - "bloodGroup": Blood group if printed (e.g. "O+", "B+", "AB+", "A+", "O-", "A-", "B-", "AB-") or null.
-   - "tpaProvider": Third Party Administrator (TPA) or insurer name (e.g. "Medi Assist", "Star Health", "Care Health", "HDFC ERGO", "Niva Bupa", "Vidal Health", "Paramount", "ICICI Lombard", "Bajaj Allianz") or null.
+8. "academicDetails": If this is a Degree, Marksheet/DMC, Diploma, Certificate, or Award:
+   - "institution": Name of School, College, University, Board, or Organization (e.g. "Delhi University", "AKTU", "CBSE", "IIT Delhi") or null.
+   - "courseOrDegree": Degree or Course (e.g. "BCA", "MCA", "B.Tech", "Class 10", "Class 12") or null.
+   - "semesterOrYear": Semester or passing year (e.g. "6th Semester", "2024") or null.
+   - "certificateTitle": Specific title of award/certificate (e.g. "Innovators Certificate", "Certificate of Merit", "National Hackathon Winner") or null.
+   - "marksOrGrade": CGPA, Marks, or Percentage (e.g. "8.8 CGPA", "85%") or null.
+9. "medicalDetails": If this is a Doctor Prescription, Clinic Slip, Diagnostic Lab Report, or Hospital Bill:
+   - "doctorName": Full name of doctor (e.g. "Dr. K.K. Sharma") or null.
+   - "hospitalOrClinic": Name of Hospital, Clinic, or Lab (e.g. "Apollo Hospital", "Max Healthcare", "AIIMS", "Dr. Lal PathLabs") or null.
+   - "diagnosis": Disease, illness, bimari, condition, or reason for visit (e.g. "Viral Fever", "Thyroid Profile", "Knee Pain", "Migraine") or null.
+   - "medicines": Comma-separated list of prescribed medicines, dosage, or tests recommended (e.g. "Paracetamol 650mg TDS, Azithromycin 500 OD, Pantocid 40") or null.
+   - "consultationDate": Date of consultation or report in YYYY-MM-DD or null.
+10. "emergencyDetails": If Health Insurance or Driving License:
+   - "bloodGroup": Blood group if printed (e.g. "O+", "B+", "AB+", "A+", "O-", etc.) or null.
+   - "tpaProvider": Third Party Administrator (TPA) or insurer name (e.g. "Star Health", "Medi Assist") or null.
    - "policyNumber": Insurance policy or cashless member ID number or null.
    - "tollFreeHelpLine": Hospital cashless claim or 24x7 toll-free emergency helpline phone number or null.
-   - "allergies": Critical allergies (e.g. "Penicillin", "Sulfa", "Peanuts") or chronic medical conditions (e.g. "Diabetic Type 2", "Asthma", "Hypertension") or null.
+   - "allergies": Critical allergies or chronic conditions or null.
    - "emergencyContactPhone": Emergency contact phone number if listed, else null.
    - "sumInsured": Sum insured amount if visible or null.
+11. "summary": A crisp 1 to 2 sentence summary of what this document is, who it is for, and key details (e.g. "Apollo Hospital prescription by Dr. Sharma for Aditya with Paracetamol & Pantocid" or "6th Semester BCA Marks Certificate issued by Delhi University with 8.4 CGPA").
+12. "searchKeywords": Array of 5 to 8 search keywords for fast lookup (e.g. ["apollo", "dr sharma", "paracetamol", "viral fever", "prescription"]).
 
 Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\`\`json code blocks.`;
 
@@ -416,6 +525,8 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
       matchedMemberName: matched?.memberName,
       docNumber: parsedData.docNumber,
       emergencyDetails: parsedData.emergencyDetails,
+      academicDetails: parsedData.academicDetails,
+      medicalDetails: parsedData.medicalDetails,
       category: parsedData.category,
       originalFileName: fileName,
     });
@@ -430,6 +541,10 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown \`\
       expiryDate: parsedData.expiryDate || null,
       suggestedTitle: smartTitle,
       emergencyDetails: parsedData.emergencyDetails || null,
+      academicDetails: parsedData.academicDetails || null,
+      medicalDetails: parsedData.medicalDetails || null,
+      summary: parsedData.summary || null,
+      searchKeywords: Array.isArray(parsedData.searchKeywords) ? parsedData.searchKeywords : [],
       matchedMemberId: matched?.memberId || null,
       matchedMemberName: matched?.memberName || '',
       confidence: matched ? 0.95 : 0.9,
