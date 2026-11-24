@@ -566,7 +566,186 @@ export function fallbackHeuristicScanner(fileName = '', originalText = '', membe
 }
 
 /**
- * Scan document using Google Gemini Multimodal Vision API
+ * Attempt document scanning via Local Ollama Multimodal Agent (100% Free, Private & Offline)
+ */
+export async function tryScanWithLocalOllama({ fileBuffer, mimeType = 'image/jpeg', fileName = '', familyMembers = [] }) {
+  if (!fileBuffer) return null;
+  // Ollama vision models (moondream, llava) require image bytes (JPEG, PNG, WebP)
+  const isImage = (mimeType && mimeType.startsWith('image/')) || /\.(jpg|jpeg|png|webp)$/i.test(fileName);
+  if (!isImage) return null;
+
+  try {
+    // Fast health check (1200ms) to see if Ollama is running locally
+    const tagsRes = await fetch('http://localhost:11434/api/tags', {
+      signal: AbortSignal.timeout(1200),
+    });
+    if (!tagsRes.ok) return null;
+
+    const data = await tagsRes.json();
+    const visionModel = data.models?.find(m =>
+      m.name.includes('qwen') ||
+      m.name.includes('vl') ||
+      m.name.includes('vision') ||
+      m.name.includes('llava') ||
+      m.name.includes('moondream')
+    );
+    if (!visionModel) return null;
+
+    const modelName = visionModel.name;
+    const base64Data = fileBuffer.toString('base64');
+
+    const prompt = `Extract Indian document details in JSON format:
+{
+  "docType": "Health Insurance or Doctor Prescription or Voter ID or Aadhaar Card or PAN Card or Driving License or Passport or Electricity Bill or Marksheet or Property Deed or Other",
+  "docNumber": "ID number, Policy No, EPIC No, PAN, Aadhaar, or Consumer CA No",
+  "holderName": "Full name of person or patient or insured",
+  "fatherOrSpouseName": "Father or husband name",
+  "dob": "YYYY-MM-DD or null",
+  "expiryDate": "YYYY-MM-DD or null",
+  "category": "Medical & Health or ID Cards or Bank & Property or Education or Legal or Other",
+  "summary": "Crisp 1-sentence summary"
+}
+Output valid JSON only.`;
+
+    const genRes = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: modelName,
+        prompt,
+        images: [base64Data],
+        stream: false,
+        format: 'json',
+        keep_alive: '2h', // Keep model hot in RAM so it never needs reloading
+        options: {
+          num_predict: 120,
+          temperature: 0.1,
+          top_p: 0.9,
+        },
+      }),
+      signal: AbortSignal.timeout(120000), // 2 min safety threshold for CPU processing
+    });
+
+    if (!genRes.ok) return null;
+    const genData = await genRes.json();
+    const rawOutput = (genData.response || '').trim();
+    if (!rawOutput) return null;
+
+    let parsed = {};
+    try {
+      parsed = JSON.parse(rawOutput);
+    } catch (e) {
+      const match = rawOutput.match(/\{[\s\S]*\}/);
+      if (match) parsed = JSON.parse(match[0]);
+    }
+
+    let docType = (parsed.docType || 'Document').trim();
+    if (docType.includes(' or ') || docType.length > 30) docType = 'Document';
+
+    let docNumber = (parsed.docNumber || '').trim();
+    if (/ID number|PAN|Aadhaar|Policy No|Clean ID/i.test(docNumber)) docNumber = '';
+
+    let holderName = (parsed.holderName || '').trim();
+    if (/full name|person name|holder|name of/i.test(holderName)) holderName = '';
+
+    let fatherOrSpouseName = (parsed.fatherOrSpouseName || parsed.fatherName || '').trim();
+    if (/father|husband|spouse/i.test(fatherOrSpouseName) || !fatherOrSpouseName) fatherOrSpouseName = null;
+
+    // Intelligent Category Normalization across all document types
+    let category = 'Other';
+    const lowerDocType = docType.toLowerCase();
+    const lowerRawCat = (parsed.category || '').toLowerCase();
+
+    if (
+      /insurance|mediclaim|health|prescription|doctor|hospital|clinic|tpa|ayushman|medical|lab report/i.test(lowerDocType) ||
+      /medical|health/i.test(lowerRawCat)
+    ) {
+      category = 'Medical & Health';
+    } else if (
+      /aadhaar|pan card|voter|epic|passport|driving license|license|voter id|ration|id card/i.test(lowerDocType) ||
+      /id card|identity/i.test(lowerRawCat)
+    ) {
+      category = 'ID Cards';
+    } else if (
+      /deed|registry|khasra|khatauni|bainama|property|fard|jamabandi|electricity|bijli|water bill|gas bill|utility|bill/i.test(lowerDocType) ||
+      /property|bank|financial|bill/i.test(lowerRawCat)
+    ) {
+      category = 'Bank & Property';
+    } else if (
+      /marksheet|degree|diploma|certificate|dmc|semester|school|college|university/i.test(lowerDocType) ||
+      /education|academic/i.test(lowerRawCat)
+    ) {
+      category = 'Education';
+    } else if (
+      /affidavit|agreement|stamp paper|court|legal|will/i.test(lowerDocType) ||
+      /legal/i.test(lowerRawCat)
+    ) {
+      category = 'Legal';
+    } else if (
+      /rc|vehicle|pollution|puc|chassis/i.test(lowerDocType) ||
+      /vehicle/i.test(lowerRawCat)
+    ) {
+      category = 'Other';
+    } else if (parsed.category && ['ID Cards', 'Medical & Health', 'Bank & Property', 'Education', 'Legal', 'Other'].includes(parsed.category)) {
+      category = parsed.category;
+    } else {
+      category = 'ID Cards';
+    }
+
+    let dob = parsed.dob || null;
+    let expiryDate = parsed.expiryDate || null;
+    if (expiryDate && expiryDate === dob) expiryDate = null;
+
+    let matchedMember = null;
+    if (holderName && familyMembers.length > 0) {
+      const cleanH = holderName.toLowerCase();
+      matchedMember = familyMembers.find(m => cleanH.includes(m.name.toLowerCase().split(' ')[0]));
+    }
+
+    const smartTitle = generateSmartDocumentTitle({
+      docType,
+      holderName,
+      matchedMemberName: matchedMember?.name,
+      docNumber,
+      category,
+      originalFileName: fileName,
+    });
+
+    return {
+      docType,
+      category,
+      docNumber,
+      holderName,
+      fatherOrSpouseName: fatherOrSpouseName || null,
+      dob,
+      expiryDate,
+      suggestedTitle: smartTitle,
+      emergencyDetails: parsed.emergencyDetails || null,
+      academicDetails: parsed.academicDetails || null,
+      medicalDetails: parsed.medicalDetails || null,
+      propertyDetails: parsed.propertyDetails || null,
+      utilityBillDetails: parsed.utilityBillDetails || null,
+      executiveSummary: parsed.summary ? [parsed.summary] : [],
+      summary: parsed.summary || `${docType} for ${holderName || 'Family Member'}`,
+      searchKeywords: [docType, docNumber, holderName].filter(Boolean),
+      matchedMemberId: matchedMember?._id || null,
+      matchedMemberName: matchedMember?.name || '',
+      confidence: docNumber ? 0.95 : 0.88,
+      qualityAssessment: {
+        isBlurry: false,
+        clarityScore: 'GOOD',
+        issueFeedback: null,
+      },
+      aiEngine: `ollama_local (${modelName})`,
+    };
+  } catch (err) {
+    console.warn('[Ollama Local Engine] Skipped/Proceeding to cloud:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Scan document using Google Gemini Multimodal Vision API (with Ollama Local Fall-Through)
  */
 export async function scanDocumentWithAI({ fileBuffer, mimeType, fileName, familyMembers = [], customApiKey = null }) {
   const apiKey = customApiKey || process.env.GEMINI_API_KEY;
@@ -578,11 +757,50 @@ export async function scanDocumentWithAI({ fileBuffer, mimeType, fileName, famil
     } catch (e) {}
   }
 
-  if (!apiKey) {
-    console.log('[AI Scanner] No GEMINI_API_KEY configured. Using intelligent heuristic scanner.');
-    return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
+  // 1. Priority #1: Google Gemini Flash-Lite Cloud AI (~1s Instant Response, 0% CPU/RAM load)
+  if (apiKey) {
+    try {
+      const geminiResult = await executeGeminiScan({
+        fileBuffer,
+        mimeType,
+        fileName,
+        familyMembers,
+        apiKey,
+      });
+      if (geminiResult) {
+        console.log(`[AI Scanner] ⚡ Successfully scanned via Cloud Gemini (${geminiResult.aiEngine})!`);
+        return geminiResult;
+      }
+    } catch (geminiErr) {
+      console.warn('[AI Scanner] Cloud Gemini attempt failed or quota reached:', geminiErr.message);
+    }
   }
 
+  // 2. Priority #2: Local Ollama AI Agent (100% Free, Private & Offline Fallback)
+  try {
+    const localOllamaResult = await tryScanWithLocalOllama({
+      fileBuffer,
+      mimeType,
+      fileName,
+      familyMembers,
+    });
+    if (localOllamaResult) {
+      console.log(`[AI Scanner] Successfully scanned via Local Ollama Agent (${localOllamaResult.aiEngine})!`);
+      return localOllamaResult;
+    }
+  } catch (ollamaErr) {
+    console.warn('[AI Scanner] Local Ollama check failed, proceeding to heuristic fallback:', ollamaErr.message);
+  }
+
+  // 3. Priority #3: Intelligent Heuristic Scanner (Zero AI Offline Fallback)
+  console.log('[AI Scanner] Cloud & local models unavailable. Using intelligent heuristic scanner.');
+  return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
+}
+
+/**
+ * Execute Cloud Gemini Scan using high-speed, high-quota Flash-Lite models
+ */
+async function executeGeminiScan({ fileBuffer, mimeType, fileName, familyMembers = [], apiKey }) {
   try {
     let cleanMime = (mimeType || 'image/jpeg').toLowerCase();
     if (cleanMime === 'image/jpg') cleanMime = 'image/jpeg';
@@ -691,26 +909,19 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
       },
     };
 
-    // Parallel Model Racing: Fire both models simultaneously with 45s safety timeout
-    // Whichever model responds first with valid data wins the race!
-    const modelsToRace = [
+    // Sequential Fast Fallback: Try gemini-flash-lite-latest first (fastest, high quota).
+    // If unavailable or rate-limited, fall back to gemini-3.5-flash-lite.
+    const modelsToTry = [
+      'gemini-flash-lite-latest',
+      'gemini-3.5-flash-lite',
       'gemini-3.8-flash',
-      'gemini-3.5-flash',
     ];
-
-    const abortControllers = modelsToRace.map(() => new AbortController());
-    const overallTimeoutId = setTimeout(() => {
-      abortControllers.forEach(c => {
-        try { c.abort('Overall scan timeout (45s)'); } catch (e) {}
-      });
-    }, 45000);
 
     let result = null;
     let successfulModel = null;
 
-    try {
-      const racePromises = modelsToRace.map(async (modelName, idx) => {
-        const controller = abortControllers[idx];
+    for (const modelName of modelsToTry) {
+      try {
         const t0 = Date.now();
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
@@ -718,57 +929,74 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
-          signal: controller.signal,
+          signal: AbortSignal.timeout(18000),
         });
 
         if (response.ok) {
           const data = await response.json();
           const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (rawText && rawText.trim()) {
-            console.log(`[AI Scanner] ⚡ Race WON by: ${modelName} in ${Date.now() - t0}ms!`);
-            // Abort competitors to free up network
-            abortControllers.forEach((c, cIdx) => {
-              if (cIdx !== idx) {
-                try { c.abort('Competitor model won'); } catch (e) {}
-              }
-            });
-            return { model: modelName, data };
+            console.log(`[AI Scanner] ⚡ Flash-Lite SUCCESS: ${modelName} in ${Date.now() - t0}ms!`);
+            result = data;
+            successfulModel = modelName;
+            break; // Stop immediately upon success - saves quota!
           }
-        }
-
-        const errStatus = response.status;
-        if (errStatus === 429) {
-          console.warn(`[AI Scanner] Daily/RPM Quota limit reached on ${modelName} (429).`);
         } else {
-          console.warn(`[AI Scanner] ${modelName} returned status ${errStatus}`);
+          console.warn(`[AI Scanner] ${modelName} returned status ${response.status}`);
         }
-        throw new Error(`${modelName} status ${errStatus}`);
-      });
-
-      const winner = await Promise.any(racePromises);
-      result = winner.data;
-      successfulModel = winner.model;
-    } catch (raceErr) {
-      console.warn('[AI Scanner] Both raced Gemini models failed or timed out:', raceErr.message);
-    } finally {
-      clearTimeout(overallTimeoutId);
+      } catch (callErr) {
+        console.warn(`[AI Scanner] ${modelName} attempt error:`, callErr.message);
+      }
     }
 
-    if (!result) {
-      console.log('[AI Scanner] Cloud models unavailable (quota/load). Scanning seamlessly via local Heuristic Intelligence.');
-      return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
-    }
+    if (!result) return null;
 
     const rawJsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawJsonText) return null;
 
-    if (!rawJsonText) {
-      console.warn('[AI Scanner] No text content returned from Gemini.');
-      return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
-    }
-
-    // Clean potential markdown quotes
     const cleanedText = rawJsonText.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
     const parsedData = JSON.parse(cleanedText);
+
+    // Intelligent Category Normalization across all document types
+    let category = 'Other';
+    const lowerDocType = (parsedData.docType || '').toLowerCase();
+    const lowerRawCat = (parsedData.category || '').toLowerCase();
+
+    if (
+      /insurance|mediclaim|health|prescription|doctor|hospital|clinic|tpa|ayushman|medical|lab report/i.test(lowerDocType) ||
+      /medical|health/i.test(lowerRawCat)
+    ) {
+      category = 'Medical & Health';
+    } else if (
+      /aadhaar|pan card|voter|epic|passport|driving license|license|voter id|ration|id card/i.test(lowerDocType) ||
+      /id card|identity/i.test(lowerRawCat)
+    ) {
+      category = 'ID Cards';
+    } else if (
+      /deed|registry|khasra|khatauni|bainama|property|fard|jamabandi|electricity|bijli|water bill|gas bill|utility|bill/i.test(lowerDocType) ||
+      /property|bank|financial|bill/i.test(lowerRawCat)
+    ) {
+      category = 'Bank & Property';
+    } else if (
+      /marksheet|degree|diploma|certificate|dmc|semester|school|college|university/i.test(lowerDocType) ||
+      /education|academic/i.test(lowerRawCat)
+    ) {
+      category = 'Education';
+    } else if (
+      /affidavit|agreement|stamp paper|court|legal|will/i.test(lowerDocType) ||
+      /legal/i.test(lowerRawCat)
+    ) {
+      category = 'Legal';
+    } else if (
+      /rc|vehicle|pollution|puc|chassis/i.test(lowerDocType) ||
+      /vehicle/i.test(lowerRawCat)
+    ) {
+      category = 'Other';
+    } else if (parsedData.category && ['ID Cards', 'Medical & Health', 'Bank & Property', 'Education', 'Legal', 'Other'].includes(parsedData.category)) {
+      category = parsedData.category;
+    } else {
+      category = 'ID Cards';
+    }
 
     // Auto-match with family members
     const matched = findBestMemberMatch(parsedData.holderName, familyMembers);
@@ -783,13 +1011,13 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
       medicalDetails: parsedData.medicalDetails,
       propertyDetails: parsedData.propertyDetails,
       utilityBillDetails: parsedData.utilityBillDetails,
-      category: parsedData.category,
+      category,
       originalFileName: fileName,
     });
 
     return {
       docType: parsedData.docType || 'Other',
-      category: parsedData.category || 'ID Cards',
+      category,
       docNumber: parsedData.docNumber || '',
       holderName: parsedData.holderName || '',
       fatherOrSpouseName: parsedData.fatherOrSpouseName || null,
@@ -812,10 +1040,10 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
         clarityScore: 'GOOD',
         issueFeedback: null,
       },
-      aiEngine: successfulModel || 'gemini',
+      aiEngine: successfulModel ? `gemini_cloud (${successfulModel})` : 'gemini_cloud',
     };
   } catch (error) {
-    console.error('[AI Scanner Error]:', error);
-    return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
+    console.warn('[AI Scanner Gemini Execution Error]:', error.message);
+    return null;
   }
 }

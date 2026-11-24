@@ -37,8 +37,10 @@ import {
   Copy,
   Car,
   Plane,
+  Crop,
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import DocumentCropperModal from '../components/DocumentCropperModal';
 
 export default function DocumentUploadPage() {
   const navigate = useNavigate();
@@ -70,6 +72,12 @@ export default function DocumentUploadPage() {
   const [frontPreview, setFrontPreview] = useState(null);
   const [backFile, setBackFile] = useState(null);
   const [backPreview, setBackPreview] = useState(null);
+
+  // Smart Document Cropper & CamScanner Mode State
+  const [cropperModalOpen, setCropperModalOpen] = useState(false);
+  const [rawFileForCrop, setRawFileForCrop] = useState(null);
+  const [cropTargetSide, setCropTargetSide] = useState('single'); // 'single' | 'front' | 'back'
+  const [pendingAiScanFile, setPendingAiScanFile] = useState(null);
 
   // AI Document Scanning State
   const [isScanning, setIsScanning] = useState(false);
@@ -452,10 +460,38 @@ export default function DocumentUploadPage() {
 
         // Map Category to one of our app categories
         let targetCategory = formData.category;
-        if (data.category) {
-          if (data.category === 'Vehicle') targetCategory = 'Other';
-          else if (data.category === 'Financial' || data.category === 'Property & Legal') targetCategory = 'Bank & Property';
-          else if (categories.some((c) => c.id === data.category)) targetCategory = data.category;
+        const rawCat = (data.category || '').toLowerCase();
+        const rawType = (data.docType || '').toLowerCase();
+
+        if (
+          /medical|health|insurance|prescription|doctor|hospital|clinic|tpa|ayushman/i.test(rawCat) ||
+          /insurance|mediclaim|health|prescription|doctor|hospital|clinic|tpa|ayushman|medical/i.test(rawType)
+        ) {
+          targetCategory = 'Medical & Health';
+        } else if (
+          /id card|identity/i.test(rawCat) ||
+          /aadhaar|pan card|voter|epic|passport|driving license|license|voter id|ration|id card/i.test(rawType)
+        ) {
+          targetCategory = 'ID Cards';
+        } else if (
+          /bank|property|financial|deed|khasra|bill/i.test(rawCat) ||
+          /deed|registry|khasra|khatauni|bainama|property|electricity|bijli|water bill|gas bill|utility|bill/i.test(rawType)
+        ) {
+          targetCategory = 'Bank & Property';
+        } else if (
+          /education|academic/i.test(rawCat) ||
+          /marksheet|degree|diploma|certificate|dmc|semester/i.test(rawType)
+        ) {
+          targetCategory = 'Education';
+        } else if (
+          /legal/i.test(rawCat) ||
+          /affidavit|agreement|stamp paper|court|legal|will/i.test(rawType)
+        ) {
+          targetCategory = 'Legal';
+        } else if (data.category === 'Vehicle' || /rc|vehicle/i.test(rawType)) {
+          targetCategory = 'Other';
+        } else if (categories.some((c) => c.id === data.category)) {
+          targetCategory = data.category;
         }
 
         // Auto-fill metadata into form
@@ -523,10 +559,12 @@ export default function DocumentUploadPage() {
           }
         }
 
-        if (data.docNumber) {
+        if (data.aiEngine && data.aiEngine.includes('ollama_local')) {
+          toast.success(`🦙 Auto-detected via Local Private AI (${data.docType}${data.docNumber ? `: ${data.docNumber}` : ''})`);
+        } else if (data.docNumber) {
           toast.success(`✨ Auto-detected ${data.docType}: ${data.docNumber}`);
         } else if (data.aiEngine === 'heuristic_fallback') {
-          toast.info('💡 Tip: Gemini API Key add karein for 100% visual OCR text detection directly from photos!');
+          toast.info('💡 Tip: Local Ollama AI ya Gemini API Key add karein for visual OCR directly from photos!');
         } else {
           toast.success(`✨ Auto-detected: ${data.docType}`);
         }
@@ -553,6 +591,18 @@ export default function DocumentUploadPage() {
     }
     setError('');
 
+    // If it's an image, launch the Smart Document Cropper to remove bedsheets, table, and fingers!
+    if (selectedFile.type && selectedFile.type.startsWith('image/')) {
+      setRawFileForCrop(selectedFile);
+      setCropTargetSide('single');
+      setCropperModalOpen(true);
+      return;
+    }
+
+    await proceedWithSelectedFile(selectedFile);
+  };
+
+  const proceedWithSelectedFile = async (selectedFile) => {
     let processedFile = selectedFile;
     if (selectedFile.type && selectedFile.type.startsWith('image/') && selectedFile.size > 500 * 1024) {
       toast.info(`⚡ Optimizing photo (${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB) to under 500KB...`);
@@ -591,28 +641,72 @@ export default function DocumentUploadPage() {
       setFormData((prev) => ({ ...prev, title: cleanName }));
     }
 
-    // Trigger AI Vision scan on the optimized file
-    triggerAIScan(processedFile);
+    // Prompt user for AI auto-scan permission (saving quota & giving full control)
+    setPendingAiScanFile(processedFile);
   };
 
   const handleFrontFileChange = async (selectedFront) => {
     if (!selectedFront) return;
+    if (selectedFront.type && selectedFront.type.startsWith('image/')) {
+      setRawFileForCrop(selectedFront);
+      setCropTargetSide('front');
+      setCropperModalOpen(true);
+      return;
+    }
+    await proceedWithFrontFile(selectedFront);
+  };
+
+  const proceedWithFrontFile = async (selectedFront) => {
     let processedFront = selectedFront;
     if (selectedFront.type && selectedFront.type.startsWith('image/') && selectedFront.size > 500 * 1024) {
       processedFront = await compressImageUnder500KB(selectedFront);
     }
     setFrontFile(processedFront);
-    // Trigger AI Vision scan on front side of ID card
-    triggerAIScan(processedFront);
+    // Prompt user for AI auto-scan permission on front side
+    setPendingAiScanFile(processedFront);
   };
 
   const handleBackFileChange = async (selectedBack) => {
     if (!selectedBack) return;
+    if (selectedBack.type && selectedBack.type.startsWith('image/')) {
+      setRawFileForCrop(selectedBack);
+      setCropTargetSide('back');
+      setCropperModalOpen(true);
+      return;
+    }
+    await proceedWithBackFile(selectedBack);
+  };
+
+  const proceedWithBackFile = async (selectedBack) => {
     let processedBack = selectedBack;
     if (selectedBack.type && selectedBack.type.startsWith('image/') && selectedBack.size > 500 * 1024) {
       processedBack = await compressImageUnder500KB(selectedBack);
     }
     setBackFile(processedBack);
+  };
+
+  const handleApplyCroppedFile = async (croppedFile) => {
+    setCropperModalOpen(false);
+    toast.success('🪄 Document cleanly cropped & enhanced! Background & hands removed.');
+    if (cropTargetSide === 'front') {
+      await proceedWithFrontFile(croppedFile);
+    } else if (cropTargetSide === 'back') {
+      await proceedWithBackFile(croppedFile);
+    } else {
+      await proceedWithSelectedFile(croppedFile);
+    }
+  };
+
+  const handleSkipCrop = async () => {
+    setCropperModalOpen(false);
+    if (!rawFileForCrop) return;
+    if (cropTargetSide === 'front') {
+      await proceedWithFrontFile(rawFileForCrop);
+    } else if (cropTargetSide === 'back') {
+      await proceedWithBackFile(rawFileForCrop);
+    } else {
+      await proceedWithSelectedFile(rawFileForCrop);
+    }
   };
 
   const handleDrop = async (e) => {
@@ -1327,6 +1421,21 @@ export default function DocumentUploadPage() {
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                      {file && file.type && file.type.startsWith('image/') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRawFileForCrop(file);
+                            setCropTargetSide('single');
+                            setCropperModalOpen(true);
+                          }}
+                          className="px-3.5 py-2 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                          title="Auto-crop background & bedsheets"
+                        >
+                          <Crop size={14} />
+                          Re-Crop & Clean
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => document.getElementById('file-upload-input').click()}
@@ -1390,8 +1499,21 @@ export default function DocumentUploadPage() {
                             setAiScanResult(null);
                           }}
                           className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-black"
+                          title="Remove Front Side"
                         >
                           <X size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRawFileForCrop(frontFile);
+                            setCropTargetSide('front');
+                            setCropperModalOpen(true);
+                          }}
+                          className="absolute bottom-1 right-1 px-2 py-1 rounded-lg bg-black/75 hover:bg-black text-emerald-400 text-[10px] font-bold flex items-center gap-1 backdrop-blur-xs cursor-pointer"
+                          title="Re-Crop Front Side"
+                        >
+                          <Crop size={11} /> Re-Crop
                         </button>
                       </div>
                     ) : (
@@ -1427,8 +1549,21 @@ export default function DocumentUploadPage() {
                           type="button"
                           onClick={() => setBackFile(null)}
                           className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-black"
+                          title="Remove Back Side"
                         >
                           <X size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRawFileForCrop(backFile);
+                            setCropTargetSide('back');
+                            setCropperModalOpen(true);
+                          }}
+                          className="absolute bottom-1 right-1 px-2 py-1 rounded-lg bg-black/75 hover:bg-black text-emerald-400 text-[10px] font-bold flex items-center gap-1 backdrop-blur-xs cursor-pointer"
+                          title="Re-Crop Back Side"
+                        >
+                          <Crop size={11} /> Re-Crop
                         </button>
                       </div>
                     ) : (
@@ -1450,6 +1585,55 @@ export default function DocumentUploadPage() {
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* AI AUTO-FILL PERMISSION & CHOICE BANNER */}
+            {pendingAiScanFile && !isScanning && !aiScanResult && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 border-2 border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl shadow-emerald-950/20 my-3">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-900/40 shrink-0 animate-pulse">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
+                        Document Clean & HD Ready!
+                      </h4>
+                      <span className="text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        AI Ready
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-neutral-300 mt-0.5">
+                      Kya aap AI se saara data (ID Number, Holder Name, DOB, Expiry) 1 second me auto-fill karwana chahte hain?
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const fileToScan = pendingAiScanFile;
+                      setPendingAiScanFile(null);
+                      triggerAIScan(fileToScan);
+                    }}
+                    className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-900/40 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <Sparkles size={14} />
+                    <span>⚡ Auto-Fill with AI (1-Click)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPendingAiScanFile(null);
+                      toast.info('✍️ Manual mode selected. AI quota saved!');
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#262626] bg-white dark:bg-[#1E1E22] hover:bg-slate-100 dark:hover:bg-[#28282D] text-slate-700 dark:text-neutral-300 font-bold text-xs cursor-pointer transition-colors"
+                  >
+                    ✍️ Fill Manually
+                  </button>
                 </div>
               </div>
             )}
@@ -1573,9 +1757,15 @@ export default function DocumentUploadPage() {
                         <span className="text-xs sm:text-sm font-extrabold text-emerald-950 dark:text-white">
                           AI Auto-Detected: {aiScanResult.docType}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]">
-                          {Math.round((aiScanResult.confidence || 0.9) * 100)}% Confidence
-                        </span>
+                        {aiScanResult.aiEngine && aiScanResult.aiEngine.includes('ollama') ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 dark:bg-violet-950/70 text-violet-800 dark:text-violet-300 border border-violet-300/60 dark:border-violet-800/60">
+                            🦙 100% Private Local AI
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]">
+                            {Math.round((aiScanResult.confidence || 0.9) * 100)}% Confidence
+                          </span>
+                        )}
                       </div>
                       <p className="text-[11px] text-emerald-700 dark:text-[#3ECF8E]/80 mt-0.5">
                         Document ID, Title, and Family Member have been automatically filled!
@@ -2311,6 +2501,15 @@ export default function DocumentUploadPage() {
           </div>
         )}
       </div>
+
+      {/* Smart Document Cropper & Auto-Deskew Modal (CamScanner Mode) */}
+      <DocumentCropperModal
+        isOpen={cropperModalOpen}
+        file={rawFileForCrop}
+        onApplyCrop={handleApplyCroppedFile}
+        onSkip={handleSkipCrop}
+        onClose={() => setCropperModalOpen(false)}
+      />
     </div>
   );
 }
