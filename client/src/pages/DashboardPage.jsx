@@ -79,7 +79,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [revealedIds, setRevealedIds] = useState(new Set());
   const [selectedLocation, setSelectedLocation] = useState('ALL');
-  const [showKycDetails, setShowKycDetails] = useState(false);
+  const [showKycDetails, setShowKycDetails] = useState(true);
   const [isPushBannerDismissed, setIsPushBannerDismissed] = useState(false);
   const [isPersonalKycBannerDismissed, setIsPersonalKycBannerDismissed] = useState(false);
 
@@ -273,33 +273,43 @@ export default function DashboardPage() {
     return Math.min(score, 100);
   }, [documents, idCards, members]);
 
+  // Robust KYC document matcher
+  const matchKyc = (docList) => {
+    const list = docList || [];
+    const hasAadhaar = list.some(d => {
+      const text = `${d.title || ''} ${d.category || ''} ${d.originalFileName || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+      const num = (d.documentNumber || '').replace(/\s+/g, '');
+      return text.includes('aadhaar') || text.includes('adhar') || text.includes('uidai') || text.includes('uid') || /^\d{12}$/.test(num);
+    });
+
+    const hasPan = list.some(d => {
+      const text = `${d.title || ''} ${d.category || ''} ${d.originalFileName || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+      const num = (d.documentNumber || '').trim().toUpperCase();
+      return text.includes('pan') || text.includes('nsdl') || text.includes('uti') || /^[A-Z]{5}\d{4}[A-Z]$/.test(num);
+    });
+
+    const hasLicenseOrVoter = list.some(d => {
+      const text = `${d.title || ''} ${d.category || ''} ${d.originalFileName || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+      const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|mediclaim|ayushman|abha)\b/i.test(text);
+      if (isMed) return false;
+      return text.includes('voter') || text.includes('election') || text.includes('epic') || /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc|passport)\b/i.test(text);
+    });
+
+    const hasHealth = list.some(d => {
+      const text = `${d.title || ''} ${d.category || ''} ${d.originalFileName || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
+      return text.includes('health') || text.includes('ayushman') || text.includes('mediclaim') || text.includes('abha') || text.includes('insurance') || text.includes('pmjay') || text.includes('policy');
+    });
+
+    return { hasAadhaar, hasPan, hasLicenseOrVoter, hasHealth };
+  };
+
   // Essential Indian KYC / Basic IDs Onboarding Tracker
   const kycStatus = useMemo(() => {
     const targetDocs = selectedMemberId === 'ALL'
       ? documents
       : documents.filter(d => (d.assignedMember?._id || d.assignedMemberId || d.uploaderId)?.toString() === selectedMemberId.toString());
 
-    const hasAadhaar = targetDocs.some(d => {
-      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return text.includes('aadhaar') || text.includes('adhar') || text.includes('uid');
-    });
-
-    const hasPan = targetDocs.some(d => {
-      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return text.includes('pan');
-    });
-
-    const hasLicenseOrVoter = targetDocs.some(d => {
-      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|mediclaim|ayushman|abha)\b/i.test(text);
-      if (isMed) return false;
-      return text.includes('voter') || text.includes('election') || /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc)\b/i.test(text);
-    });
-
-    const hasHealth = targetDocs.some(d => {
-      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return text.includes('health') || text.includes('ayushman') || text.includes('mediclaim') || text.includes('abha') || text.includes('insurance');
-    });
+    const { hasAadhaar, hasPan, hasLicenseOrVoter, hasHealth } = matchKyc(targetDocs);
 
     const items = [
       {
@@ -376,27 +386,7 @@ export default function DashboardPage() {
       return docMemberId?.toString() === myId.toString();
     });
 
-    const hasAadhaar = myDocs.some((d) => {
-      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return text.includes('aadhaar') || text.includes('adhar') || text.includes('uid');
-    });
-
-    const hasPan = myDocs.some((d) => {
-      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return text.includes('pan');
-    });
-
-    const hasLicenseOrVoter = myDocs.some((d) => {
-      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|mediclaim|ayushman|abha)\b/i.test(text);
-      if (isMed) return false;
-      return text.includes('voter') || text.includes('election') || /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc)\b/i.test(text);
-    });
-
-    const hasHealth = myDocs.some((d) => {
-      const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return text.includes('health') || text.includes('ayushman') || text.includes('mediclaim') || text.includes('abha') || text.includes('insurance');
-    });
+    const { hasAadhaar, hasPan, hasLicenseOrVoter, hasHealth } = matchKyc(myDocs);
 
     const items = [
       {
@@ -479,7 +469,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (loading) return;
     const myId = user?._id || user?.id;
-    if (!myId || !isVerifiedUser) return;
+    if (!myId) return;
 
     if (!myPersonalKycStatus.isComplete) {
       const dismissedKey = 'gharvault_dismissed_kyc_' + myId;
@@ -491,7 +481,7 @@ export default function DashboardPage() {
       // If complete, ensure modal is closed and will not trigger
       setIsPersonalKycModalOpen(false);
     }
-  }, [loading, isVerifiedUser, myPersonalKycStatus.isComplete, user?._id, user?.id]);
+  }, [loading, myPersonalKycStatus.isComplete, user?._id, user?.id]);
 
   const handleDismissPersonalKyc = () => {
     const myId = user?._id || user?.id;
@@ -506,25 +496,8 @@ export default function DashboardPage() {
     const memberDocs = documents.filter(
       (d) => (d.assignedMember?._id || d.assignedMemberId || d.uploaderId)?.toString() === memberId?.toString()
     );
-    const hasAadhaar = memberDocs.some((d) => {
-      const t = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return t.includes('aadhaar') || t.includes('adhar') || t.includes('uid');
-    });
-    const hasPan = memberDocs.some((d) => {
-      const t = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return t.includes('pan');
-    });
-    const hasDl = memberDocs.some((d) => {
-      const t = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      const isMed = /\b(prescription|hospital|clinic|doctor|medicine|dawai|parchi|parcha|discharge|health|medical|mediclaim|ayushman|abha)\b/i.test(t);
-      if (isMed) return false;
-      return t.includes('voter') || /\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc)\b/i.test(t);
-    });
-    const hasHealth = memberDocs.some((d) => {
-      const t = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
-      return t.includes('health') || t.includes('ayushman') || t.includes('mediclaim') || t.includes('abha') || t.includes('prescription') || t.includes('doctor');
-    });
-    return hasAadhaar && hasPan && hasDl && hasHealth;
+    const { hasAadhaar, hasPan, hasLicenseOrVoter, hasHealth } = matchKyc(memberDocs);
+    return Boolean(hasAadhaar && hasPan && hasLicenseOrVoter && hasHealth);
   };
 
   // Card theme helper
@@ -935,7 +908,7 @@ export default function DashboardPage() {
         )}
 
         {/* Personal KYC Gentle Chip */}
-        {isVerifiedUser && !myPersonalKycStatus.isComplete && !isPersonalKycBannerDismissed && (
+        {!myPersonalKycStatus.isComplete && !isPersonalKycBannerDismissed && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200 animate-fadeIn">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-base shrink-0">💡</span>

@@ -4,12 +4,40 @@ import Family from '../models/Family.js';
 import { isConnected } from '../config/db.js';
 import { processDocumentWithIntelligence } from './documentAI/index.js';
 
+export const devanagariMap = {
+  'अ': 'a', 'आ': 'aa', 'इ': 'i', 'ई': 'ee', 'उ': 'u', 'ऊ': 'oo', 'ऋ': 'ri',
+  'ए': 'e', 'ऐ': 'ai', 'ओ': 'o', 'औ': 'au', 'अं': 'am', 'अः': 'ah',
+  'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'ng',
+  'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'ny',
+  'ट': 't', 'ठ': 'th', 'ड': 'd', 'ढ': 'dh', 'ण': 'n',
+  'त': 't', 'थ': 'th', 'द': 'd', 'ध': 'dh', 'न': 'n',
+  'प': 'p', 'फ': 'ph', 'ब': 'b', 'भ': 'bh', 'म': 'm',
+  'य': 'y', 'र': 'r', 'ल': 'l', 'व': 'v', 'श': 'sh', 'ष': 'sh', 'स': 's', 'ह': 'h',
+  'ा': 'a', 'ि': 'i', 'ी': 'ee', 'ु': 'u', 'ू': 'oo', 'ृ': 'ri',
+  'े': 'e', 'ै': 'ai', 'ो': 'o', 'ौ': 'au', 'ं': 'n', '्': '',
+  '़': '', '।': ' ', '॥': ' '
+};
+
 /**
- * Clean & normalize string for fuzzy name matching
+ * Phonetically transliterate Devanagari text to Latin for seamless matching
  */
-function normalizeName(str) {
+export function devanagariToLatin(str) {
   if (!str) return '';
-  return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').trim();
+  let result = '';
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    result += devanagariMap[ch] !== undefined ? devanagariMap[ch] : ch;
+  }
+  return result;
+}
+
+/**
+ * Clean & normalize string for fuzzy name matching (Bilingual English + Hindi)
+ */
+export function normalizeName(str) {
+  if (!str) return '';
+  const transliterated = devanagariToLatin(str.trim());
+  return transliterated.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 const COMMON_INDIAN_SUFFIXES = new Set([
@@ -19,11 +47,13 @@ const COMMON_INDIAN_SUFFIXES = new Set([
 /**
  * Match an extracted name against family members with Indian name awareness
  */
-function findBestMemberMatch(extractedName, members = []) {
+export function findBestMemberMatch(extractedName, members = []) {
   if (!extractedName || !members.length) return null;
   const normExtracted = normalizeName(extractedName);
+  if (!normExtracted) return null;
   const extractedParts = normExtracted.split(/\s+/).filter(Boolean);
   if (!extractedParts.length) return null;
+  const spacelessExtracted = normExtracted.replace(/\s+/g, '');
 
   let bestMatch = null;
   let highestScore = 0;
@@ -31,19 +61,40 @@ function findBestMemberMatch(extractedName, members = []) {
   for (const m of members) {
     const memberName = normalizeName(m.name);
     if (!memberName) continue;
+    const memberId = (m._id || m.id || '').toString();
     const memberParts = memberName.split(/\s+/).filter(Boolean);
     if (!memberParts.length) continue;
+    const spacelessMember = memberName.replace(/\s+/g, '');
 
-    // 1. Exact full name match (e.g. "Aditya Shukla" === "Aditya Shukla")
+    // 1. Exact full name match (e.g. "Aditya Shukla" === "Aditya Shukla" or "शिव राम" === "Shiv Ram")
     if (normExtracted === memberName) {
-      return { memberId: m._id, memberName: m.name, confidence: 1.0, score: 100 };
+      return { memberId, memberName: m.name, confidence: 1.0, score: 100 };
+    }
+
+    // 2. Spaceless match (e.g. "Shiv Ram" === "Shivram", "Harsh Vardhan" === "Harshvardhan")
+    if (spacelessExtracted === spacelessMember && spacelessExtracted.length >= 3) {
+      return { memberId, memberName: m.name, confidence: 0.98, score: 95 };
+    }
+
+    // 3. Prefix/Subset match when either is a single-word given name (e.g. member is "Shiv" and extracted is "Shiv Ram")
+    if (
+      (extractedParts.length === 1 || memberParts.length === 1) &&
+      (spacelessExtracted.startsWith(spacelessMember) || spacelessMember.startsWith(spacelessExtracted)) &&
+      Math.min(spacelessExtracted.length, spacelessMember.length) >= 3
+    ) {
+      const matchScore = 85;
+      if (matchScore > highestScore) {
+        highestScore = matchScore;
+        bestMatch = { memberId, memberName: m.name, confidence: 0.92, score: matchScore };
+      }
+      continue;
     }
 
     let score = 0;
     const extractedFirst = extractedParts[0];
     const memberFirst = memberParts[0];
 
-    // 2. Primary Given Name Match (Critical in Indian naming)
+    // 4. Primary Given Name Match (Critical in Indian naming)
     if (extractedFirst === memberFirst) {
       // e.g. "Aditya Kumar" vs "Aditya Shukla" -> same given name (+20 points)
       score += 20;
@@ -55,22 +106,18 @@ function findBestMemberMatch(extractedName, members = []) {
       score -= 15;
     }
 
-    // 3. Match remaining tokens (surname / middle names)
+    // 5. Match remaining tokens (surname / middle names)
     for (let i = 1; i < extractedParts.length; i++) {
       const part = extractedParts[i];
       if (memberParts.includes(part)) {
-        // Generic suffix like "kumar", "singh" gives very little weight (+1)
-        // Distinct surnames like "shukla", "agarwal", "chatterjee" give high weight (+6)
         score += COMMON_INDIAN_SUFFIXES.has(part) ? 1 : 6;
       }
     }
 
-    // A candidate MUST have at least 10 points to qualify as a genuine match
-    // (A generic suffix alone can never exceed 1 point, preventing "Vinay Kumar" from matching "Aditya Kumar")
     if (score >= 10 && score > highestScore) {
       highestScore = score;
       bestMatch = {
-        memberId: m._id,
+        memberId,
         memberName: m.name,
         confidence: Math.min(score / 25, 0.98),
         score,
@@ -1063,12 +1110,14 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
       },
     };
 
-    // Sequential Fast Fallback: Try gemini-flash-lite-latest first (fastest, high quota).
-    // If unavailable or rate-limited, fall back to gemini-3.5-flash-lite.
+    // Sequential Fast Fallback: Active, high-availability Gemini models
+    // Priority 1: gemini-3-flash-preview (proven ~3.0s vision inference, high availability)
+    // Priority 2: gemini-flash-lite-latest (fastest lightweight tier)
+    // Priority 3: gemini-3.1-flash-lite-preview (resilient preview fallback)
     const modelsToTry = [
+      'gemini-3-flash-preview',
       'gemini-flash-lite-latest',
-      'gemini-3.5-flash-lite',
-      'gemini-3.8-flash',
+      'gemini-3.1-flash-lite-preview',
     ];
 
     let result = null;
@@ -1083,7 +1132,7 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
-          signal: AbortSignal.timeout(18000),
+          signal: AbortSignal.timeout(12000),
         });
 
         if (response.ok) {

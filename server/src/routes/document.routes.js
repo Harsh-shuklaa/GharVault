@@ -10,7 +10,7 @@ import User from '../models/User.js';
 import Family from '../models/Family.js';
 import Notification from '../models/Notification.js';
 import { isConnected } from '../config/db.js';
-import { uploadDocument, createSignedUrl, deleteDocument } from '../services/supabaseStorage.js';
+import { uploadDocument, createSignedUrl, deleteDocument, LOCAL_STORAGE_DIR } from '../services/supabaseStorage.js';
 import { recordAuditLog } from '../services/auditService.js';
 import { sendPushToFamily } from '../services/pushNotification.service.js';
 import { scanDocumentWithAI, generateSmartDocumentTitle } from '../services/aiDocumentScanner.js';
@@ -607,18 +607,40 @@ router.post('/ai-scan', (req, res, next) => {
 
       console.log(`[AI Scan] Processing file: "${req.file.originalname}" (${(req.file.size / 1024).toFixed(1)} KB), mime: ${req.file.mimetype}`);
 
-      if (familyId) {
-        if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
-          try {
-            const users = await User.find({ familyId }).select('_id name relationship role').lean();
-            familyMembers = users.map(u => ({ _id: u._id.toString(), name: u.name }));
-          } catch (e) {
-            console.warn('[AI Scan] Failed to load members from DB:', e.message);
+      // 1. Check if client passed members list directly in request body
+      if (req.body?.members) {
+        try {
+          const parsed = typeof req.body.members === 'string' ? JSON.parse(req.body.members) : req.body.members;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            familyMembers = parsed.map(m => ({
+              _id: (m._id || m.id || '').toString(),
+              name: m.name || '',
+              relationship: m.relationship || 'Member',
+            }));
           }
-        } else if (memoryStore.users) {
+        } catch (e) {
+          console.warn('[AI Scan] Failed to parse members from request body:', e.message);
+        }
+      }
+
+      // 2. Fallback to DB query if not provided in body
+      if (familyMembers.length === 0 && familyId) {
+        try {
+          const query = mongoose.Types.ObjectId.isValid(familyId)
+            ? { $or: [{ familyId }, { familyId: new mongoose.Types.ObjectId(familyId) }] }
+            : { familyId };
+          const users = await User.find(query).select('_id name relationship role').lean();
+          if (users && users.length > 0) {
+            familyMembers = users.map(u => ({ _id: u._id.toString(), name: u.name, relationship: u.relationship }));
+          }
+        } catch (e) {
+          console.warn('[AI Scan] Failed to load members from DB:', e.message);
+        }
+
+        if (familyMembers.length === 0 && memoryStore.users) {
           familyMembers = memoryStore.users
-            .filter(u => u.familyId === familyId)
-            .map(u => ({ _id: u._id, name: u.name }));
+            .filter(u => u.familyId?.toString() === familyId.toString())
+            .map(u => ({ _id: u._id, name: u.name, relationship: u.relationship }));
         }
       }
 
@@ -826,6 +848,10 @@ router.post('/upload', (req, res, next) => {
       assignedMemberId,
       memberId,
       documentNumber = '',
+      holderName = '',
+      fatherOrSpouseName = '',
+      dob = '',
+      docType = '',
       issueDate,
       expiryDate,
       whoCanView = 'ALL',
@@ -868,12 +894,30 @@ router.post('/upload', (req, res, next) => {
     const sha256Hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
 
     // 2. Storage Path in Private Encrypted Bucket
-    const fileExt = path.extname(originalName) || '.pdf';
+    const fileExt = path.extname(originalName) || (mimeType?.startsWith('image/png') ? '.png' : mimeType?.startsWith('image/jpeg') ? '.jpg' : '.pdf');
     const storagePath = `vault/${category.toLowerCase().replace(/[^a-z0-9]/g, '_')}/${Date.now()}_${crypto.randomBytes(4).toString('hex')}${fileExt}`;
 
-    // 3. Auto-extract number if not provided
-    const ocrData = simulateOCR(originalName, title || '', category);
-    const finalDocNumber = documentNumber?.trim() || ocrData.documentNumber || '';
+    // 2.5 Persist Document File to Vault Storage (Local Vault & Supabase)
+    try {
+      await uploadDocument(fileBuffer, storagePath, mimeType);
+    } catch (storageErr) {
+      console.warn('[Upload Storage Warning] Could not persist file buffer:', storageErr.message);
+    }
+
+    // 3. Receive or Auto-extract OCR Intelligence
+    let passedOcrData = null;
+    if (req.body.ocrExtractedData) {
+      try {
+        passedOcrData = typeof req.body.ocrExtractedData === 'string'
+          ? JSON.parse(req.body.ocrExtractedData)
+          : req.body.ocrExtractedData;
+      } catch (e) {
+        console.warn('[Upload OCR Parse Error]:', e.message);
+      }
+    }
+
+    const ocrData = passedOcrData || simulateOCR(originalName, title || '', category);
+    const finalDocNumber = documentNumber?.trim() || ocrData.docNumber || ocrData.documentNumber || '';
 
     // Merge emergency medical details if passed from AI scan
     let parsedEmergencyDetails = null;
@@ -885,7 +929,12 @@ router.post('/upload', (req, res, next) => {
       } catch (e) {}
     }
     const finalOcrData = {
-      ...ocrData,
+      ...(ocrData || {}),
+      holderName: (holderName || ocrData?.holderName || '').trim(),
+      fatherOrSpouseName: (fatherOrSpouseName || ocrData?.fatherOrSpouseName || '').trim() || null,
+      dob: dob || ocrData?.dob || null,
+      docType: docType || ocrData?.docType || ocrData?.type || category,
+      docNumber: finalDocNumber,
       emergencyDetails: parsedEmergencyDetails || ocrData.emergencyDetails || null,
     };
 
@@ -1573,7 +1622,19 @@ router.put('/:id/mpin-protection', async (req, res) => {
 // Handler for updating document metadata & optional replacement scan
 const handleUpdateDocument = async (req, res) => {
   try {
-    const { title, documentNumber, expiryDate, category, assignedMemberId, notes } = req.body;
+    const {
+      title,
+      documentNumber,
+      issueDate,
+      expiryDate,
+      category,
+      assignedMemberId,
+      notes,
+      isSensitive,
+      isMpinProtected,
+      whoCanView,
+    } = req.body;
+
     const targetFamilyId = (req.familyId?._id || req.familyId || req.user?.familyId?._id || req.user?.familyId)?.toString();
     const currentUserId = (req.userId || req.user?._id)?.toString();
 
@@ -1594,31 +1655,97 @@ const handleUpdateDocument = async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    const isUploader = doc.uploaderId && doc.uploaderId.toString() === currentUserId;
-    if (targetFamilyId && doc.familyId && doc.familyId.toString() !== targetFamilyId && !isUploader) {
+    // Access check: allow uploader, or if same family, or in single family/dev mode
+    const isUploader = Boolean(doc.uploaderId && currentUserId && doc.uploaderId.toString() === currentUserId);
+    const docFamId = doc.familyId ? (doc.familyId._id || doc.familyId).toString() : null;
+    if (targetFamilyId && docFamId && targetFamilyId !== docFamId && !isUploader) {
       return res.status(403).json({ error: 'Access forbidden. This document belongs to another family vault.' });
     }
 
+    // Safe date parser
+    const parseSafeDate = (val) => {
+      if (!val || val === 'null' || val === 'undefined' || val === '') return null;
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
     if (title !== undefined && title.trim()) doc.title = title.trim();
     if (documentNumber !== undefined) doc.documentNumber = documentNumber.trim().toUpperCase();
-    if (category !== undefined) doc.category = category;
-    if (assignedMemberId !== undefined) doc.assignedMemberId = assignedMemberId || null;
-    if (expiryDate !== undefined) {
-      doc.expiryDate = expiryDate ? new Date(expiryDate) : null;
+    if (category !== undefined && category.trim()) doc.category = category.trim();
+
+    if (assignedMemberId !== undefined) {
+      const cleanMemberId = (assignedMemberId && assignedMemberId !== 'null' && assignedMemberId !== 'undefined' && assignedMemberId !== '')
+        ? assignedMemberId
+        : null;
+      if (isMongo) {
+        doc.assignedMemberId = (cleanMemberId && mongoose.Types.ObjectId.isValid(cleanMemberId))
+          ? cleanMemberId
+          : null;
+      } else {
+        doc.assignedMemberId = cleanMemberId;
+      }
     }
+
+    if (issueDate !== undefined) {
+      doc.issueDate = parseSafeDate(issueDate);
+    }
+
+    if (expiryDate !== undefined) {
+      doc.expiryDate = parseSafeDate(expiryDate);
+      if (doc.expiryDate) {
+        const now = Date.now();
+        const exp = doc.expiryDate.getTime();
+        if (exp <= now) doc.status = 'EXPIRED';
+        else if (exp <= now + 30 * 86400000) doc.status = 'EXPIRING_SOON';
+        else doc.status = 'ACTIVE';
+      } else {
+        doc.status = 'ACTIVE';
+      }
+    }
+
     if (notes !== undefined) doc.notes = notes.trim();
+
+    if (req.body.holderName !== undefined || req.body.fatherOrSpouseName !== undefined || req.body.dob !== undefined || req.body.docType !== undefined) {
+      doc.ocrExtractedData = {
+        ...(doc.ocrExtractedData || {}),
+        ...(req.body.holderName !== undefined ? { holderName: req.body.holderName.trim() } : {}),
+        ...(req.body.fatherOrSpouseName !== undefined ? { fatherOrSpouseName: req.body.fatherOrSpouseName.trim() } : {}),
+        ...(req.body.dob !== undefined ? { dob: req.body.dob } : {}),
+        ...(req.body.docType !== undefined ? { docType: req.body.docType.trim() } : {}),
+      };
+      if (isMongo && doc.markModified) {
+        doc.markModified('ocrExtractedData');
+      }
+    }
+
+    if (isMpinProtected !== undefined || isSensitive !== undefined) {
+      const shouldLock = (isMpinProtected === 'true' || isMpinProtected === true || isSensitive === 'true' || isSensitive === true);
+      doc.isSensitive = shouldLock;
+    }
+
+    if (whoCanView !== undefined) {
+      let parsedWho = ['ALL'];
+      try {
+        parsedWho = typeof whoCanView === 'string' && (whoCanView.startsWith('[') || whoCanView.startsWith('{'))
+          ? JSON.parse(whoCanView)
+          : Array.isArray(whoCanView) ? whoCanView : whoCanView.split(',').map(s => s.trim());
+      } catch (e) {
+        parsedWho = Array.isArray(whoCanView) ? whoCanView : ['ALL'];
+      }
+      doc.whoCanView = parsedWho;
+    }
 
     // Optional file update if user attached a replacement scan/photo
     if (req.file) {
+      const fileExt = path.extname(req.file.originalname) || (req.file.mimetype?.startsWith('image/png') ? '.png' : req.file.mimetype?.startsWith('image/jpeg') ? '.jpg' : '.pdf');
+      const storagePath = `vault/${(category || doc.category || 'general').toLowerCase().replace(/[^a-z0-9]/g, '_')}/${Date.now()}_${crypto.randomBytes(4).toString('hex')}${fileExt}`;
       const sha256Hash = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
-      const storagePath = `documents/${targetFamilyId || 'general'}/${Date.now()}_${path.basename(req.file.originalname).replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      let uploadedUrl = null;
       try {
-        uploadedUrl = await uploadDocument(storagePath, req.file.buffer, req.file.mimetype);
+        await uploadDocument(req.file.buffer, storagePath, req.file.mimetype);
       } catch (uploadErr) {
         console.warn('[Storage Warning] Storage upload fallback:', uploadErr.message);
       }
-      doc.fileUrl = uploadedUrl || doc.fileUrl;
+      doc.fileUrl = `/api/documents/raw/${encodeURIComponent(storagePath)}`;
       doc.storagePath = storagePath;
       doc.sha256Hash = sha256Hash;
       doc.fileSize = req.file.size;
@@ -1627,7 +1754,29 @@ const handleUpdateDocument = async (req, res) => {
     }
 
     if (isMongo && typeof doc.save === 'function') {
-      await doc.save();
+      try {
+        await doc.save();
+      } catch (saveErr) {
+        console.warn('[Mongoose Save Warning] doc.save failed, falling back to findByIdAndUpdate:', saveErr.message);
+        await Document.findByIdAndUpdate(doc._id, {
+          title: doc.title,
+          documentNumber: doc.documentNumber,
+          category: doc.category,
+          assignedMemberId: doc.assignedMemberId,
+          issueDate: doc.issueDate,
+          expiryDate: doc.expiryDate,
+          status: doc.status,
+          notes: doc.notes,
+          isSensitive: doc.isSensitive,
+          whoCanView: doc.whoCanView,
+          storagePath: doc.storagePath,
+          fileUrl: doc.fileUrl,
+          fileSize: doc.fileSize,
+          mimeType: doc.mimeType,
+          originalFileName: doc.originalFileName,
+          sha256Hash: doc.sha256Hash,
+        });
+      }
     }
 
     // Auto-sync medical credentials upon edit/update
@@ -1661,7 +1810,38 @@ const handleUpdateDocument = async (req, res) => {
       link: `/vault/documents/${doc._id}`,
     }).catch(e => console.warn('[Auto-Push Error] Update push notification failed:', e.message));
 
-    res.json({ success: true, document: doc });
+    // Fetch assigned member details for enriched return
+    let enrichedMember = null;
+    if (doc.assignedMemberId) {
+      if (isMongo && mongoose.Types.ObjectId.isValid(doc.assignedMemberId)) {
+        enrichedMember = await User.findById(doc.assignedMemberId).lean();
+      } else {
+        enrichedMember = memoryStore.users.find(u => u._id?.toString() === doc.assignedMemberId?.toString());
+      }
+    }
+
+    const enrichedMemberFormatted = enrichedMember ? {
+      ...enrichedMember,
+      id: enrichedMember._id,
+      relation: enrichedMember.relationship || 'Member',
+      relationship: enrichedMember.relationship || 'Member',
+      dob: enrichedMember.dateOfBirth || '',
+      dateOfBirth: enrichedMember.dateOfBirth || '',
+      avatarUrl: enrichedMember.avatar,
+      avatar: enrichedMember.avatar,
+    } : null;
+
+    const normalizedDoc = {
+      ...(doc.toObject ? doc.toObject() : doc),
+      id: doc._id,
+      assignedMemberId: doc.assignedMemberId,
+      memberId: doc.assignedMemberId,
+      assignedMember: enrichedMemberFormatted,
+      isMpinProtected: Boolean(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)),
+      isSensitive: Boolean(doc.isSensitive || ['Property & Legal', 'Financial', 'Legal'].includes(doc.category)),
+    };
+
+    res.json({ success: true, document: normalizedDoc, message: 'Document updated successfully' });
   } catch (err) {
     console.error('Error updating document:', err);
     res.status(500).json({ error: err.message });
@@ -1733,27 +1913,76 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// GET /api/documents/raw/:path
-router.get('/raw/:path', async (req, res) => {
-  const storagePath = decodeURIComponent(req.params.path);
-  const localFilePath = path.resolve('server/uploads/vault', storagePath.replace(/\//g, '_'));
-
-  if (fs.existsSync(localFilePath)) {
-    return res.sendFile(localFilePath);
-  }
-
+// GET /api/documents/raw/* (Serve vault document files for preview and download)
+router.get(['/raw/:path(*)', '/raw/*', '/raw/:path'], async (req, res) => {
   try {
-    const signedUrl = await createSignedUrl(storagePath, 3600);
-    if (signedUrl && signedUrl.startsWith('http')) {
-      return res.redirect(signedUrl);
-    }
-  } catch (err) {
-    console.warn('[Raw] Could not sign url:', err.message);
-  }
+    const rawParam = req.params.path || req.params[0] || req.path.replace(/^\/raw\/?/, '');
+    const storagePath = decodeURIComponent(rawParam);
 
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'inline; filename="document_preview.pdf"');
-  res.send(Buffer.from('%PDF-1.4 [GharVault Secure Encrypted Preview]'));
+    const candidates = [
+      path.join(LOCAL_STORAGE_DIR, storagePath.replace(/\//g, '_')),
+      path.join(LOCAL_STORAGE_DIR, storagePath.replace(/\\/g, '/').replace(/\//g, '_')),
+      path.join(LOCAL_STORAGE_DIR, path.basename(storagePath)),
+      path.join(LOCAL_STORAGE_DIR, storagePath),
+    ];
+
+    let foundFile = null;
+    for (const cand of candidates) {
+      if (fs.existsSync(cand) && fs.statSync(cand).isFile()) {
+        foundFile = cand;
+        break;
+      }
+    }
+
+    const mimeMap = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.webp': 'image/webp',
+      '.svg': 'image/svg+xml',
+      '.gif': 'image/gif',
+      '.pdf': 'application/pdf',
+    };
+
+    if (foundFile) {
+      const ext = path.extname(foundFile).toLowerCase();
+      if (mimeMap[ext]) {
+        res.setHeader('Content-Type', mimeMap[ext]);
+      }
+      const isDownload = req.query.download === 'true' || req.query.download === '1';
+      if (isDownload) {
+        const customFilename = req.query.filename ? decodeURIComponent(req.query.filename) : null;
+        const cleanBasename = path.basename(foundFile).replace(/^vault_[a-z0-9_]+_\d+_[a-f0-9]+_?/, '');
+        const downloadName = customFilename || cleanBasename || `document${ext}`;
+        res.setHeader('Content-Disposition', `attachment; filename="${downloadName.replace(/["\r\n]/g, '')}"`);
+      }
+      return res.sendFile(path.resolve(foundFile));
+    }
+
+    // Try Supabase if not found on local disk
+    try {
+      const signedUrl = await createSignedUrl(storagePath, 3600);
+      if (signedUrl && signedUrl.startsWith('http')) {
+        return res.redirect(signedUrl);
+      }
+    } catch (err) {
+      console.warn('[Raw] Could not sign url:', err.message);
+    }
+
+    // If file is an image and missing, return 404 (DO NOT return dummy PDF bytes to <img> tags)
+    const ext = path.extname(storagePath).toLowerCase();
+    const isImage = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(ext);
+    if (isImage) {
+      return res.status(404).json({ error: 'Image file not found in vault storage' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="document_preview.pdf"');
+    return res.send(Buffer.from('%PDF-1.4 [GharVault Secure Encrypted Preview]'));
+  } catch (err) {
+    console.error('[Raw Route Error]', err);
+    return res.status(500).json({ error: 'Failed to retrieve document file' });
+  }
 });
 
 export default router;

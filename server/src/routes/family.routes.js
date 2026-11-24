@@ -821,7 +821,17 @@ router.put('/members/:id', async (req, res) => {
       role,
     } = req.body;
 
-    let existingMember = isConnected ? await User.findById(req.params.id) : memoryStore.users.find(u => u._id.toString() === req.params.id);
+    let existingMember = null;
+    if (isConnected && mongoose.Types.ObjectId.isValid(req.params.id)) {
+      try {
+        existingMember = await User.findById(req.params.id);
+      } catch (e) {
+        existingMember = null;
+      }
+    }
+    if (!existingMember) {
+      existingMember = memoryStore.users.find(u => u._id?.toString() === req.params.id);
+    }
     if (!existingMember) return res.status(404).json({ error: 'Family member not found' });
     if (targetFamilyId && existingMember.familyId && existingMember.familyId.toString() !== targetFamilyId.toString()) {
       return res.status(403).json({ error: 'Access forbidden. Member belongs to another family vault.' });
@@ -834,7 +844,12 @@ router.put('/members/:id', async (req, res) => {
     if (name?.trim()) updates.name = name.trim();
     if (finalRel?.trim()) updates.relationship = finalRel.trim();
     if (phone !== undefined) updates.phone = phone.trim();
-    if (email !== undefined) updates.email = email.toLowerCase().trim();
+    if (email !== undefined) {
+      const cleanEmail = email ? email.toLowerCase().trim() : '';
+      if (cleanEmail) {
+        updates.email = cleanEmail;
+      }
+    }
     if (bloodGroup !== undefined) updates.bloodGroup = bloodGroup.trim();
     if (finalDob !== undefined) updates.dateOfBirth = finalDob.trim();
     if (healthInsurancePolicy !== undefined) updates.healthInsurancePolicy = healthInsurancePolicy.trim();
@@ -846,14 +861,20 @@ router.put('/members/:id', async (req, res) => {
     if (role?.trim()) updates.role = role.trim();
 
     let member = null;
-    if (isConnected) {
-      member = await User.findByIdAndUpdate(
-        req.params.id,
-        updates,
-        { new: true }
-      );
+    if (isConnected && mongoose.Types.ObjectId.isValid(req.params.id)) {
+      try {
+        member = await User.findByIdAndUpdate(
+          req.params.id,
+          updates,
+          { new: true }
+        );
+      } catch (dbErr) {
+        console.warn('[Update Member Warning] Mongo update failed, using memory fallback:', dbErr.message);
+        member = memoryStore.users.find(u => u._id?.toString() === req.params.id);
+        if (member) Object.assign(member, updates);
+      }
     } else {
-      member = memoryStore.users.find(u => u._id.toString() === req.params.id);
+      member = memoryStore.users.find(u => u._id?.toString() === req.params.id);
       if (member) {
         Object.assign(member, updates);
       }

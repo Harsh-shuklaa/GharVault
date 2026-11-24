@@ -101,6 +101,10 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
       setError('');
       const data = new FormData();
       data.append('avatar', file);
+      const targetMemberId = member?._id || member?.id;
+      if (targetMemberId) {
+        data.append('memberId', targetMemberId);
+      }
       const res = await api.uploadAvatar(data);
       if (res?.avatarUrl) {
         setFormData((prev) => ({ ...prev, avatar: res.avatarUrl }));
@@ -183,14 +187,16 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
           </button>
         </div>
 
-        {/* Scrollable Form Body */}
-        <form id="edit-member-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
-          {error && (
-            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
-              <AlertCircle size={16} className="shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+        {/* Form Container */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+          {/* Scrollable Form Body */}
+          <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4">
+            {error && (
+              <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
           {/* Avatar Upload Banner */}
           <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#27272A] flex items-center justify-between gap-3">
@@ -404,27 +410,27 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
               </div>
             </label>
           </div>
-        </form>
+          </div>
 
-        {/* Fixed Footer */}
-        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] hover:bg-slate-100 dark:hover:bg-[#27272A] text-slate-700 dark:text-neutral-300 font-bold text-xs transition-colors cursor-pointer text-center"
-          >
-            Cancel
-          </button>
-          <button
-            form="edit-member-form"
-            type="submit"
-            disabled={loading}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
-          >
-            <Check size={15} strokeWidth={2.5} />
-            <span>{loading ? 'Saving Profile...' : 'Save Changes'}</span>
-          </button>
-        </div>
+          {/* Fixed Footer */}
+          <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] hover:bg-slate-100 dark:hover:bg-[#27272A] text-slate-700 dark:text-neutral-300 font-bold text-xs transition-colors cursor-pointer text-center"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+            >
+              <Check size={15} strokeWidth={2.5} />
+              <span>{loading ? 'Saving Profile...' : 'Save Changes'}</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>,
     document.body

@@ -56,7 +56,7 @@ export const getSupabaseClient = () => {
 };
 
 // Local storage fallback directory
-const LOCAL_STORAGE_DIR = path.resolve(__dirname, '../../uploads/vault');
+export const LOCAL_STORAGE_DIR = path.resolve(__dirname, '../../uploads/vault');
 if (!fs.existsSync(LOCAL_STORAGE_DIR)) {
   fs.mkdirSync(LOCAL_STORAGE_DIR, { recursive: true });
 }
@@ -89,6 +89,18 @@ export const ensureBucketExists = async () => {
 };
 
 export const uploadDocument = async (fileBuffer, storagePath, mimeType) => {
+  // Always guarantee file is persisted to local vault storage for immediate, offline & fast previews
+  const localFilePath = path.join(LOCAL_STORAGE_DIR, storagePath.replace(/\//g, '_'));
+  try {
+    const parentDir = path.dirname(localFilePath);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+    fs.writeFileSync(localFilePath, fileBuffer);
+  } catch (localWriteErr) {
+    console.warn('[Local Storage] Failed to write local cache file:', localWriteErr.message);
+  }
+
   const supabase = getSupabaseClient();
   if (supabase) {
     try {
@@ -100,7 +112,7 @@ export const uploadDocument = async (fileBuffer, storagePath, mimeType) => {
         });
 
       if (!error && data?.path) {
-        return { path: data.path, provider: 'supabase' };
+        return { path: data.path, localFile: localFilePath, provider: 'supabase' };
       }
       console.warn('[Supabase Storage] Cloud upload returned error, using local secure vault:', error?.message);
     } catch (networkErr) {
@@ -108,9 +120,6 @@ export const uploadDocument = async (fileBuffer, storagePath, mimeType) => {
     }
   }
 
-  // Fallback: store locally in secure encrypted/hash directory
-  const localFilePath = path.join(LOCAL_STORAGE_DIR, storagePath.replace(/\//g, '_'));
-  fs.writeFileSync(localFilePath, fileBuffer);
   return { path: storagePath, localFile: localFilePath, provider: 'local' };
 };
 

@@ -454,20 +454,18 @@ export default function AppLayout() {
 
           {/* Topbar Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            {/* Ask Vault AI Trigger Button in Topbar */}
+            {/* Ask Vault AI Trigger Button in Topbar (ChatGPT Minimalist Style) */}
             <button
               type="button"
               onClick={() => setIsAskAIOpen(true)}
-              title="Ask Vault AI (Gemini Assistant)"
-              className={`h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
-                isBlue
-                  ? 'border-blue-400/40 bg-blue-50/80 hover:bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:hover:bg-blue-500/25 dark:text-blue-300'
-                  : 'border-emerald-300/80 bg-emerald-50/80 hover:bg-emerald-100 text-emerald-800 dark:bg-[#3ECF8E]/15 dark:hover:bg-[#3ECF8E]/25 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/30'
-              }`}
+              title="Ask Vault AI"
+              className="h-8 sm:h-9 px-2 sm:px-3 rounded-xl border border-neutral-200 dark:border-[#262626] bg-white dark:bg-[#0A0A0A] hover:bg-neutral-50 dark:hover:bg-[#141414] text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs group active:scale-95"
             >
-              <Sparkles size={14} className="animate-pulse" />
-              <span className="text-[11px] font-extrabold hidden md:inline">
-                Ask AI
+              <div className="w-4 h-4 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0">
+                <Sparkles size={9} />
+              </div>
+              <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 hidden sm:inline">
+                Ask Vault
               </span>
             </button>
 

@@ -128,36 +128,54 @@ router.post('/avatar', requireAuth, upload.single('avatar'), async (req, res) =>
       return res.status(400).json({ error: 'No avatar image file provided.' });
     }
 
+    const targetUserId = req.body?.memberId || req.query?.memberId || req.userId;
+
     const uploadRes = await uploadAvatar(
       req.file.buffer,
       req.file.originalname,
       req.file.mimetype,
-      req.userId
+      targetUserId
     );
 
     if (!uploadRes.success || !uploadRes.avatarUrl) {
       throw new Error('Avatar upload failed.');
     }
 
-    // Save avatar URL to user profile
-    let user = null;
+    // Save avatar URL to profile:
+    // If targetUserId !== req.userId, update that specific family member without touching the current admin user!
+    let targetUser = null;
     if (isConnected) {
-      user = await User.findByIdAndUpdate(
-        req.userId,
-        { avatar: uploadRes.avatarUrl },
-        { new: true }
-      );
+      if (targetUserId !== req.userId) {
+        const currentUser = await User.findById(req.userId);
+        const memberUser = await User.findById(targetUserId);
+        if (memberUser && currentUser && memberUser.familyId?.toString() === currentUser.familyId?.toString()) {
+          targetUser = await User.findByIdAndUpdate(
+            targetUserId,
+            { avatar: uploadRes.avatarUrl },
+            { new: true }
+          );
+        } else {
+          targetUser = memberUser;
+        }
+      } else {
+        targetUser = await User.findByIdAndUpdate(
+          req.userId,
+          { avatar: uploadRes.avatarUrl },
+          { new: true }
+        );
+      }
     } else {
-      user = memoryStore.users.find((u) => u._id.toString() === req.userId.toString());
-      if (user) {
-        user.avatar = uploadRes.avatarUrl;
+      const found = memoryStore.users.find((u) => u._id.toString() === targetUserId.toString());
+      if (found) {
+        found.avatar = uploadRes.avatarUrl;
+        targetUser = found;
       }
     }
 
     res.json({
       success: true,
       avatarUrl: uploadRes.avatarUrl,
-      user,
+      user: targetUser,
       message: 'Profile photo updated successfully!',
     });
   } catch (err) {

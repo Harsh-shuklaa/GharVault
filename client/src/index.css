@@ -746,7 +746,10 @@ html.theme-blue .selection\:bg-\[\#3ECF8E\] *::selection {
 /* ================= BLUE THEME: STITCH MIDNIGHT NAVY DARK MODE PALETTE ================= */
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]),
 html.theme-blue.dark:not(.dark-obsidian),
-html.theme-blue.dark[data-dark-style="midnight"] {
+html.theme-blue.dark[data-dark-style="midnight"],
+html.dark.dark-midnight,
+html.dark[data-dark-style="midnight"],
+html.dark:not(.dark-obsidian):not([data-dark-style="obsidian"]) {
   color-scheme: dark;
 }
 
@@ -754,9 +757,15 @@ html.theme-blue.dark[data-dark-style="midnight"] {
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) body,
 html.theme-blue.dark:not(.dark-obsidian) body,
 html.theme-blue.dark[data-dark-style="midnight"] body,
+html.dark.dark-midnight body,
+html.dark[data-dark-style="midnight"] body,
+html.dark:not(.dark-obsidian):not([data-dark-style="obsidian"]) body,
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#121212\],
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#121212\],
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#121212\] {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#121212\],
+html.dark.dark-midnight .dark\:bg-\[\#121212\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#121212\],
+html.dark:not(.dark-obsidian):not([data-dark-style="obsidian"]) .dark\:bg-\[\#121212\] {
   background-color: #0A0F1D !important;
   color: #E2E8F0 !important;
 }
@@ -764,13 +773,19 @@ html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#121212\] {
 /* Sidebar, Topbar, Mobile Navigation & Inset Containers */
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#141414\],
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#141414\],
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\] {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\],
+html.dark.dark-midnight .dark\:bg-\[\#141414\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\],
+html.dark:not(.dark-obsidian):not([data-dark-style="obsidian"]) .dark\:bg-\[\#141414\] {
   background-color: #0F172A !important;
 }
 
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#141414\]\/95,
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#141414\]\/95,
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\]\/95 {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\]\/95,
+html.dark.dark-midnight .dark\:bg-\[\#141414\]\/95,
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\]\/95,
+html.dark:not(.dark-obsidian):not([data-dark-style="obsidian"]) .dark\:bg-\[\#141414\]\/95 {
   background-color: rgba(15, 23, 42, 0.95) !important;
 }
 
@@ -778,22 +793,33 @@ html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#141414\]\/95 {
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#18181B\],
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#18181B\],
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#18181B\],
+html.dark.dark-midnight .dark\:bg-\[\#18181B\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#18181B\],
+html.dark:not(.dark-obsidian):not([data-dark-style="obsidian"]) .dark\:bg-\[\#18181B\],
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#1A1D24\],
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#1A1D24\],
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#1A1D24\] {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#1A1D24\],
+html.dark.dark-midnight .dark\:bg-\[\#1A1D24\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#1A1D24\],
+html.dark:not(.dark-obsidian):not([data-dark-style="obsidian"]) .dark\:bg-\[\#1A1D24\] {
   background-color: #131E36 !important;
 }
 
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#18181B\]\/95,
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#18181B\]\/95,
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#18181B\]\/95 {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#18181B\]\/95,
+html.dark.dark-midnight .dark\:bg-\[\#18181B\]\/95,
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#18181B\]\/95,
+html.dark:not(.dark-obsidian):not([data-dark-style="obsidian"]) .dark\:bg-\[\#18181B\]\/95 {
   background-color: rgba(19, 30, 54, 0.95) !important;
 }
 
 /* Elevated Utility Controls, Quick Buttons, Swatches */
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#1C1C1C\],
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#1C1C1C\],
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#1C1C1C\] {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#1C1C1C\],
+html.dark.dark-midnight .dark\:bg-\[\#1C1C1C\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#1C1C1C\] {
   background-color: #182644 !important;
 }
 
@@ -803,7 +829,11 @@ html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#20
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#202022\],
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#202024\],
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#202022\],
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#202024\] {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#202024\],
+html.dark.dark-midnight .dark\:bg-\[\#202022\],
+html.dark.dark-midnight .dark\:bg-\[\#202024\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#202022\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#202024\] {
   background-color: #1E2D4E !important;
 }
 
@@ -813,7 +843,11 @@ html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:bg-\[\#27
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#262626\],
 html.theme-blue.dark:not(.dark-obsidian) .dark\:bg-\[\#27272A\],
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#262626\],
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#27272A\] {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:bg-\[\#27272A\],
+html.dark.dark-midnight .dark\:bg-\[\#262626\],
+html.dark.dark-midnight .dark\:bg-\[\#27272A\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#262626\],
+html.dark[data-dark-style="midnight"] .dark\:bg-\[\#27272A\] {
   background-color: #223456 !important;
 }
 
@@ -826,7 +860,13 @@ html.theme-blue.dark:not(.dark-obsidian) .dark\:hover\:bg-\[\#262626\]:hover,
 html.theme-blue.dark:not(.dark-obsidian) .dark\:hover\:bg-\[\#333\]:hover,
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#202024\]:hover,
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#262626\]:hover,
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#333\]:hover {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#333\]:hover,
+html.dark.dark-midnight .dark\:hover\:bg-\[\#202024\]:hover,
+html.dark.dark-midnight .dark\:hover\:bg-\[\#262626\]:hover,
+html.dark.dark-midnight .dark\:hover\:bg-\[\#333\]:hover,
+html.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#202024\]:hover,
+html.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#262626\]:hover,
+html.dark[data-dark-style="midnight"] .dark\:hover\:bg-\[\#333\]:hover {
   background-color: #223456 !important;
 }
 
@@ -851,7 +891,15 @@ html.theme-blue.dark:not(.dark-obsidian) .dark\:border-\[\#2E3340\],
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#262626\],
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#27272A\],
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#2E2E33\],
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#2E3340\] {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-\[\#2E3340\],
+html.dark.dark-midnight .dark\:border-\[\#262626\],
+html.dark.dark-midnight .dark\:border-\[\#27272A\],
+html.dark.dark-midnight .dark\:border-\[\#2E2E33\],
+html.dark.dark-midnight .dark\:border-\[\#2E3340\],
+html.dark[data-dark-style="midnight"] .dark\:border-\[\#262626\],
+html.dark[data-dark-style="midnight"] .dark\:border-\[\#27272A\],
+html.dark[data-dark-style="midnight"] .dark\:border-\[\#2E2E33\],
+html.dark[data-dark-style="midnight"] .dark\:border-\[\#2E3340\] {
   border-color: #1E2E4E !important;
 }
 
@@ -860,13 +908,19 @@ html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:border-ne
 html.theme-blue.dark:not(.dark-obsidian) .dark\:border-neutral-700,
 html.theme-blue.dark:not(.dark-obsidian) .dark\:border-neutral-800,
 html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-neutral-700,
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-neutral-800 {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:border-neutral-800,
+html.dark.dark-midnight .dark\:border-neutral-700,
+html.dark.dark-midnight .dark\:border-neutral-800,
+html.dark[data-dark-style="midnight"] .dark\:border-neutral-700,
+html.dark[data-dark-style="midnight"] .dark\:border-neutral-800 {
   border-color: #1E2E4E !important;
 }
 
 html[data-accent="blue"].dark:not([data-dark-style="obsidian"]) .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]),
 html.theme-blue.dark:not(.dark-obsidian) .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]),
-html.theme-blue.dark[data-dark-style="midnight"] .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]) {
+html.theme-blue.dark[data-dark-style="midnight"] .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]),
+html.dark.dark-midnight .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]),
+html.dark[data-dark-style="midnight"] .dark\:divide-\[\#27272A\] > :not([hidden]) ~ :not([hidden]) {
   border-color: #1E2E4E !important;
 }
 
@@ -949,7 +1003,9 @@ html.theme-blue.dark[data-dark-style="midnight"] .hover\:shadow-md:hover {
 html[data-accent="blue"].dark.dark-obsidian,
 html.theme-blue.dark.dark-obsidian,
 html[data-accent="blue"].dark[data-dark-style="obsidian"],
-html.theme-blue.dark[data-dark-style="obsidian"] {
+html.theme-blue.dark[data-dark-style="obsidian"],
+html.dark.dark-obsidian,
+html.dark[data-dark-style="obsidian"] {
   color-scheme: dark;
 }
 
@@ -957,9 +1013,13 @@ html.theme-blue.dark[data-dark-style="obsidian"] {
 html[data-accent="blue"].dark.dark-obsidian body,
 html.theme-blue.dark.dark-obsidian body,
 html[data-accent="blue"].dark[data-dark-style="obsidian"] body,
+html.dark.dark-obsidian body,
+html.dark[data-dark-style="obsidian"] body,
 html[data-accent="blue"].dark.dark-obsidian .dark\:bg-\[\#121212\],
 html.theme-blue.dark.dark-obsidian .dark\:bg-\[\#121212\],
-html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#121212\] {
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#121212\],
+html.dark.dark-obsidian .dark\:bg-\[\#121212\],
+html.dark[data-dark-style="obsidian"] .dark\:bg-\[\#121212\] {
   background-color: #0A0A0C !important;
   color: #E2E8F0 !important;
 }
@@ -967,7 +1027,9 @@ html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#121212\] {
 /* Sidebar, Topbar, Mobile Navigation & Inset Containers */
 html[data-accent="blue"].dark.dark-obsidian .dark\:bg-\[\#141414\],
 html.theme-blue.dark.dark-obsidian .dark\:bg-\[\#141414\],
-html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#141414\] {
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#141414\],
+html.dark.dark-obsidian .dark\:bg-\[\#141414\],
+html.dark[data-dark-style="obsidian"] .dark\:bg-\[\#141414\] {
   background-color: #10121A !important;
 }
 
@@ -975,9 +1037,13 @@ html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#141414\] {
 html[data-accent="blue"].dark.dark-obsidian .dark\:bg-\[\#18181B\],
 html.theme-blue.dark.dark-obsidian .dark\:bg-\[\#18181B\],
 html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#18181B\],
+html.dark.dark-obsidian .dark\:bg-\[\#18181B\],
+html.dark[data-dark-style="obsidian"] .dark\:bg-\[\#18181B\],
 html[data-accent="blue"].dark.dark-obsidian .dark\:bg-\[\#1A1D24\],
 html.theme-blue.dark.dark-obsidian .dark\:bg-\[\#1A1D24\],
-html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#1A1D24\] {
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:bg-\[\#1A1D24\],
+html.dark.dark-obsidian .dark\:bg-\[\#1A1D24\],
+html.dark[data-dark-style="obsidian"] .dark\:bg-\[\#1A1D24\] {
   background-color: #141722 !important;
 }
 
@@ -987,7 +1053,11 @@ html[data-accent="blue"].dark.dark-obsidian .dark\:border-\[\#27272A\],
 html.theme-blue.dark.dark-obsidian .dark\:border-\[\#262626\],
 html.theme-blue.dark.dark-obsidian .dark\:border-\[\#27272A\],
 html.theme-blue.dark[data-dark-style="obsidian"] .dark\:border-\[\#262626\],
-html.theme-blue.dark[data-dark-style="obsidian"] .dark\:border-\[\#27272A\] {
+html.theme-blue.dark[data-dark-style="obsidian"] .dark\:border-\[\#27272A\],
+html.dark.dark-obsidian .dark\:border-\[\#262626\],
+html.dark.dark-obsidian .dark\:border-\[\#27272A\],
+html.dark[data-dark-style="obsidian"] .dark\:border-\[\#262626\],
+html.dark[data-dark-style="obsidian"] .dark\:border-\[\#27272A\] {
   border-color: #212838 !important;
 }
 

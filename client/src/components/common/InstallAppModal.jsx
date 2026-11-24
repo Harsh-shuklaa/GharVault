@@ -72,21 +72,21 @@ export default function InstallAppModal({ isOpen, onClose }) {
 
           <div className="flex items-center gap-2.5 sm:gap-3 pr-8">
             <img
-              src="/icon-192.svg"
+              src="/icon-192.png"
               alt="Dastavej App Icon"
               className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl shadow-md shadow-[#3ECF8E]/20 shrink-0 border border-[#3ECF8E]/30"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h3 className="text-sm sm:text-base font-extrabold tracking-tight truncate">
-                  Install Dastavej App
+                  Install Dastavej App / ऐप डाउनलोड करें
                 </h3>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/15 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/30">
-                  PWA
+                  App
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
-                Fast 1-tap access on your phone home screen
+                Direct phone home screen par add karein (Play Store ki zaroorat nahi)
               </p>
             </div>
           </div>
@@ -295,47 +295,47 @@ export default function InstallAppModal({ isOpen, onClose }) {
               {deferredPrompt ? (
                 <div className="text-center space-y-3 py-2">
                   <p className="text-xs text-slate-600 dark:text-neutral-300">
-                    Your browser supports 1-click direct installation. Tap below to install Dastavej onto your device:
+                    Aapka phone direct 1-click install support karta hai. Neeche button dabayein:
                   </p>
                   <button
                     type="button"
                     onClick={triggerNativeInstall}
-                    className="w-full min-h-[44px] py-3 px-6 rounded-2xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98"
+                    className="w-full min-h-[46px] py-3.5 px-6 rounded-2xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-extrabold text-xs shadow-md shadow-[#3ECF8E]/25 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98"
                   >
-                    <Download size={16} />
-                    <span>Install Dastavej on This Device</span>
+                    <Download size={18} strokeWidth={2.5} />
+                    <span>Install Dastavej App Now (फोन में इनस्टॉल करें)</span>
                   </button>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-xs text-slate-600 dark:text-neutral-300">
-                    Install Dastavej directly via your browser menu:
-                  </p>
+                  <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-[#3ECF8E]/10 border border-emerald-200 dark:border-[#3ECF8E]/25 text-emerald-900 dark:text-[#3ECF8E] text-xs font-semibold">
+                    💡 Phone me Play Store ki tarah app download karne ke 2 aasan steps:
+                  </div>
                   <div className="space-y-2.5">
-                    <div className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626]">
+                    <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626]">
                       <span className="w-6 h-6 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center shrink-0">
                         1
                       </span>
                       <div className="text-xs">
                         <span className="font-bold text-slate-900 dark:text-white">
-                          Tap the browser menu (3 dots ⋮)
+                          Phone browser ke upar 3 Dots (⋮) par tap karein
                         </span>
                         <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5">
-                          Located in the top-right corner of Chrome or Edge.
+                          Chrome ya apne mobile browser ke top-right corner me 3 dots icon ⋮ hota hai.
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626]">
+                    <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626]">
                       <span className="w-6 h-6 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center shrink-0">
                         2
                       </span>
                       <div className="text-xs">
                         <span className="font-bold text-slate-900 dark:text-white">
-                          Tap "Install app" or "Add to Home screen"
+                          Menu me "Install app" ya "Add to Home screen" dabayein
                         </span>
                         <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5">
-                          Confirms adding Dastavej to your home screen or desktop.
+                          (होम स्क्रीन पर जोड़ें) — Iske baad "Install" par tap karein. App aapke phone me standalone app ki tarah add ho jayegi!
                         </p>
                       </div>
                     </div>

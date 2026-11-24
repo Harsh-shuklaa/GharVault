@@ -33,6 +33,7 @@ import {
   Briefcase,
   Plane,
   Edit3,
+  Camera,
 } from 'lucide-react';
 import MpinModal from '../components/common/MpinModal';
 import VaultPageSkeleton from '../components/common/VaultPageSkeleton';
@@ -1471,6 +1472,14 @@ export default function VaultPage() {
         </div>,
         document.body
       )}
+      {/* Mobile Floating Action Button (Quick Camera Scan) */}
+      <Link
+        to="/vault/upload"
+        className="sm:hidden fixed bottom-6 right-5 z-40 px-4 py-3 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-[#0c1322] font-black text-xs shadow-xl shadow-[#10B981]/40 flex items-center gap-2 active:scale-95 transition-transform"
+      >
+        <Camera size={17} />
+        <span>Scan Document</span>
+      </Link>
     </div>
   );
 }

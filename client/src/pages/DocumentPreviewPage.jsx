@@ -53,6 +53,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowRight,
+  CreditCard,
 } from 'lucide-react';
 import MpinModal from '../components/common/MpinModal';
 import VaultSecurityLoader from '../components/common/VaultSecurityLoader';
@@ -134,7 +135,11 @@ export default function DocumentPreviewPage() {
     title: '',
     documentNumber: '',
     category: 'ID Cards',
+    assignedMemberId: '',
+    issueDate: '',
     expiryDate: '',
+    isMpinProtected: false,
+    whoCanView: ['ALL'],
     notes: '',
   });
 
@@ -526,11 +531,27 @@ export default function DocumentPreviewPage() {
         formattedExpiry = typeof doc.expiryDate === 'string' ? doc.expiryDate.slice(0, 10) : '';
       }
     }
+    let formattedIssue = '';
+    if (doc.issueDate) {
+      try {
+        const d = new Date(doc.issueDate);
+        if (!isNaN(d.getTime())) {
+          formattedIssue = d.toISOString().split('T')[0];
+        }
+      } catch (e) {
+        formattedIssue = typeof doc.issueDate === 'string' ? doc.issueDate.slice(0, 10) : '';
+      }
+    }
+    const memId = (doc.assignedMemberId?._id || doc.assignedMemberId || doc.memberId || '')?.toString();
     setEditFormData({
       title: doc.title || '',
       documentNumber: doc.documentNumber || '',
       category: doc.category || 'ID Cards',
+      assignedMemberId: memId,
+      issueDate: formattedIssue,
       expiryDate: formattedExpiry,
+      isMpinProtected: Boolean(doc.isSensitive || doc.isMpinProtected),
+      whoCanView: Array.isArray(doc.whoCanView) ? doc.whoCanView : ['ALL'],
       notes: doc.notes || '',
     });
     setReplacementFile(null);
@@ -546,43 +567,62 @@ export default function DocumentPreviewPage() {
 
   const handleSaveEdit = async (e) => {
     e?.preventDefault();
+    if (!editFormData.title.trim()) {
+      toast.error('Document title is required');
+      return;
+    }
     try {
       setSavingEdit(true);
       let payload;
       if (replacementFile) {
         payload = new FormData();
-        payload.append('title', editFormData.title);
-        payload.append('documentNumber', editFormData.documentNumber);
+        payload.append('title', editFormData.title.trim());
+        payload.append('documentNumber', editFormData.documentNumber.trim());
         payload.append('category', editFormData.category);
+        if (editFormData.assignedMemberId) {
+          payload.append('assignedMemberId', editFormData.assignedMemberId);
+        } else {
+          payload.append('assignedMemberId', '');
+        }
+        if (editFormData.issueDate) {
+          payload.append('issueDate', editFormData.issueDate);
+        } else {
+          payload.append('issueDate', '');
+        }
         if (editFormData.expiryDate) {
           payload.append('expiryDate', editFormData.expiryDate);
+        } else {
+          payload.append('expiryDate', '');
         }
-        payload.append('notes', editFormData.notes);
+        payload.append('isMpinProtected', editFormData.isMpinProtected ? 'true' : 'false');
+        payload.append('isSensitive', editFormData.isMpinProtected ? 'true' : 'false');
+        payload.append('whoCanView', JSON.stringify(editFormData.whoCanView || ['ALL']));
+        payload.append('notes', editFormData.notes.trim());
         payload.append('file', replacementFile);
       } else {
         payload = {
-          title: editFormData.title,
-          documentNumber: editFormData.documentNumber,
+          title: editFormData.title.trim(),
+          documentNumber: editFormData.documentNumber.trim(),
           category: editFormData.category,
+          assignedMemberId: editFormData.assignedMemberId || null,
+          issueDate: editFormData.issueDate || null,
           expiryDate: editFormData.expiryDate || null,
-          notes: editFormData.notes,
+          isMpinProtected: editFormData.isMpinProtected,
+          isSensitive: editFormData.isMpinProtected,
+          whoCanView: editFormData.whoCanView || ['ALL'],
+          notes: editFormData.notes.trim(),
         };
       }
       const res = await api.updateDocument(id, payload);
       if (res?.document) {
         setDoc((prev) => ({
           ...prev,
-          title: res.document.title,
-          documentNumber: res.document.documentNumber,
-          category: res.document.category,
-          expiryDate: res.document.expiryDate,
-          notes: res.document.notes,
-          fileUrl: res.document.fileUrl || prev?.fileUrl,
-          fileSize: res.document.fileSize || prev?.fileSize,
-          mimeType: res.document.mimeType || prev?.mimeType,
-          originalFileName: res.document.originalFileName || prev?.originalFileName,
-          sha256Hash: res.document.sha256Hash || prev?.sha256Hash,
+          ...res.document,
+          assignedMember: res.document.assignedMember || (editFormData.assignedMemberId ? members.find(m => (m._id || m.id)?.toString() === editFormData.assignedMemberId) : null) || prev?.assignedMember,
         }));
+        if (replacementFile) {
+          setImageError(false);
+        }
       }
       toast.success('Document updated successfully!');
       setIsEditModalOpen(false);
@@ -613,6 +653,7 @@ export default function DocumentPreviewPage() {
   const loadDocumentDetails = async () => {
     try {
       setLoading(true);
+      setImageError(false);
       const res = await api.getDocument(id);
       if (res.document) {
         setDoc(res.document);
@@ -880,10 +921,256 @@ export default function DocumentPreviewPage() {
     };
   };
 
-  const handleDownloadClick = () => {
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // Generate high-resolution Digital Sovereign Smart Card PNG image via HTML5 Canvas
+  const exportSmartCardAsImage = (documentData) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const d = documentData || doc;
+        if (!d) return reject(new Error('Document not available'));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 960;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+
+        // Card Container with soft gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, 960, 600);
+        bgGrad.addColorStop(0, '#ffffff');
+        bgGrad.addColorStop(1, '#f8fafc');
+        ctx.fillStyle = bgGrad;
+
+        // Rounded corners
+        const r = 24;
+        ctx.beginPath();
+        ctx.moveTo(r, 0);
+        ctx.lineTo(960 - r, 0);
+        ctx.quadraticCurveTo(960, 0, 960, r);
+        ctx.lineTo(960, 600 - r);
+        ctx.quadraticCurveTo(960, 600, 960 - r, 600);
+        ctx.lineTo(r, 600);
+        ctx.quadraticCurveTo(0, 600, 0, 600 - r);
+        ctx.lineTo(0, r);
+        ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Header Strip (Official Blue #112347)
+        ctx.fillStyle = '#112347';
+        ctx.fillRect(0, 0, 960, 92);
+
+        // Header Tricolor Accent Bar at Top
+        ctx.fillStyle = '#f97316'; // Saffron
+        ctx.fillRect(0, 0, 320, 6);
+        ctx.fillStyle = '#ffffff'; // White
+        ctx.fillRect(320, 0, 320, 6);
+        ctx.fillStyle = '#16a34a'; // Green
+        ctx.fillRect(640, 0, 320, 6);
+
+        // Header Text: Republic of India
+        ctx.fillStyle = '#fde68a';
+        ctx.font = 'bold 15px monospace';
+        ctx.fillText('REPUBLIC OF INDIA • भारत गणराज्य', 36, 40);
+
+        // Header Subtext: Document Title
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText((d.title || 'Official Document').toUpperCase(), 36, 72);
+
+        // Header Right: Sovereign Seal
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#fde68a';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText('SECURE DIGITAL VAULT', 924, 42);
+        ctx.font = '11px monospace';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillText('VERIFIED SOVEREIGN RECORD', 924, 66);
+        ctx.textAlign = 'left';
+
+        // Metallic Gold Smart Chip Graphic (Left side)
+        const chipX = 40;
+        const chipY = 125;
+        const chipW = 84;
+        const chipH = 62;
+        const chipGrad = ctx.createLinearGradient(chipX, chipY, chipX + chipW, chipY + chipH);
+        chipGrad.addColorStop(0, '#fef08a');
+        chipGrad.addColorStop(0.5, '#eab308');
+        chipGrad.addColorStop(1, '#ca8a04');
+        ctx.fillStyle = chipGrad;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(chipX, chipY, chipW, chipH, 8);
+        else ctx.rect(chipX, chipY, chipW, chipH);
+        ctx.fill();
+        ctx.strokeStyle = '#a16207';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Chip circuit pattern
+        ctx.strokeStyle = '#713f12';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(chipX + 28, chipY);
+        ctx.lineTo(chipX + 28, chipY + chipH);
+        ctx.moveTo(chipX + 56, chipY);
+        ctx.lineTo(chipX + 56, chipY + chipH);
+        ctx.moveTo(chipX, chipY + 31);
+        ctx.lineTo(chipX + chipW, chipY + 31);
+        ctx.stroke();
+
+        // Document Number (Large bold monospace font)
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 36px monospace';
+        const displayDocNum = d.documentNumber ? formatDocNumber(d.documentNumber, true, false) : 'GHAR-VERIFIED-RECORD';
+        ctx.fillText(displayDocNum, 40, 245);
+
+        // Holder Name
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('NAME / नाम', 40, 295);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText((d.assignedMember?.name || user?.name || 'CITIZEN').toUpperCase(), 40, 328);
+
+        // Category
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('CATEGORY / श्रेणी', 40, 380);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText(d.category || 'General', 40, 410);
+
+        // Validity / Expiry
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('VALIDITY / EXPIRY', 340, 380);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText(
+          d.expiryDate
+            ? new Date(d.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+            : 'PERMANENT / LIFETIME',
+          340,
+          410
+        );
+
+        // Bottom Security Ribbon
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(0, 525, 960, 75);
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, 525);
+        ctx.lineTo(960, 525);
+        ctx.stroke();
+
+        ctx.fillStyle = '#475569';
+        ctx.font = 'bold 12px monospace';
+        const shaStr = d.sha256Hash ? d.sha256Hash.substring(0, 24).toUpperCase() : 'AUTHENTIC-SHA256';
+        ctx.fillText(`GHARVAULT IMMUTABLE LEDGER • SHA-256: ${shaStr}...`, 36, 565);
+
+        ctx.textAlign = 'right';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillStyle = '#059669';
+        ctx.fillText('✓ ZERO-KNOWLEDGE ENCRYPTED REPOSITORY COPY', 924, 565);
+        ctx.textAlign = 'left';
+
+        canvas.toBlob((blob) => {
+          if (!blob) return reject(new Error('Failed to generate image blob'));
+          resolve(blob);
+        }, 'image/png');
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
+
+  const handleDownloadDocument = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (isDownloading) return;
+
     const docId = doc?._id || id;
     if (docId) {
       api.notifyDownload(docId).catch(() => {});
+    }
+
+    setIsDownloading(true);
+
+    try {
+      // SCENARIO 1: If authentic photo/pdf file is available on server and not errored
+      if (fileUrl && !imageError) {
+        toast.info('Downloading original document...');
+        const cleanTitle = (doc?.title || 'document').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const defaultExt = isImage ? '.jpg' : isPdf ? '.pdf' : '.jpg';
+        const targetFilename = doc?.originalFileName || `${cleanTitle}${defaultExt}`;
+
+        let targetUrl = fileUrl;
+        const dlQuery = `download=true&filename=${encodeURIComponent(targetFilename)}`;
+        targetUrl += targetUrl.includes('?') ? `&${dlQuery}` : `?${dlQuery}`;
+
+        try {
+          const res = await fetch(targetUrl);
+          if (res.ok) {
+            const blob = await res.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = blobUrl;
+            a.download = targetFilename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1500);
+            toast.success(`"${targetFilename}" downloaded successfully!`);
+            setIsDownloading(false);
+            return;
+          }
+        } catch (fetchErr) {
+          console.warn('[Download] Direct blob fetch fallback:', fetchErr.message);
+        }
+
+        // Direct browser download fallback (Robust for Mobile Chrome & Safari)
+        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+        if (isMobileDevice) {
+          window.location.href = targetUrl;
+        } else {
+          const fallbackA = document.createElement('a');
+          fallbackA.href = targetUrl;
+          fallbackA.download = targetFilename;
+          fallbackA.target = '_blank';
+          document.body.appendChild(fallbackA);
+          fallbackA.click();
+          document.body.removeChild(fallbackA);
+        }
+        toast.success(`Started download for "${targetFilename}"!`);
+        setIsDownloading(false);
+        return;
+      }
+
+      // SCENARIO 2: If image file is missing or in Digital Smart Card view, export high-res PNG image
+      toast.info('Exporting official Smart Card image...');
+      const cardBlob = await exportSmartCardAsImage(doc);
+      const cleanTitle = (doc?.title || 'Document').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `${cleanTitle}_SmartCard.png`;
+      const blobUrl = window.URL.createObjectURL(cardBlob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1500);
+      toast.success(`✨ "${filename}" downloaded as PNG image!`);
+    } catch (err) {
+      console.error('Download error:', err);
+      toast.error('Download failed: ' + (err.message || 'Error'));
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -1092,17 +1379,16 @@ export default function DocumentPreviewPage() {
                   <span>24h Link</span>
                 </button>
 
-                <a
-                  href={fileUrl}
-                  download={doc.originalFileName || `${doc.title}`}
-                  onClick={handleDownloadClick}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+                <button
+                  type="button"
+                  onClick={handleDownloadDocument}
+                  disabled={isDownloading}
+                  className="px-3 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                  title="Download Document Image"
                 >
-                  <Download size={13} />
-                  <span>Download</span>
-                </a>
+                  {isDownloading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+                  <span>{isDownloading ? 'Downloading...' : 'Download'}</span>
+                </button>
               </div>
 
               {/* Delete */}
@@ -1255,7 +1541,10 @@ export default function DocumentPreviewPage() {
               {isImage && (
                 <button
                   type="button"
-                  onClick={() => setViewerMode('PREVIEW')}
+                  onClick={() => {
+                    setImageError(false);
+                    setViewerMode('PREVIEW');
+                  }}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     viewerMode === 'PREVIEW'
                       ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
@@ -1445,6 +1734,23 @@ export default function DocumentPreviewPage() {
                   <div className="relative w-full max-w-[520px] max-h-[46vh] sm:max-h-[54vh] lg:max-h-[calc(100vh-240px)] overflow-y-auto bg-white dark:bg-[#1C1C1C] rounded-2xl shadow-xl flex flex-col border border-slate-200 dark:border-[#2E2E2E]">
                     {renderWatermarkOverlay()}
 
+                    {/* Notice if photo was missing from storage */}
+                    {isImage && imageError && (
+                      <div className="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 px-3 py-1.5 flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-300 shrink-0">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <AlertTriangle size={13} className="text-amber-600 shrink-0" />
+                          <span className="truncate">Original photo file missing • Sovereign Smart Card layout active</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsEditModalOpen(true)}
+                          className="ml-2 font-bold underline hover:text-amber-900 dark:hover:text-amber-200 cursor-pointer shrink-0 text-[10px]"
+                        >
+                          Re-upload
+                        </button>
+                      </div>
+                    )}
+
                     {/* Authentic Header Bar */}
                     <div className="bg-[#112347] dark:bg-[#0c1830] text-white px-3.5 sm:px-4 py-2.5 flex items-center justify-between shadow-sm shrink-0">
                       <div className="flex items-center gap-2">
@@ -1568,18 +1874,16 @@ export default function DocumentPreviewPage() {
 
           {/* Quick Action Floating Dock at Bottom of Viewer */}
           <div className="p-2 sm:p-2.5 bg-slate-50/90 dark:bg-[#141414]/90 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between gap-1.5 sm:gap-2 shrink-0">
-            <a
-              href={fileUrl}
-              download={doc.originalFileName || `${doc.title}`}
-              onClick={handleDownloadClick}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors"
+            <button
+              type="button"
+              onClick={handleDownloadDocument}
+              disabled={isDownloading}
+              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors cursor-pointer disabled:opacity-50"
             >
-              <Download size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+              {isDownloading ? <Loader2 size={13} className="animate-spin text-[#10B981]" /> : <Download size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />}
               <span className="hidden sm:inline">Export Copy</span>
               <span className="sm:hidden">Export</span>
-            </a>
+            </button>
             <button
               type="button"
               onClick={handleWhatsAppShare}
@@ -1741,6 +2045,182 @@ export default function DocumentPreviewPage() {
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Intelligence Bento ID: Official Photo Identity & Cardholder Credentials (Voter ID, Aadhaar, PAN, DL, Passport) */}
+          {(() => {
+            const ocr = doc.ocrExtractedData || {};
+            const isIdCard = Boolean(
+              doc.category === 'ID Cards' ||
+              doc.category === 'Identity' ||
+              ocr.holderName ||
+              ocr.fatherOrSpouseName ||
+              ocr.dob ||
+              /\b(voter|aadhaar|adhar|pan card|pan|passport|driving|driver|license|licence|epic|identity|id card)\b/i.test(`${doc.title} ${doc.category} ${ocr.docType || ''}`)
+            );
+            if (!isIdCard) return null;
+
+            const holder = ocr.holderName || doc.assignedMember?.name || '';
+            const fatherOrSpouse = ocr.fatherOrSpouseName || null;
+            const dob = ocr.dob || doc.assignedMember?.dateOfBirth || null;
+            const docNum = doc.documentNumber || ocr.docNumber || '';
+            const docTypeLabel = ocr.docType || doc.title || 'Official Identity Card';
+
+            // Calculate age if dob is available
+            let ageStr = '';
+            if (dob) {
+              const birthYear = parseInt(dob.split(/[-/]/)[0], 10) > 1900
+                ? parseInt(dob.split(/[-/]/)[0], 10)
+                : parseInt(dob.split(/[-/]/)[2], 10);
+              if (birthYear > 1900 && birthYear < 2030) {
+                ageStr = `${new Date().getFullYear() - birthYear} Years`;
+              }
+            }
+
+            const bullets = Array.isArray(ocr.executiveSummary) && ocr.executiveSummary.length > 0
+              ? ocr.executiveSummary
+              : null;
+
+            return (
+              <div className="bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-emerald-500/10 rounded-2xl p-3 sm:p-3.5 border border-blue-300/60 dark:border-blue-500/30 shadow-xs space-y-2.5 transition-colors shrink-0">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300 flex items-center justify-center font-bold text-xs border border-blue-300/50 dark:border-blue-500/30">
+                      <CreditCard size={15} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xs text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
+                        <span>Government Identity & Credentials</span>
+                      </h3>
+                      <p className="text-[10px] text-blue-800/80 dark:text-blue-400/80">
+                        पहचान पत्र व नागरिक विवरण (Official Record)
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-900 dark:text-blue-200 text-[10px] font-bold border border-blue-300/60 dark:border-blue-500/30">
+                    {docTypeLabel}
+                  </span>
+                </div>
+
+                {/* Executive Summary Takeaways (if present) */}
+                {bullets && (
+                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#18181B]/80 border border-blue-200/70 dark:border-blue-500/20 space-y-1">
+                    <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300">
+                      <Sparkles size={11} className="text-blue-500" />
+                      <span>Executive Summary (सार)</span>
+                    </div>
+                    <ul className="space-y-1 text-xs text-slate-800 dark:text-neutral-200">
+                      {bullets.map((b, i) => (
+                        <li key={i} className="flex items-start gap-1.5 leading-snug">
+                          <span className="text-[#10B981] dark:text-[#3ECF8E] font-bold text-xs shrink-0 mt-0.5">✓</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Key Metrics Grid */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {/* Cardholder Legal Name */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-blue-200/50 dark:border-[#262626] flex items-center justify-between">
+                    <div className="min-w-0 pr-1">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Cardholder / धारक का नाम</span>
+                      <span className="font-bold text-slate-900 dark:text-white truncate block text-[13px]">
+                        {holder || 'Self / Registered'}
+                      </span>
+                    </div>
+                    {holder && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopySnippet(holder, 'Cardholder Name')}
+                        className="p-1 rounded bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 text-slate-700 dark:text-neutral-300 cursor-pointer shrink-0"
+                        title="Copy Holder Name"
+                      >
+                        {copiedSnippet === holder ? <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={12} />}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Father / Husband / Spouse Name */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-blue-200/50 dark:border-[#262626] flex items-center justify-between">
+                    <div className="min-w-0 pr-1">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Father / पिता या पति</span>
+                      <span className="font-semibold text-slate-900 dark:text-white truncate block text-[13px]">
+                        {fatherOrSpouse || 'Recorded on card'}
+                      </span>
+                    </div>
+                    {fatherOrSpouse && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopySnippet(fatherOrSpouse, "Father's Name")}
+                        className="p-1 rounded bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 text-slate-700 dark:text-neutral-300 cursor-pointer shrink-0"
+                        title="Copy Father's Name"
+                      >
+                        {copiedSnippet === fatherOrSpouse ? <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={12} />}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Document ID Number */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-blue-200/50 dark:border-[#262626] flex items-center justify-between">
+                    <div className="min-w-0 pr-1">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">ID / Card Number</span>
+                      <span className="font-mono font-bold text-emerald-700 dark:text-[#3ECF8E] truncate block text-[13px]">
+                        {docNum || 'N/A'}
+                      </span>
+                    </div>
+                    {docNum && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopySnippet(docNum, 'ID Number')}
+                        className="p-1 rounded bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 text-slate-700 dark:text-neutral-300 cursor-pointer shrink-0"
+                        title="Copy ID Number"
+                      >
+                        {copiedSnippet === docNum ? <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={12} />}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Date of Birth & Age */}
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-blue-200/50 dark:border-[#262626]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block">Date of Birth (DOB)</span>
+                      {ageStr && (
+                        <span className="text-[9px] font-bold text-emerald-600 dark:text-[#3ECF8E]">
+                          {ageStr}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-semibold text-slate-900 dark:text-white truncate block text-[13px]">
+                      {dob || 'Not listed'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Assigned Member Footer */}
+                <div className="p-2 rounded-xl bg-white/70 dark:bg-black/30 border border-blue-200/40 dark:border-[#262626] flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-500 dark:text-slate-400 text-[11px]">Vault Folder:</span>
+                    <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                      <span>{doc.assignedMember?.name || 'Whole Family'}</span>
+                      <CheckCircle2 size={12} className="text-emerald-500" />
+                    </span>
+                  </div>
+                  {doc.assignedMember?._id && (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/vault/members/${doc.assignedMember._id}`)}
+                      className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <span>Member Profile</span>
+                      <ExternalLink size={10} />
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -2755,27 +3235,107 @@ export default function DocumentPreviewPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {/* Document Number */}
+                {/* Assigned Member */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
-                    <Hash size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
-                    <span>Document ID Number</span>
+                    <Users size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                    <span>Assigned Family Member</span>
                   </label>
+                  <select
+                    value={editFormData.assignedMemberId}
+                    onChange={(e) => setEditFormData({ ...editFormData, assignedMemberId: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                  >
+                    <option value="">Whole Family / Common Document</option>
+                    {members.map((m) => (
+                      <option key={m._id || m.id} value={(m._id || m.id).toString()}>
+                        {m.name} ({m.relationship || 'Member'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Category */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
+                    <Box size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                    <span>Category</span>
+                  </label>
+                  <select
+                    value={editFormData.category}
+                    onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                  >
+                    <option value="ID Cards">ID Cards (Aadhaar, PAN, Voter ID, Passport)</option>
+                    <option value="Medical & Health">Medical & Health (Insurance, Reports, Prescriptions)</option>
+                    <option value="Bank & Property">Bank & Property (Passbooks, Registry, Fixed Deposits)</option>
+                    <option value="Vehicle & Transport">Vehicle & Transport (RC, Driver License, Insurance)</option>
+                    <option value="Property & Legal">Property & Legal (Registry Deed, Will, Agreement)</option>
+                    <option value="Education & Work">Education & Work (Degrees, Marksheets, Certificates)</option>
+                    <option value="Financial">Financial (Bank, Tax, Mutual Funds, Investment)</option>
+                    <option value="Other">Other (Bills, Receipts, Miscellaneous)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Document Number */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
+                  <Hash size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                  <span>Document ID Number</span>
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.documentNumber}
+                  onChange={(e) => setEditFormData({ ...editFormData, documentNumber: e.target.value })}
+                  placeholder="e.g. 5489 1234 9876 / ABCDE1234F"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* Issue Date */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
+                      <Calendar size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                      <span>Issue Date (Optional)</span>
+                    </label>
+                    {editFormData.issueDate && (
+                      <button
+                        type="button"
+                        onClick={() => setEditFormData({ ...editFormData, issueDate: '' })}
+                        className="text-[10px] text-red-500 hover:underline cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                   <input
-                    type="text"
-                    value={editFormData.documentNumber}
-                    onChange={(e) => setEditFormData({ ...editFormData, documentNumber: e.target.value })}
-                    placeholder="e.g. 5489 1234 9876 / ABCDE1234F"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                    type="date"
+                    value={editFormData.issueDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, issueDate: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
                   />
                 </div>
 
                 {/* Expiry Date */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
-                    <Calendar size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
-                    <span>Expiry Date (Optional)</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
+                      <Clock size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                      <span>Expiry Date (Optional)</span>
+                    </label>
+                    {editFormData.expiryDate && (
+                      <button
+                        type="button"
+                        onClick={() => setEditFormData({ ...editFormData, expiryDate: '' })}
+                        className="text-[10px] text-red-500 hover:underline cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="date"
                     value={editFormData.expiryDate}
@@ -2785,24 +3345,34 @@ export default function DocumentPreviewPage() {
                 </div>
               </div>
 
-              {/* Category */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-neutral-300">
-                  Category
-                </label>
-                <select
-                  value={editFormData.category}
-                  onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+              {/* Security MPIN Toggle */}
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    editFormData.isMpinProtected
+                      ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                      : 'bg-slate-200 dark:bg-[#262626] text-slate-500'
+                  }`}>
+                    <Lock size={14} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">Family Security MPIN Lock</p>
+                    <p className="text-[10px] text-slate-500 dark:text-neutral-400">Require 4-digit PIN to view and open</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditFormData({ ...editFormData, isMpinProtected: !editFormData.isMpinProtected })}
+                  className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${
+                    editFormData.isMpinProtected ? 'bg-[#10B981] dark:bg-[#3ECF8E]' : 'bg-slate-300 dark:bg-slate-700'
+                  }`}
                 >
-                  <option value="ID Cards">ID Cards (Aadhaar, PAN, Voter ID)</option>
-                  <option value="Vehicle & Transport">Vehicle & Transport (RC, DL, Insurance)</option>
-                  <option value="Medical & Health">Medical & Health (Insurance, Reports)</option>
-                  <option value="Property & Legal">Property & Legal (Registry, Deed, Will)</option>
-                  <option value="Education & Work">Education & Work (Degrees, Certificates)</option>
-                  <option value="Financial">Financial (Bank, Tax, Mutual Funds)</option>
-                  <option value="Other">Other</option>
-                </select>
+                  <span
+                    className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                      editFormData.isMpinProtected ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
               </div>
 
               {/* Optional: Replace Scanned File */}
@@ -2905,17 +3475,15 @@ export default function DocumentPreviewPage() {
             <MessageCircle size={14} className="text-emerald-600 dark:text-[#3ECF8E]" />
             <span className="truncate">WhatsApp</span>
           </button>
-          <a
-            href={fileUrl}
-            download={doc.originalFileName || `${doc.title}`}
-            onClick={handleDownloadClick}
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 py-2.5 px-1 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer"
+          <button
+            type="button"
+            onClick={handleDownloadDocument}
+            disabled={isDownloading}
+            className="flex-1 py-2.5 px-1 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer disabled:opacity-50"
           >
-            <Download size={13} />
-            <span className="truncate">Download</span>
-          </a>
+            {isDownloading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+            <span className="truncate">{isDownloading ? 'Downloading...' : 'Download'}</span>
+          </button>
         </div>
       </div>
     </div>

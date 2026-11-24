@@ -61,14 +61,14 @@ export default function PersonalKycPromptModal({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
-                  Essential Documents Required
+                  Essential Documents Required / आवश्यक दस्तावेज़
                 </h3>
                 <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300">
                   {completedCount}/{total} Vaulted
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
-                Personal Identity Vault for <strong>{user?.name || 'Verified User'}</strong>
+                Personal Identity Vault for <strong>{user?.name || 'Verified Member'}</strong>
               </p>
             </div>
           </div>
@@ -88,10 +88,10 @@ export default function PersonalKycPromptModal({
           <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/25 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1.5">
             <div className="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
               <AlertTriangle size={15} className="shrink-0" />
-              <span>Namaste {userName}! Apne documents upload karein</span>
+              <span>Namaste {userName}! Apne essential documents upload karein</span>
             </div>
             <p className="text-[11px] text-slate-700 dark:text-neutral-300 pl-5 leading-normal">
-              Aap verified member hain par aapke account me essential identity documents missing hain. Emergency verification aur medical cashless hospital admission ke liye inko safe vault me jald upload karein.
+              Aapke personal vault me zaroori identity documents missing hain. Emergency verification, banking aur cashless hospital admission ke liye inko safe vault me upload karein.
             </p>
           </div>
 
