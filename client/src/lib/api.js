@@ -237,6 +237,14 @@ export const api = {
     });
   },
 
+  async checkDuplicate(data) {
+    return request(`${API_BASE}/documents/check-duplicate`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+  },
+
   async askVaultAI(query) {
     return request(`${API_BASE}/documents/ask-ai`, {
       method: 'POST',

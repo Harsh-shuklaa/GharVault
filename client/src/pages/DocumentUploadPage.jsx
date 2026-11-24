@@ -417,6 +417,54 @@ export default function DocumentUploadPage() {
     });
   };
 
+  // Fast Client-Side SHA-256 Checksum Calculation via Web Crypto API
+  const computeFileSha256 = async (inputFile) => {
+    if (!inputFile) return null;
+    try {
+      if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+        const arrayBuffer = await inputFile.arrayBuffer();
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', arrayBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+      }
+    } catch (e) {
+      console.warn('SHA-256 computation error:', e);
+    }
+    return null;
+  };
+
+  // Real-Time Duplicate Document Detector across Family Vault
+  const runDuplicateCheck = async (overrides = {}) => {
+    try {
+      const activeFile = file || frontFile;
+      let sha = null;
+      if (activeFile && overrides.fileSha256 === undefined) {
+        sha = await computeFileSha256(activeFile);
+      }
+      const payload = {
+        fileSha256: overrides.fileSha256 !== undefined ? overrides.fileSha256 : sha,
+        fileName: overrides.fileName !== undefined ? overrides.fileName : (activeFile?.name || ''),
+        title: overrides.title !== undefined ? overrides.title : formData.title,
+        documentNumber: overrides.documentNumber !== undefined ? overrides.documentNumber : formData.documentNumber,
+        assignedMemberId: overrides.assignedMemberId !== undefined ? overrides.assignedMemberId : formData.assignedMemberId,
+      };
+
+      // Only check if we have at least sha, documentNumber, or a meaningful title
+      if (!payload.fileSha256 && (!payload.documentNumber || payload.documentNumber.trim().length < 4) && (!payload.title || payload.title.trim().length < 4)) {
+        return;
+      }
+
+      const res = await api.checkDuplicate(payload);
+      if (res?.isDuplicate && res?.duplicateWarning) {
+        setDetectedDuplicate(res.duplicateWarning);
+      } else if (!overrides.preserveExisting) {
+        setDetectedDuplicate(null);
+      }
+    } catch (e) {
+      console.warn('Real-time duplicate check error:', e);
+    }
+  };
+
   // Automatic AI Document Scanner & Metadata Extraction
   const triggerAIScan = async (fileToScan) => {
     if (!fileToScan) return;
@@ -641,6 +689,13 @@ export default function DocumentUploadPage() {
       setFormData((prev) => ({ ...prev, title: cleanName }));
     }
 
+    // Immediate real-time duplicate check based on file hash and filename
+    computeFileSha256(processedFile).then((sha) => {
+      if (sha) {
+        runDuplicateCheck({ fileSha256: sha, fileName: processedFile.name, title: cleanName });
+      }
+    });
+
     // Prompt user for AI auto-scan permission (saving quota & giving full control)
     setPendingAiScanFile(processedFile);
   };
@@ -662,6 +717,12 @@ export default function DocumentUploadPage() {
       processedFront = await compressImageUnder500KB(selectedFront);
     }
     setFrontFile(processedFront);
+    // Immediate real-time duplicate check based on front file hash
+    computeFileSha256(processedFront).then((sha) => {
+      if (sha) {
+        runDuplicateCheck({ fileSha256: sha, fileName: processedFront.name });
+      }
+    });
     // Prompt user for AI auto-scan permission on front side
     setPendingAiScanFile(processedFront);
   };
@@ -916,8 +977,8 @@ export default function DocumentUploadPage() {
   };
 
   // Final Vault Submission
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
+  const handleSubmit = async (e, forceUpload = false) => {
+    if (e && e.preventDefault) e.preventDefault();
 
     let finalFile = file;
 
@@ -960,6 +1021,10 @@ export default function DocumentUploadPage() {
       data.append('file', finalFile);
       data.append('title', cleanTitle);
       data.append('category', formData.category);
+
+      if (forceUpload) {
+        data.append('ignoreDuplicate', 'true');
+      }
 
       if (
         formData.assignedMemberId &&
@@ -1036,6 +1101,20 @@ export default function DocumentUploadPage() {
       }
     } catch (err) {
       console.error('Upload document error:', err);
+      if (err.status === 409 || err.data?.isDuplicate) {
+        const warning = err.data?.duplicateWarning || {
+          isDuplicate: true,
+          message: err.data?.error || err.message || 'Yeh document pehle se aapke vault me saved hai.',
+          matchType: err.data?.duplicateWarning?.matchType || 'ID_NUMBER',
+          existingDocId: err.data?.duplicateWarning?.existingDocId,
+          existingDocTitle: err.data?.duplicateWarning?.existingDocTitle,
+          documentNumber: err.data?.duplicateWarning?.documentNumber || formData.documentNumber,
+        };
+        setDetectedDuplicate(warning);
+        toast.warning(warning.message || 'Duplicate document detected in your vault!');
+        setError(warning.message);
+        return;
+      }
       const msg = err.message || 'Upload failed. Please check your connection and try again.';
       setError(msg);
       toast.error(msg);
@@ -2044,7 +2123,7 @@ export default function DocumentUploadPage() {
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap sm:flex-nowrap">
                     <button
                       type="button"
-                      onClick={() => navigate(`/vault/${detectedDuplicate.existingDocId}`)}
+                      onClick={() => navigate(`/vault/documents/${detectedDuplicate.existingDocId}`)}
                       className="px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                     >
                       <Eye size={13} />
@@ -2054,7 +2133,8 @@ export default function DocumentUploadPage() {
                       type="button"
                       onClick={() => {
                         setDetectedDuplicate(null);
-                        toast.info('Continuing upload as a new document version.');
+                        toast.info('Continuing upload as a new document version...');
+                        handleSubmit(null, true);
                       }}
                       className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                     >
@@ -2147,6 +2227,11 @@ export default function DocumentUploadPage() {
                   placeholder="e.g. Papa's Aadhaar Card, Car Insurance"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onBlur={() => {
+                    if (formData.title && formData.title.trim().length >= 4) {
+                      runDuplicateCheck({ title: formData.title.trim() });
+                    }
+                  }}
                   className={`w-full px-4 py-2.5 rounded-2xl border bg-slate-50/60 dark:bg-[#141414] focus:border-[#3ECF8E] text-xs font-bold text-slate-900 dark:text-white outline-none transition-all duration-500 ${
                     aiFieldHighlight && formData.title
                       ? 'border-[#3ECF8E] ring-2 ring-[#3ECF8E]/60 shadow-[0_0_18px_rgba(62,207,142,0.35)]'
@@ -2179,6 +2264,11 @@ export default function DocumentUploadPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, documentNumber: e.target.value.toUpperCase() })
                   }
+                  onBlur={() => {
+                    if (formData.documentNumber && formData.documentNumber.trim().length >= 4) {
+                      runDuplicateCheck({ documentNumber: formData.documentNumber.trim() });
+                    }
+                  }}
                   className={`w-full px-4 py-2.5 rounded-2xl border bg-slate-50/60 dark:bg-[#141414] focus:border-[#3ECF8E] font-mono text-xs font-bold text-slate-900 dark:text-white outline-none uppercase transition-all duration-500 ${
                     aiFieldHighlight && formData.documentNumber
                       ? 'border-[#3ECF8E] ring-2 ring-[#3ECF8E]/60 shadow-[0_0_18px_rgba(62,207,142,0.35)]'
@@ -2388,6 +2478,60 @@ export default function DocumentUploadPage() {
                   className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-[#262626] bg-slate-50/60 dark:bg-[#141414] focus:border-[#3ECF8E] text-xs font-medium text-slate-900 dark:text-white outline-none resize-none"
                 />
               </div>
+
+              {/* Duplicate Document Conflict Warning in Step 3 */}
+              {detectedDuplicate && (
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-indigo-500/10 border border-violet-400/40 dark:border-violet-500/30 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-violet-500/20 text-violet-700 dark:text-violet-300 flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                      <ShieldAlert size={18} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          Duplicate Document Already Saved in Vault
+                        </span>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/70 text-violet-800 dark:text-violet-300 border border-violet-300/60 dark:border-violet-800/60">
+                          {detectedDuplicate.matchType === 'EXACT_FILE'
+                            ? 'Exact File Match'
+                            : detectedDuplicate.matchType === 'ID_NUMBER'
+                            ? 'Matching ID Number'
+                            : 'Similar Document in Vault'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-700 dark:text-neutral-300 mt-1 leading-relaxed">
+                        {detectedDuplicate.message}
+                      </p>
+                      {detectedDuplicate.documentNumber && (
+                        <div className="text-[11px] font-mono text-violet-700 dark:text-violet-300 mt-1">
+                          ID: <strong>{detectedDuplicate.documentNumber}</strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap sm:flex-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/vault/documents/${detectedDuplicate.existingDocId}`)}
+                      className="px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Eye size={13} />
+                      <span>View Existing</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDetectedDuplicate(null);
+                        toast.info('Continuing upload as a new document version...');
+                        handleSubmit(null, true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                    >
+                      Upload Anyway
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Navigation & Submit Action */}
               <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-[#262626]">

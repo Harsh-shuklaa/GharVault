@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Family from '../models/Family.js';
 import { isConnected } from '../config/db.js';
+import { processDocumentWithIntelligence } from './documentAI/index.js';
 
 /**
  * Clean & normalize string for fuzzy name matching
@@ -102,8 +103,10 @@ export function generateSmartDocumentTitle(params = {}) {
   const utilityBillDetails = params.utilityBillDetails || extracted.utilityBillDetails || null;
   const category = params.category || extracted.category || '';
   const originalFileName = params.originalFileName || '';
+  const summary = params.summary || extracted.summary || '';
+  const searchKeywords = Array.isArray(params.searchKeywords) ? params.searchKeywords.join(' ') : (params.searchKeywords || '');
 
-  let cleanType = (docType || 'Document').trim();
+  let cleanType = (docType || '').trim();
 
   // 1. Property Sale Deed & Khasra-Khatauni Title logic
   if (propertyDetails) {
@@ -152,10 +155,75 @@ export function generateSmartDocumentTitle(params = {}) {
     }
   }
 
-  // 5. Normalize common standard types
-  const isPrescriptionOrSlip = /prescription|parchi|parcha|rx|dawai|doctor|clinic/i.test(cleanType + ' ' + originalFileName);
-  const isMedicalContext = /medical|hospital|clinic|doctor|prescription|parchi|parcha|ayushman|abha|mediclaim|health|insurance/i.test(cleanType + ' ' + originalFileName);
+  // Full contextual text for keyword synthesis
+  const combinedContext = `${cleanType} ${originalFileName} ${summary} ${searchKeywords}`.toLowerCase();
+  const isMedicalContext = /medical|hospital|clinic|doctor|prescription|parchi|parcha|ayushman|abha|mediclaim|health|insurance/i.test(combinedContext);
 
+  // 5. Check if cleanType is generic or missing (e.g. "Other", "Document", "Scan", etc.)
+  const isGeneric = !cleanType || /^(other|document|unknown|file|scan|image|pdf|untitled|other document)$/i.test(cleanType);
+
+  if (isGeneric) {
+    // Attempt intelligent title extraction from summary, filename or combined context
+    if (/\b(rent agreement|lease agreement|tenancy agreement|kirayanama|kiraya nama)\b/i.test(combinedContext)) {
+      cleanType = 'Rent Agreement';
+    } else if (/\b(salary slip|payslip|pay slip|salary certificate|form 16|net pay|gross pay)\b/i.test(combinedContext)) {
+      cleanType = 'Salary Slip';
+    } else if (/\b(passbook|bank passbook)\b/i.test(combinedContext)) {
+      cleanType = 'Bank Passbook';
+    } else if (/\b(bank statement|account statement)\b/i.test(combinedContext)) {
+      cleanType = 'Bank Statement';
+    } else if (/\b(cheque|canceled cheque|cancelled cheque)\b/i.test(combinedContext)) {
+      cleanType = 'Bank Cheque';
+    } else if (/\b(ration card|rashan card|nfsa)\b/i.test(combinedContext)) {
+      cleanType = 'Ration Card';
+    } else if (/\b(domicile|niwas praman|residence cert)\b/i.test(combinedContext)) {
+      cleanType = 'Domicile Certificate';
+    } else if (/\b(caste cert|jati praman|obc cert|sc cert|st cert)\b/i.test(combinedContext)) {
+      cleanType = 'Caste Certificate';
+    } else if (/\b(income cert|aay praman)\b/i.test(combinedContext)) {
+      cleanType = 'Income Certificate';
+    } else if (/\b(gas connection|lpg|indane|bharat gas|hp gas)\b/i.test(combinedContext)) {
+      cleanType = 'LPG Gas Document';
+    } else if (/\b(marriage cert|vivah praman)\b/i.test(combinedContext)) {
+      cleanType = 'Marriage Certificate';
+    } else if (/\b(death cert|mrityu praman)\b/i.test(combinedContext)) {
+      cleanType = 'Death Certificate';
+    } else if (/\b(vaccin|covid cert|immuniz)\b/i.test(combinedContext)) {
+      cleanType = 'Vaccination Certificate';
+    } else if (/\b(lic\b|life insurance|jeevan bima|term plan)\b/i.test(combinedContext)) {
+      cleanType = 'Life Insurance Policy';
+    } else if (/\b(vehicle insurance|car insurance|bike insurance|motor insurance)\b/i.test(combinedContext)) {
+      cleanType = 'Vehicle Insurance';
+    } else if (/\b(affidavit|shapath patra|stamp paper|notary)\b/i.test(combinedContext)) {
+      cleanType = 'Legal Affidavit';
+    } else if (/\b(discharge summary|discharge slip)\b/i.test(combinedContext)) {
+      cleanType = 'Discharge Summary';
+    } else if (/\b(lab report|blood test|pathology report|test report)\b/i.test(combinedContext)) {
+      cleanType = 'Medical Lab Report';
+    } else if (/\b(prescription|rx|parchi|parcha|doctor slip)\b/i.test(combinedContext)) {
+      cleanType = 'Doctor Prescription';
+    } else if (/\b(invoice|tax invoice|bill receipt|payment receipt)\b/i.test(combinedContext)) {
+      cleanType = 'Tax Invoice / Bill';
+    } else if (/\b(marksheet|mark sheet|grade sheet|report card)\b/i.test(combinedContext)) {
+      cleanType = 'Academic Marksheet';
+    } else if (/\b(degree|diploma|graduation cert)\b/i.test(combinedContext)) {
+      cleanType = 'Education Degree';
+    } else if (/\b(voter|epic)\b/i.test(combinedContext)) {
+      cleanType = 'Voter ID';
+    } else if (/\b(birth cert|janm praman)\b/i.test(combinedContext)) {
+      cleanType = 'Birth Certificate';
+    } else if (/\b(aadhaar|adhar|uidai)\b/i.test(combinedContext)) {
+      cleanType = 'Aadhaar Card';
+    } else if (/\b(pan card|incometax|nsdl)\b/i.test(combinedContext)) {
+      cleanType = 'PAN Card';
+    } else if (/\b(driving licen[cs]e|driver licen[cs]e)\b/i.test(combinedContext)) {
+      cleanType = 'Driving License';
+    } else if (/\b(passport)\b/i.test(combinedContext)) {
+      cleanType = 'Passport';
+    }
+  }
+
+  // 6. Normalize common standard types
   if (/aadhaar|adhar|uidai/i.test(cleanType) || /aadhaar|adhar/i.test(originalFileName)) {
     cleanType = 'Aadhaar Card';
   } else if (/pan\b|incometax|nsdl/i.test(cleanType) || /\bpan\b/i.test(originalFileName)) {
@@ -166,7 +234,7 @@ export function generateSmartDocumentTitle(params = {}) {
     cleanType = 'Passport';
   } else if (/ayushman|abha/i.test(cleanType) || /ayushman|abha/i.test(originalFileName)) {
     cleanType = 'Ayushman / ABHA Card';
-  } else if (!medicalDetails && (/insurance|mediclaim|health|medical|hospital/i.test(cleanType) || category === 'Medical & Health' || /insurance|health|mediclaim/i.test(originalFileName))) {
+  } else if (!medicalDetails && (/insurance|mediclaim/i.test(cleanType) || /insurance|mediclaim/i.test(originalFileName) || emergencyDetails?.policyNumber)) {
     if (emergencyDetails?.tpaProvider && emergencyDetails.tpaProvider !== 'Health Insurance TPA') {
       cleanType = `${emergencyDetails.tpaProvider} Mediclaim`;
     } else {
@@ -186,6 +254,26 @@ export function generateSmartDocumentTitle(params = {}) {
     cleanType = 'Birth Certificate';
   } else if (!academicDetails && (/marksheet|degree|diploma|certificate/i.test(cleanType) || /marksheet|degree/i.test(originalFileName))) {
     cleanType = 'Education Certificate';
+  }
+
+  // 7. STRICT ZERO "Other" FALLBACK: If cleanType is STILL generic or 'Other', synthesize from Category
+  if (!cleanType || /^(other|document|unknown|file|scan|image|pdf|untitled|other document)$/i.test(cleanType)) {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('medical') || cat.includes('health')) {
+      cleanType = 'Medical Record';
+    } else if (cat.includes('bank') || cat.includes('property') || cat.includes('financial')) {
+      cleanType = 'Financial / Property Record';
+    } else if (cat.includes('education') || cat.includes('academic')) {
+      cleanType = 'Academic Certificate';
+    } else if (cat.includes('id card') || cat.includes('identity')) {
+      cleanType = 'Identity Document';
+    } else if (cat.includes('legal')) {
+      cleanType = 'Legal Document';
+    } else if (cat.includes('vehicle')) {
+      cleanType = 'Vehicle Document';
+    } else {
+      cleanType = 'Family Document';
+    }
   }
 
   // Extract clean First Name of member
@@ -215,7 +303,7 @@ export function generateSmartDocumentTitle(params = {}) {
     }
   }
 
-  // Assemble Title
+  // Assemble Title (NEVER returns "Other")
   if (firstName) {
     return `${cleanType}${contextSuffix} — ${firstName}`;
   } else if (contextSuffix) {
@@ -274,6 +362,64 @@ export function fallbackHeuristicScanner(fileName = '', originalText = '', membe
     suggestedTitle = 'Vehicle RC';
     const m = text.match(/\b([A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4})\b/i);
     if (m) docNumber = m[1].toUpperCase();
+  } else if (/\b(rent agreement|lease agreement|tenancy agreement|kirayanama|kiraya nama)\b/i.test(text)) {
+    docType = 'Rent Agreement';
+    category = 'Legal';
+    suggestedTitle = 'Rent Agreement';
+  } else if (/\b(salary slip|payslip|pay slip|salary certificate|form 16|net pay|gross pay)\b/i.test(text)) {
+    docType = 'Salary Slip';
+    category = 'Bank & Property';
+    suggestedTitle = 'Salary Slip';
+  } else if (/\b(passbook|bank passbook)\b/i.test(text)) {
+    docType = 'Bank Passbook';
+    category = 'Bank & Property';
+    suggestedTitle = 'Bank Passbook';
+  } else if (/\b(bank statement|account statement)\b/i.test(text)) {
+    docType = 'Bank Statement';
+    category = 'Bank & Property';
+    suggestedTitle = 'Bank Statement';
+  } else if (/\b(cheque|canceled cheque|cancelled cheque)\b/i.test(text)) {
+    docType = 'Bank Cheque';
+    category = 'Bank & Property';
+    suggestedTitle = 'Bank Cheque';
+  } else if (/\b(ration card|rashan card|nfsa)\b/i.test(text)) {
+    docType = 'Ration Card';
+    category = 'ID Cards';
+    suggestedTitle = 'Ration Card';
+  } else if (/\b(domicile|niwas praman|residence cert)\b/i.test(text)) {
+    docType = 'Domicile Certificate';
+    category = 'ID Cards';
+    suggestedTitle = 'Domicile Certificate';
+  } else if (/\b(caste cert|jati praman|obc cert|sc cert|st cert)\b/i.test(text)) {
+    docType = 'Caste Certificate';
+    category = 'ID Cards';
+    suggestedTitle = 'Caste Certificate';
+  } else if (/\b(income cert|aay praman)\b/i.test(text)) {
+    docType = 'Income Certificate';
+    category = 'Bank & Property';
+    suggestedTitle = 'Income Certificate';
+  } else if (/\b(lic\b|life insurance|jeevan bima|term plan)\b/i.test(text)) {
+    docType = 'Life Insurance Policy';
+    category = 'Bank & Property';
+    suggestedTitle = 'Life Insurance Policy';
+  } else if (/\b(marriage cert|vivah praman)\b/i.test(text)) {
+    docType = 'Marriage Certificate';
+    category = 'Legal';
+    suggestedTitle = 'Marriage Certificate';
+  } else if (/\b(death cert|mrityu praman)\b/i.test(text)) {
+    docType = 'Death Certificate';
+    category = 'Legal';
+    suggestedTitle = 'Death Certificate';
+  } else if (/\b(voter|epic)\b/i.test(text)) {
+    docType = 'Voter ID';
+    category = 'ID Cards';
+    suggestedTitle = 'Voter ID';
+    const m = text.match(/\b([A-Z]{3}[0-9]{7})\b/i);
+    if (m) docNumber = m[1].toUpperCase();
+  } else if (/\b(birth cert|janm praman)\b/i.test(text)) {
+    docType = 'Birth Certificate';
+    category = 'ID Cards';
+    suggestedTitle = 'Birth Certificate';
   }
 
   // Only match member if their name is explicitly found in filename or text
@@ -535,6 +681,7 @@ export function fallbackHeuristicScanner(fileName = '', originalText = '', membe
     utilityBillDetails,
     category,
     originalFileName: fileName,
+    summary: text,
   });
 
   return {
@@ -596,7 +743,7 @@ export async function tryScanWithLocalOllama({ fileBuffer, mimeType = 'image/jpe
 
     const prompt = `Extract Indian document details in JSON format:
 {
-  "docType": "Health Insurance or Doctor Prescription or Voter ID or Aadhaar Card or PAN Card or Driving License or Passport or Electricity Bill or Marksheet or Property Deed or Other",
+  "docType": "Specific document title (e.g. Health Insurance Policy, Doctor Prescription, Rent Agreement, Salary Slip, Voter ID, Aadhaar Card, PAN Card, Driving License, Passport, Electricity Bill, Bank Passbook, Marksheet, Property Deed, Ration Card, etc. Never return Other unless completely unreadable)",
   "docNumber": "ID number, Policy No, EPIC No, PAN, Aadhaar, or Consumer CA No",
   "holderName": "Full name of person or patient or insured",
   "fatherOrSpouseName": "Father or husband name",
@@ -657,17 +804,17 @@ Output valid JSON only.`;
     const lowerRawCat = (parsed.category || '').toLowerCase();
 
     if (
-      /insurance|mediclaim|health|prescription|doctor|hospital|clinic|tpa|ayushman|medical|lab report/i.test(lowerDocType) ||
+      /insurance|mediclaim|health|prescription|doctor|hospital|clinic|tpa|ayushman|medical|lab report|discharge/i.test(lowerDocType) ||
       /medical|health/i.test(lowerRawCat)
     ) {
       category = 'Medical & Health';
     } else if (
-      /aadhaar|pan card|voter|epic|passport|driving license|license|voter id|ration|id card/i.test(lowerDocType) ||
+      /aadhaar|pan card|voter|epic|passport|driving license|license|voter id|ration|id card|domicile|caste|niwas|jati|identity/i.test(lowerDocType) ||
       /id card|identity/i.test(lowerRawCat)
     ) {
       category = 'ID Cards';
     } else if (
-      /deed|registry|khasra|khatauni|bainama|property|fard|jamabandi|electricity|bijli|water bill|gas bill|utility|bill/i.test(lowerDocType) ||
+      /deed|registry|khasra|khatauni|bainama|property|fard|jamabandi|electricity|bijli|water bill|gas bill|utility|bill|salary|payslip|passbook|bank|statement|cheque|income/i.test(lowerDocType) ||
       /property|bank|financial|bill/i.test(lowerRawCat)
     ) {
       category = 'Bank & Property';
@@ -677,7 +824,7 @@ Output valid JSON only.`;
     ) {
       category = 'Education';
     } else if (
-      /affidavit|agreement|stamp paper|court|legal|will/i.test(lowerDocType) ||
+      /rent|lease|agreement|affidavit|shapath|stamp paper|court|legal|will|marriage|death/i.test(lowerDocType) ||
       /legal/i.test(lowerRawCat)
     ) {
       category = 'Legal';
@@ -709,6 +856,7 @@ Output valid JSON only.`;
       docNumber,
       category,
       originalFileName: fileName,
+      summary: parsed.summary,
     });
 
     return {
@@ -745,19 +893,15 @@ Output valid JSON only.`;
 }
 
 /**
- * Scan document using Google Gemini Multimodal Vision API (with Ollama Local Fall-Through)
+ * Scan document using Hybrid Intelligence Pipeline:
+ * Priority 1: Google Gemini Flash-Lite (~1.5s Instant Cloud Response, 0% CPU load)
+ * Priority 2: Local Ollama AI Agent (Free, Private, Offline Fallback)
+ * Priority 3: Local Tesseract OCR (Zero-AI Offline Verified Deterministic Fallback)
  */
 export async function scanDocumentWithAI({ fileBuffer, mimeType, fileName, familyMembers = [], customApiKey = null }) {
   const apiKey = customApiKey || process.env.GEMINI_API_KEY;
 
-  let fallbackText = '';
-  if (fileBuffer) {
-    try {
-      fallbackText = fileBuffer.toString('utf8', 0, Math.min(fileBuffer.length, 5000));
-    } catch (e) {}
-  }
-
-  // 1. Priority #1: Google Gemini Flash-Lite Cloud AI (~1s Instant Response, 0% CPU/RAM load)
+  // 1. Priority #1: Google Gemini Flash-Lite Cloud AI (~1.5s Instant Response)
   if (apiKey) {
     try {
       const geminiResult = await executeGeminiScan({
@@ -772,29 +916,38 @@ export async function scanDocumentWithAI({ fileBuffer, mimeType, fileName, famil
         return geminiResult;
       }
     } catch (geminiErr) {
-      console.warn('[AI Scanner] Cloud Gemini attempt failed or quota reached:', geminiErr.message);
+      console.warn('[AI Scanner] Cloud Gemini attempt notice (falling back to local):', geminiErr.message);
     }
   }
 
-  // 2. Priority #2: Local Ollama AI Agent (100% Free, Private & Offline Fallback)
+  // 2. Priority #2: Local Modular Pipeline with Ollama AI & Tesseract OCR
   try {
-    const localOllamaResult = await tryScanWithLocalOllama({
+    const localPipelineResult = await processDocumentWithIntelligence({
       fileBuffer,
       mimeType,
       fileName,
       familyMembers,
     });
-    if (localOllamaResult) {
-      console.log(`[AI Scanner] Successfully scanned via Local Ollama Agent (${localOllamaResult.aiEngine})!`);
-      return localOllamaResult;
+
+    if (localPipelineResult) {
+      if (localPipelineResult.aiEngine && localPipelineResult.aiEngine.startsWith('ollama_local')) {
+        console.log(`[AI Scanner] ⚡ Successfully processed via Local Modular Ollama Pipeline (${localPipelineResult.aiEngine})!`);
+        return localPipelineResult;
+      }
+
+      if (localPipelineResult.docNumber && localPipelineResult.confidence >= 0.85) {
+        console.log(`[AI Scanner] ⚡ High-confidence local OCR extraction succeeded (${localPipelineResult.aiEngine})!`);
+        return localPipelineResult;
+      }
+
+      return localPipelineResult;
     }
-  } catch (ollamaErr) {
-    console.warn('[AI Scanner] Local Ollama check failed, proceeding to heuristic fallback:', ollamaErr.message);
+  } catch (localErr) {
+    console.warn('[AI Scanner] Local modular pipeline notice:', localErr.message);
   }
 
-  // 3. Priority #3: Intelligent Heuristic Scanner (Zero AI Offline Fallback)
-  console.log('[AI Scanner] Cloud & local models unavailable. Using intelligent heuristic scanner.');
-  return fallbackHeuristicScanner(fileName, fallbackText, familyMembers);
+  // 3. Priority #3: Fast Heuristic Fallback
+  return fallbackHeuristicScanner(fileName, '', familyMembers);
 }
 
 /**
@@ -816,11 +969,12 @@ Important matching rule:
       : '';
 
     const prompt = `You are an expert Indian Document Intelligence System for a secure family vault app called "Dastavej".
-Analyze the attached Indian official document (could be an Aadhaar Card, PAN Card, Driving License, Passport, Vehicle RC, Health Insurance Policy/TPA card, Doctor Prescription, Clinic Slip, Medical/Lab Report, Property Sale Deed / Registry (Bainama), Khasra-Khatauni (Jamabandi/Fard), Electricity / Water / Gas Utility Bill, Education Degree, Semester Marksheet/DMC, Competition/Innovators Certificate, Voter ID, Birth Certificate, or other family record).
+Analyze the attached Indian official document (could be an Aadhaar Card, PAN Card, Driving License, Passport, Vehicle RC, Vehicle Insurance, Health Insurance Policy/TPA card, Life Insurance / LIC Policy, Doctor Prescription, Clinic Slip, Medical/Lab Report, Hospital Discharge Summary, Property Sale Deed / Registry (Bainama), Khasra-Khatauni (Jamabandi/Fard), Rent Agreement, Salary Slip / Payslip, Bank Passbook / Statement, Bank Cheque, Ration Card, Domicile / Niwas Certificate, Caste / Jati Certificate, Income / Aay Certificate, Electricity / Water / Gas Utility Bill, Education Degree, Semester Marksheet/DMC, Competition/Innovators Certificate, Voter ID, Birth Certificate, Marriage Certificate, Death Certificate, Tax Invoice / Bill, or other family record).
 ${memberListText}
 
 Extract the following information with maximum accuracy:
-1. "docType": One of ['Aadhaar Card', 'PAN Card', 'Driving License', 'Passport', 'Vehicle RC', 'Vehicle Insurance', 'Health Insurance', 'Doctor Prescription', 'Medical Lab Report', 'Hospital Discharge Summary', 'Property Sale Deed / Registry', 'Khasra / Khatauni', 'Electricity Bill', 'Water Bill', 'Piped Gas Bill', 'Education Degree', 'Marksheet / DMC', 'Competition Certificate', 'Bank Passbook / Statement', 'Voter ID', 'Birth Certificate', 'Tax Invoice', 'Other']
+1. "docType": Specific Indian document title (e.g. 'Aadhaar Card', 'PAN Card', 'Voter ID', 'Driving License', 'Passport', 'Vehicle RC', 'Vehicle Insurance', 'Health Insurance Policy', 'Life Insurance / LIC Policy', 'Doctor Prescription', 'Medical Lab Report', 'Hospital Discharge Summary', 'Property Sale Deed / Registry', 'Khasra / Khatauni', 'Rent Agreement', 'Salary Slip / Payslip', 'Bank Passbook / Statement', 'Bank Cheque', 'Ration Card', 'Domicile / Niwas Certificate', 'Caste / Jati Certificate', 'Income Certificate', 'Electricity Bill', 'Water Bill', 'Piped Gas Bill', 'Education Degree', 'Marksheet / DMC', 'Competition Certificate', 'Birth Certificate', 'Marriage Certificate', 'Death Certificate', 'Tax Invoice / Bill', etc.).
+CRITICAL DOC_TYPE RULE: ALWAYS provide a specific, descriptive name in English/Hinglish based on the document heading or content. NEVER return generic "Other" or "Document" if the document title, heading, or purpose is readable.
 2. "docNumber": Clean primary ID, roll number, policy number, Khasra number, Consumer CA number, or certificate registration number.
 3. "holderName": Full legal name of the candidate/patient/holder/owner (do NOT confuse with father's name, seller, or Doctor/Authority name).
 4. "fatherOrSpouseName": Father's or spouse's name if clearly listed, else null.
@@ -963,17 +1117,17 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
     const lowerRawCat = (parsedData.category || '').toLowerCase();
 
     if (
-      /insurance|mediclaim|health|prescription|doctor|hospital|clinic|tpa|ayushman|medical|lab report/i.test(lowerDocType) ||
+      /insurance|mediclaim|health|prescription|doctor|hospital|clinic|tpa|ayushman|medical|lab report|discharge/i.test(lowerDocType) ||
       /medical|health/i.test(lowerRawCat)
     ) {
       category = 'Medical & Health';
     } else if (
-      /aadhaar|pan card|voter|epic|passport|driving license|license|voter id|ration|id card/i.test(lowerDocType) ||
+      /aadhaar|pan card|voter|epic|passport|driving license|license|voter id|ration|id card|domicile|caste|niwas|jati|identity/i.test(lowerDocType) ||
       /id card|identity/i.test(lowerRawCat)
     ) {
       category = 'ID Cards';
     } else if (
-      /deed|registry|khasra|khatauni|bainama|property|fard|jamabandi|electricity|bijli|water bill|gas bill|utility|bill/i.test(lowerDocType) ||
+      /deed|registry|khasra|khatauni|bainama|property|fard|jamabandi|electricity|bijli|water bill|gas bill|utility|bill|salary|payslip|passbook|bank|statement|cheque|income/i.test(lowerDocType) ||
       /property|bank|financial|bill/i.test(lowerRawCat)
     ) {
       category = 'Bank & Property';
@@ -983,7 +1137,7 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
     ) {
       category = 'Education';
     } else if (
-      /affidavit|agreement|stamp paper|court|legal|will/i.test(lowerDocType) ||
+      /rent|lease|agreement|affidavit|shapath|stamp paper|court|legal|will|marriage|death/i.test(lowerDocType) ||
       /legal/i.test(lowerRawCat)
     ) {
       category = 'Legal';
@@ -1013,6 +1167,8 @@ Return ONLY a valid JSON object matching these keys. Do NOT wrap in markdown cod
       utilityBillDetails: parsedData.utilityBillDetails,
       category,
       originalFileName: fileName,
+      summary: parsedData.summary,
+      searchKeywords: parsedData.searchKeywords,
     });
 
     return {

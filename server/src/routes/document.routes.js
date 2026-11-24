@@ -741,6 +741,70 @@ router.post('/ask-ai', async (req, res) => {
   }
 });
 
+// POST /api/documents/check-duplicate — Real-time Duplicate Document Prevention (Feature E)
+router.post('/check-duplicate', async (req, res) => {
+  try {
+    const {
+      documentNumber = '',
+      title = '',
+      fileName = '',
+      assignedMemberId = null,
+      fileSha256 = null,
+    } = req.body;
+
+    let familyId = req.familyId || req.user?.familyId;
+    if (!familyId && (req.user?._id || req.userId)) {
+      if (isConnected) {
+        const u = await User.findById(req.user?._id || req.userId).lean();
+        if (u?.familyId) familyId = u.familyId;
+      } else if (memoryStore.users) {
+        const u = memoryStore.users.find(x => x._id?.toString() === (req.user?._id || req.userId)?.toString());
+        if (u?.familyId) familyId = u.familyId;
+      }
+    }
+
+    if (!familyId) {
+      return res.json({ isDuplicate: false, duplicateWarning: null });
+    }
+
+    let existingDocs = [];
+    let familyMembers = [];
+    if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
+      [existingDocs, familyMembers] = await Promise.all([
+        Document.find({ familyId, status: { $ne: 'ARCHIVED' } })
+          .select('_id title category documentNumber sha256Hash assignedMemberId createdAt')
+          .populate('assignedMemberId', 'name relationship')
+          .lean(),
+        User.find({ familyId }).select('_id name relationship').lean(),
+      ]);
+    } else if (memoryStore.documents) {
+      existingDocs = memoryStore.documents.filter(
+        d => d.familyId?.toString() === familyId.toString() && d.status !== 'ARCHIVED'
+      );
+      familyMembers = (memoryStore.users || []).filter(u => u.familyId?.toString() === familyId.toString());
+    }
+
+    const duplicateWarning = detectHeuristicDuplicate({
+      fileSha256,
+      scanDocNumber: (documentNumber || '').trim(),
+      scanDocType: 'Document',
+      suggestedTitle: (title || '').trim(),
+      fileName: (fileName || '').trim(),
+      matchedMemberId: assignedMemberId,
+      existingDocs,
+      familyMembers,
+    });
+
+    return res.json({
+      isDuplicate: !!duplicateWarning?.isDuplicate,
+      duplicateWarning: duplicateWarning || null,
+    });
+  } catch (err) {
+    console.warn('[Check Duplicate Error]:', err.message);
+    res.status(500).json({ isDuplicate: false, error: err.message });
+  }
+});
+
 // POST /api/documents/upload
 router.post('/upload', (req, res, next) => {
   upload.single('file')(req, res, (err) => {
@@ -807,10 +871,7 @@ router.post('/upload', (req, res, next) => {
     const fileExt = path.extname(originalName) || '.pdf';
     const storagePath = `vault/${category.toLowerCase().replace(/[^a-z0-9]/g, '_')}/${Date.now()}_${crypto.randomBytes(4).toString('hex')}${fileExt}`;
 
-    // 3. Upload to Encrypted Storage
-    await uploadDocument(fileBuffer, storagePath, mimeType);
-
-    // 4. Auto-extract number if not provided
+    // 3. Auto-extract number if not provided
     const ocrData = simulateOCR(originalName, title || '', category);
     const finalDocNumber = documentNumber?.trim() || ocrData.documentNumber || '';
 
@@ -929,6 +990,50 @@ router.post('/upload', (req, res, next) => {
           category,
           originalFileName: originalName,
         });
+
+    // 4. Duplicate Document Prevention Guard (Feature E)
+    const ignoreDuplicate = req.body.ignoreDuplicate === 'true' || req.body.ignoreDuplicate === true;
+    if (!ignoreDuplicate && familyId) {
+      try {
+        let existingDocs = [];
+        let familyMembers = [];
+        if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
+          [existingDocs, familyMembers] = await Promise.all([
+            Document.find({ familyId, status: { $ne: 'ARCHIVED' } })
+              .select('_id title category documentNumber sha256Hash assignedMemberId createdAt')
+              .populate('assignedMemberId', 'name relationship')
+              .lean(),
+            User.find({ familyId }).select('_id name relationship').lean(),
+          ]);
+        } else if (memoryStore.documents) {
+          existingDocs = memoryStore.documents.filter(
+            d => d.familyId?.toString() === familyId.toString() && d.status !== 'ARCHIVED'
+          );
+          familyMembers = (memoryStore.users || []).filter(u => u.familyId?.toString() === familyId.toString());
+        }
+
+        const duplicateWarning = detectHeuristicDuplicate({
+          fileSha256: sha256Hash,
+          scanDocNumber: finalDocNumber,
+          scanDocType: category,
+          suggestedTitle: resolvedTitle,
+          fileName: originalName,
+          matchedMemberId: finalMemberId,
+          existingDocs,
+          familyMembers,
+        });
+
+        if (duplicateWarning?.isDuplicate) {
+          return res.status(409).json({
+            isDuplicate: true,
+            error: duplicateWarning.message,
+            duplicateWarning,
+          });
+        }
+      } catch (dupErr) {
+        console.warn('[Upload Duplicate Check Warning]:', dupErr.message);
+      }
+    }
 
     let useMongo = isConnected && mongoose.connection.readyState === 1;
     let newDoc = null;
