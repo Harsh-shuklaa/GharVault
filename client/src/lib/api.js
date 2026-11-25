@@ -253,6 +253,14 @@ export const api = {
     });
   },
 
+  async askVaultAIAudio(formData) {
+    return request(`${API_BASE}/documents/ask-ai-audio`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: formData,
+    });
+  },
+
   async uploadDocument(formData) {
     return request(`${API_BASE}/documents/upload`, {
       method: 'POST',

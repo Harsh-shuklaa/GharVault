@@ -763,6 +763,116 @@ router.post('/ask-ai', async (req, res) => {
   }
 });
 
+// POST /api/documents/ask-ai-audio (Voice Audio Query with Gemini Transcription + Vault AI Answer)
+router.post('/ask-ai-audio', upload.single('audio'), async (req, res) => {
+  try {
+    const familyId = req.familyId || req.user?.familyId || req.headers['x-family-id'] || req.body?.familyId;
+    if (!familyId) {
+      return res.status(401).json({ error: 'Authentication required. Please sign in to ask Vault AI.' });
+    }
+
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ error: 'No audio file received. Please record your question and try again.' });
+    }
+
+    const customApiKey = req.headers['x-gemini-api-key'] || req.body?.customApiKey || process.env.GEMINI_API_KEY || null;
+
+    let transcribedText = '';
+
+    // Transcribe with Gemini Flash Audio understanding
+    if (customApiKey) {
+      try {
+        const audioMime = req.file.mimetype || 'audio/webm';
+        const base64Audio = req.file.buffer.toString('base64');
+        const cleanApiKey = customApiKey.trim();
+
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanApiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    {
+                      inlineData: {
+                        mimeType: audioMime,
+                        data: base64Audio,
+                      },
+                    },
+                    {
+                      text: 'Transcribe this voice audio query accurately (spoken in Hindi, Hinglish, or English). Return ONLY the transcription text as a single question sentence without any greetings, commentary, or quotes.',
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.1,
+                maxOutputTokens: 250,
+              },
+            }),
+          }
+        );
+
+        if (geminiRes.ok) {
+          const geminiData = await geminiRes.json();
+          const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          transcribedText = rawText.trim().replace(/^["']|["']$/g, '');
+        }
+      } catch (geminiErr) {
+        console.warn('[Voice Audio Transcription Warning]:', geminiErr.message);
+      }
+    }
+
+    if (!transcribedText) {
+      transcribedText = req.body?.fallbackText || 'Aapke documents ke baare me jankari batao';
+    }
+
+    let familyMembers = [];
+    let documents = [];
+
+    if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
+      try {
+        const [users, docs] = await Promise.all([
+          User.find({ familyId }).select('_id name relationship role phone bloodGroup').lean(),
+          Document.find({ familyId, status: { $ne: 'ARCHIVED' } })
+            .select('_id title category documentNumber expiryDate notes isSensitive assignedMemberId ocrExtractedData')
+            .lean(),
+        ]);
+        familyMembers = users.map(u => ({ ...u, _id: u._id.toString() }));
+        documents = docs.map(d => ({ ...d, _id: d._id.toString() }));
+      } catch (dbErr) {
+        console.warn('[Vault AI Audio Route] Mongo fetch error:', dbErr.message);
+      }
+    } else {
+      familyMembers = (memoryStore.users || [])
+        .filter(u => u.familyId?.toString() === familyId.toString())
+        .map(u => ({ ...u, _id: u._id.toString() }));
+      documents = (memoryStore.documents || [])
+        .filter(d => d.familyId?.toString() === familyId.toString() && d.status !== 'ARCHIVED')
+        .map(d => ({ ...d, _id: d._id.toString() }));
+    }
+
+    const result = await askVaultAI({
+      query: transcribedText,
+      familyMembers,
+      documents,
+      currentUser: req.user || { name: 'Family Member' },
+      customApiKey,
+    });
+
+    res.json({
+      success: true,
+      transcribedQuery: transcribedText,
+      data: result,
+    });
+  } catch (err) {
+    console.error('[Ask Vault AI Audio Route Error]:', err);
+    res.status(500).json({ error: 'Vault AI audio query failed: ' + err.message });
+  }
+});
+
 // POST /api/documents/check-duplicate — Real-time Duplicate Document Prevention (Feature E)
 router.post('/check-duplicate', async (req, res) => {
   try {
