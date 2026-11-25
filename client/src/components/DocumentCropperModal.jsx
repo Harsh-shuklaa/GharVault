@@ -393,18 +393,18 @@ export default function DocumentCropperModal({
       </div>
 
       {/* Bottom Controls & Filters Bar */}
-      <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/90 backdrop-blur-md">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="px-3 sm:px-6 py-3 sm:py-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-800 bg-slate-900/95 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Enhancement Filters */}
-          <div className="flex items-center gap-2 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800">
-            <span className="text-xs font-semibold text-slate-400 px-2 flex items-center gap-1.5">
+          <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 max-w-full">
+            <span className="text-[11px] sm:text-xs font-semibold text-slate-400 px-1 sm:px-2 flex items-center gap-1.5">
               <Sliders className="w-3.5 h-3.5 text-emerald-400" />
               Filter:
             </span>
             <button
               type="button"
               onClick={() => setFilterMode('magic')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
                 filterMode === 'magic'
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -416,7 +416,7 @@ export default function DocumentCropperModal({
             <button
               type="button"
               onClick={() => setFilterMode('bw')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
                 filterMode === 'bw'
                   ? 'bg-slate-700 text-white shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -428,7 +428,7 @@ export default function DocumentCropperModal({
             <button
               type="button"
               onClick={() => setFilterMode('original')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 filterMode === 'original'
                   ? 'bg-slate-700 text-white'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -439,33 +439,33 @@ export default function DocumentCropperModal({
           </div>
 
           {/* Utility Tools & Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center flex-wrap gap-2 w-full md:w-auto">
             <button
               type="button"
               onClick={handleRotate}
-              className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors flex items-center gap-1.5 text-xs font-medium"
+              className="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors flex items-center gap-1.5 text-xs font-medium"
               title="Rotate 90 degrees"
             >
               <RotateCw className="w-4 h-4" />
-              Rotate
+              <span className="hidden xs:inline">Rotate</span>
             </button>
             <button
               type="button"
               onClick={handleResetCorners}
-              className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors flex items-center gap-1.5 text-xs font-medium"
+              className="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors flex items-center gap-1.5 text-xs font-medium"
               title="Auto frame card boundaries"
             >
               <RefreshCw className="w-4 h-4" />
-              Auto Frame
+              <span className="hidden xs:inline">Auto Frame</span>
             </button>
             <button
               type="button"
               onClick={handleFullFrame}
-              className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors flex items-center gap-1.5 text-xs font-medium"
+              className="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors flex items-center gap-1.5 text-xs font-medium"
               title="Select full photo"
             >
               <Maximize2 className="w-4 h-4" />
-              Full Image
+              <span className="hidden xs:inline">Full Image</span>
             </button>
 
             {/* Apply & Finish Button */}
@@ -473,7 +473,7 @@ export default function DocumentCropperModal({
               type="button"
               onClick={handleApply}
               disabled={isProcessing}
-              className="ml-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-lg shadow-emerald-900/40 flex items-center gap-2 transition-all disabled:opacity-50"
+              className="w-full sm:w-auto justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/40 flex items-center gap-2 transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
             >
               {isProcessing ? (
                 <>

@@ -625,13 +625,15 @@ export default function AppLayout() {
         )}
 
         {/* ================= PAGE OUTLET ================= */}
-        <main className="w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:pt-16 flex-1 min-w-0">
+        <main className="w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:pt-16 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 flex-1 min-w-0">
           <Outlet />
         </main>
       </div>
 
       {/* ================= MOBILE BOTTOM NAVIGATION BAR (< 768px) with iPhone Safe Area ================= */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] pt-1 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#262626] flex items-center justify-between px-1.5 sm:px-4 shadow-lg select-none">
+      {/* Hide on Upload and Document Preview pages where full-width sticky action buttons (Save to Vault / Download) need the bottom bar space */}
+      {!(location.pathname.startsWith('/vault/documents/') || location.pathname === '/vault/upload') && (
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] pt-1 bg-white/95 dark:bg-[#141414]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#262626] flex items-center justify-between px-1.5 sm:px-4 shadow-lg select-none">
         {/* Home */}
         <Link
           to="/dashboard"
@@ -699,6 +701,7 @@ export default function AppLayout() {
           <span className="text-[10px] leading-tight font-medium mt-0.5 truncate">Settings</span>
         </Link>
       </nav>
+      )}
 
       {/* Global Modals */}
       <AskVaultAIFloatingButton onClick={() => setIsAskAIOpen(true)} />

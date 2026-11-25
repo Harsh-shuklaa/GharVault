@@ -1,6 +1,14 @@
+import dns from 'dns';
 import mongoose from 'mongoose';
 import { seedInitialData } from './seed.js';
 import User from '../models/User.js';
+
+// Configure reliable DNS servers to prevent Windows querySrv ECONNREFUSED on MongoDB SRV records
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (dnsErr) {
+  console.warn('[Database] Custom DNS resolver setup warning:', dnsErr.message);
+}
 
 let isConnected = false;
 
@@ -30,10 +38,15 @@ export const connectDB = async () => {
     return;
   }
 
+  // Attempt connection with public DNS resolvers
   try {
+    try {
+      dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+    } catch (e) {}
+
     const conn = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
       family: 4,
     });
     isConnected = true;
@@ -46,15 +59,28 @@ export const connectDB = async () => {
     }
     await seedInitialData(true);
   } catch (err) {
-    isConnected = false;
-    console.error(`[Database] MongoDB Atlas connection failed: ${err.message}`);
-    console.log('[Database] Falling back to high-fidelity In-Memory Store so GharVault remains 100% operational.');
-    await seedInitialData(false);
+    console.warn(`[Database] MongoDB Atlas initial connection failed (${err.message}), retrying once with explicit Cloudflare DNS...`);
+    try {
+      dns.setServers(['1.1.1.1', '8.8.8.8']);
+      const conn = await mongoose.connect(mongoUri, {
+        serverSelectionTimeoutMS: 12000,
+        connectTimeoutMS: 12000,
+        family: 4,
+      });
+      isConnected = true;
+      console.log(`[Database] MongoDB Atlas Connected on retry: ${conn.connection.host}`);
+      await seedInitialData(true);
+    } catch (retryErr) {
+      isConnected = false;
+      console.error(`[Database] MongoDB Atlas connection failed: ${retryErr.message}`);
+      console.log('[Database] Falling back to high-fidelity In-Memory Store so GharVault remains 100% operational.');
+      await seedInitialData(false);
+    }
   }
 };
 
 export const getIsConnected = () => {
-  return isConnected && mongoose.connection.readyState === 1;
+  return (isConnected || mongoose.connection.readyState === 1);
 };
 
 export { isConnected };

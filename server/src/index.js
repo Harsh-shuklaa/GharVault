@@ -14,7 +14,7 @@ import express from 'express';
 import cors from 'cors';
 import { authenticate } from './middleware/auth.js';
 
-import { connectDB } from './config/db.js';
+import { connectDB, getIsConnected } from './config/db.js';
 import { ensureBucketExists } from './services/supabaseStorage.js';
 
 import authRoutes from './routes/auth.routes.js';
@@ -63,7 +63,7 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     features: {
       storage: 'Supabase Private Buckets',
-      database: 'MongoDB Atlas',
+      database: getIsConnected() ? 'MongoDB Atlas' : 'In-Memory Store',
       encryption: 'AES-256-GCM',
     },
   });

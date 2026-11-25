@@ -846,7 +846,13 @@ router.put('/members/:id', async (req, res) => {
     if (phone !== undefined) updates.phone = phone.trim();
     if (email !== undefined) {
       const cleanEmail = email ? email.toLowerCase().trim() : '';
-      if (cleanEmail) {
+      if (cleanEmail && cleanEmail !== existingMember.email) {
+        if (isConnected && mongoose.connection.readyState === 1) {
+          const emailExists = await User.findOne({ email: cleanEmail, _id: { $ne: existingMember._id } });
+          if (emailExists) {
+            return res.status(400).json({ error: 'Yeh email address pehle se kisi aur account me registered hai.' });
+          }
+        }
         updates.email = cleanEmail;
       }
     }
@@ -869,9 +875,11 @@ router.put('/members/:id', async (req, res) => {
           { new: true }
         );
       } catch (dbErr) {
-        console.warn('[Update Member Warning] Mongo update failed, using memory fallback:', dbErr.message);
-        member = memoryStore.users.find(u => u._id?.toString() === req.params.id);
-        if (member) Object.assign(member, updates);
+        if (dbErr.code === 11000) {
+          return res.status(400).json({ error: 'Yeh email address pehle se kisi aur account me registered hai.' });
+        }
+        console.warn('[Update Member Warning] Mongo update error:', dbErr.message);
+        throw dbErr;
       }
     } else {
       member = memoryStore.users.find(u => u._id?.toString() === req.params.id);

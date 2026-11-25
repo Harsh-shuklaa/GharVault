@@ -1775,6 +1775,7 @@ const handleUpdateDocument = async (req, res) => {
           mimeType: doc.mimeType,
           originalFileName: doc.originalFileName,
           sha256Hash: doc.sha256Hash,
+          ocrExtractedData: doc.ocrExtractedData,
         });
       }
     }

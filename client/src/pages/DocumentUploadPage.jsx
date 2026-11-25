@@ -55,6 +55,7 @@ export default function DocumentUploadPage() {
   // Document Number Masking Toggle & Preview Side
   const [showUnmaskedDocNumber, setShowUnmaskedDocNumber] = useState(false);
   const [activePreviewSide, setActivePreviewSide] = useState('front');
+  const [previewMode, setPreviewMode] = useState('scan'); // 'scan' (authentic document photo) | 'card' (digital sovereign card)
   const [nomineeSync, setNomineeSync] = useState(true);
 
   const triggerCrop = (targetFile, side = 'single') => {
@@ -803,6 +804,7 @@ export default function DocumentUploadPage() {
 
     // Prompt user for AI auto-scan permission (saving quota & giving full control)
     setPendingAiScanFile(processedFile);
+    triggerAIScan(processedFile);
   };
 
   const handleFrontFileChange = async (selectedFront) => {
@@ -830,6 +832,7 @@ export default function DocumentUploadPage() {
     });
     // Prompt user for AI auto-scan permission on front side
     setPendingAiScanFile(processedFront);
+    triggerAIScan(processedFront);
   };
 
   const handleBackFileChange = async (selectedBack) => {
@@ -1517,6 +1520,10 @@ export default function DocumentUploadPage() {
                           : 'border-emerald-500/40 hover:border-emerald-500 bg-slate-50/60 dark:bg-[#141414] hover:bg-emerald-50/10'
                       }`}
                     >
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-[#3ECF8E] text-[11px] font-bold mb-3 shadow-2xs">
+                        <Sparkles size={12} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                        <span>Gemini Flash AI Auto-Detection Enabled</span>
+                      </div>
                       <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-[#10B981] dark:text-[#3ECF8E] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                         <Upload size={28} />
                       </div>
@@ -1581,7 +1588,17 @@ export default function DocumentUploadPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                      <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => triggerAIScan(file)}
+                          disabled={isScanning}
+                          className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-[#10B981] hover:from-emerald-500 hover:to-[#3ECF8E] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 transition-all active:scale-95"
+                          title="Auto-detect ID numbers, category and holder name with Gemini AI"
+                        >
+                          <Sparkles size={13} className={isScanning ? "animate-spin" : ""} />
+                          <span>{isScanning ? `Scanning AI (${scanElapsed}s)...` : (aiScanResult ? '🔄 Re-Scan with AI' : '✨ Scan with AI')}</span>
+                        </button>
                         {file && file.type && file.type.startsWith('image/') && (
                           <button
                             type="button"
@@ -1619,11 +1636,24 @@ export default function DocumentUploadPage() {
               {/* Mode 2: 2-Sided ID Stitcher */}
               {uploadMode === 'twosided' && (
                 <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-[#3ECF8E]/10 border border-emerald-200/80 dark:border-[#3ECF8E]/20 text-xs text-emerald-800 dark:text-[#3ECF8E] flex items-center gap-2">
-                    <Sparkles size={15} className="shrink-0" />
-                    <span>
-                      <strong>Smart 2-Sided Stitcher:</strong> Front and Back photos automatically combine into a unified high-resolution document.
-                    </span>
+                  <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-[#3ECF8E]/10 border border-emerald-300/80 dark:border-[#3ECF8E]/25 text-xs text-emerald-900 dark:text-[#3ECF8E] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Sparkles size={16} className="shrink-0 text-[#10B981] dark:text-[#3ECF8E]" />
+                      <span>
+                        <strong>Smart 2-Sided Stitcher:</strong> Front and Back photos combine into one unified document with auto AI extraction.
+                      </span>
+                    </div>
+                    {frontFile && (
+                      <button
+                        type="button"
+                        onClick={() => triggerAIScan(frontFile)}
+                        disabled={isScanning}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 shrink-0 self-start sm:self-auto transition-all active:scale-95"
+                      >
+                        <Sparkles size={13} className={isScanning ? "animate-spin" : ""} />
+                        <span>{isScanning ? `Scanning (${scanElapsed}s)...` : (aiScanResult ? '🔄 Re-Scan Front' : '✨ Scan Front with AI')}</span>
+                      </button>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -1690,183 +1720,389 @@ export default function DocumentUploadPage() {
               )}
             </div>
 
-            {/* Futuristic Live AI OCR Inspector Card */}
+            {/* Realistic Live Document Visual Inspector & OCR Studio */}
             <div className="bg-white dark:bg-[#18181B] rounded-3xl border border-slate-200/80 dark:border-[#262626] shadow-xl overflow-hidden">
-              {/* Inspector Top Header Pill Banner */}
-              <div className="p-4 bg-slate-50 dark:bg-[#141414] border-b border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-3">
+              {/* Inspector Header: Status, Telemetry & View Switcher */}
+              <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-[#141414] border-b border-slate-200/80 dark:border-[#262626] flex flex-wrap items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-[#3ECF8E]">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
-                    </span>
-                    <span>✨ Auto-Detected: {formData.category === 'ID Cards' ? 'Aadhaar Card' : formData.category}</span>
-                    <span className="text-[11px] opacity-80">(पहचान पत्र)</span>
+                  <div className={`px-3 py-1 rounded-full flex items-center gap-2 text-xs font-bold ${
+                    isScanning
+                      ? 'bg-amber-500/15 border border-amber-500/40 text-amber-700 dark:text-amber-400'
+                      : aiScanResult
+                      ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-700 dark:text-[#3ECF8E]'
+                      : (file || frontFile)
+                      ? 'bg-blue-500/15 border border-blue-500/30 text-blue-700 dark:text-blue-400'
+                      : 'bg-slate-200 dark:bg-[#222] border border-slate-300 dark:border-[#333] text-slate-700 dark:text-neutral-300'
+                  }`}>
+                    {isScanning ? (
+                      <>
+                        <Sparkles size={13} className="animate-spin text-amber-500" />
+                        <span>AI Scanning ({scanElapsed}s)...</span>
+                      </>
+                    ) : aiScanResult ? (
+                      <>
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
+                        </span>
+                        <span>✨ Auto-Detected: {aiScanResult.docType || formData.category}</span>
+                      </>
+                    ) : (file || frontFile) ? (
+                      <>
+                        <FileText size={13} className="text-blue-500" />
+                        <span>Real Document Attached</span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera size={13} className="text-slate-400" />
+                        <span>Live Document Inspector</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                {(file || frontFile) && (
-                  <button
-                    type="button"
-                    onClick={() => triggerCrop(uploadMode === 'twosided' ? (activePreviewSide === 'front' ? frontFile : backFile) : file, activePreviewSide)}
-                    className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#202024] hover:bg-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
-                  >
-                    <Crop size={13} />
-                    <span>Retake / Crop</span>
-                  </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* View Mode Switcher: Real Scan vs Smart Card */}
+                  {(previewUrl || frontPreview || file) && (
+                    <div className="flex p-0.5 bg-slate-200/80 dark:bg-[#202024] rounded-xl text-[11px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode('scan')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          previewMode === 'scan'
+                            ? 'bg-white dark:bg-[#2b2b30] text-emerald-700 dark:text-[#3ECF8E] shadow-2xs'
+                            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        📷 Real Scan (असली कॉपी)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode('card')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          previewMode === 'card'
+                            ? 'bg-white dark:bg-[#2b2b30] text-emerald-700 dark:text-[#3ECF8E] shadow-2xs'
+                            : 'text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        🪪 Smart Card
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Re-crop Button if an image is loaded */}
+                  {(file || frontFile) && (previewUrl || frontPreview) && (
+                    <button
+                      type="button"
+                      onClick={() => triggerCrop(uploadMode === 'twosided' ? (activePreviewSide === 'front' ? frontFile : backFile) : file, activePreviewSide)}
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#202024] hover:bg-slate-200 transition-colors flex items-center gap-1 cursor-pointer border border-slate-200 dark:border-[#333]"
+                    >
+                      <Crop size={12} />
+                      <span className="hidden sm:inline">Crop</span>
+                    </button>
+                  )}
+
+                  {/* Manual AI Scan Button */}
+                  {(file || frontFile) && (
+                    <button
+                      type="button"
+                      onClick={() => triggerAIScan(uploadMode === 'twosided' ? (activePreviewSide === 'front' ? frontFile : backFile) : file)}
+                      disabled={isScanning}
+                      className="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 transition-all active:scale-95"
+                    >
+                      <Sparkles size={12} className={isScanning ? "animate-spin" : ""} />
+                      <span>{isScanning ? `${scanElapsed}s` : (aiScanResult ? 'Re-Scan' : 'Scan with AI')}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Realistic Document Surface */}
+              <div className="p-4 sm:p-6 bg-slate-100/80 dark:bg-[#070E1D] flex flex-col items-center min-h-[340px] justify-center relative overflow-hidden">
+                {/* VIEW 1: Real Scan Preview (Default & Authentic) */}
+                {previewMode === 'scan' ? (
+                  (previewUrl || frontPreview || backPreview) ? (
+                    <div className="relative w-full max-w-xl flex flex-col items-center">
+                      {/* Document Frame */}
+                      <div className="relative rounded-2xl overflow-hidden bg-slate-950/90 border border-slate-700/60 shadow-2xl p-2 sm:p-3 w-full flex items-center justify-center">
+                        {/* Viewfinder Corners */}
+                        <div className="absolute top-2.5 left-2.5 w-5 h-5 border-t-2 border-l-2 border-[#3ECF8E] rounded-tl pointer-events-none z-10" />
+                        <div className="absolute top-2.5 right-2.5 w-5 h-5 border-t-2 border-r-2 border-[#3ECF8E] rounded-tr pointer-events-none z-10" />
+                        <div className="absolute bottom-2.5 left-2.5 w-5 h-5 border-b-2 border-l-2 border-[#3ECF8E] rounded-bl pointer-events-none z-10" />
+                        <div className="absolute bottom-2.5 right-2.5 w-5 h-5 border-b-2 border-r-2 border-[#3ECF8E] rounded-br pointer-events-none z-10" />
+
+                        {/* The Actual Real Uploaded Document Image */}
+                        <img
+                          src={
+                            uploadMode === 'twosided'
+                              ? (activePreviewSide === 'back' && backPreview ? backPreview : frontPreview || previewUrl)
+                              : previewUrl
+                          }
+                          alt="Real Document Scan"
+                          className="max-h-[360px] sm:max-h-[440px] w-auto max-w-full object-contain rounded-lg shadow-md"
+                        />
+
+                        {/* Real-time AI Laser Scanning Sweep directly over the document */}
+                        {isScanning && (
+                          <div className="absolute inset-0 pointer-events-none flex flex-col justify-between overflow-hidden rounded-xl">
+                            <div className="absolute inset-0 bg-emerald-950/30 backdrop-blur-[0.5px]" />
+                            <div className="absolute left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#3ECF8E] to-transparent shadow-[0_0_24px_#3ECF8E] animate-laser-beam z-20" />
+                            <div className="absolute inset-0 flex items-center justify-center z-30">
+                              <div className="px-4 py-2.5 rounded-2xl bg-black/85 border border-[#3ECF8E]/50 shadow-2xl flex items-center gap-3 text-white">
+                                <Sparkles size={22} className="text-[#3ECF8E] animate-spin" />
+                                <div>
+                                  <p className="text-xs font-mono font-bold text-[#3ECF8E]">Gemini Vision AI Reading Document...</p>
+                                  <p className="text-[10px] text-slate-300 font-sans">{scanElapsed}s elapsed • Reading Devanagari & English text</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Real Extracted OCR Key-Value Strip */}
+                      {(formData.documentNumber || formData.holderName || aiScanResult) && (
+                        <div className="w-full mt-3.5 p-3 rounded-2xl bg-white/95 dark:bg-[#18181B]/95 border border-slate-200 dark:border-[#262626] shadow-sm space-y-2 text-xs animate-fadeIn">
+                          <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#262626] pb-2">
+                            <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                              <Sparkles size={14} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                              <span>AI Extracted Intelligence (वास्तविक डेटा)</span>
+                            </div>
+                            {aiScanResult?.confidence && (
+                              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E]">
+                                {Math.round(aiScanResult.confidence * 100)}% Match
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+                            {formData.documentNumber && (
+                              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/60 dark:border-[#222]">
+                                <span className="text-slate-400 block text-[10px] font-medium">ID NUMBER</span>
+                                <span className="font-mono font-bold text-slate-900 dark:text-white truncate block">
+                                  {formData.documentNumber}
+                                </span>
+                              </div>
+                            )}
+
+                            {formData.holderName && (
+                              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/60 dark:border-[#222]">
+                                <span className="text-slate-400 block text-[10px] font-medium">HOLDER NAME</span>
+                                <span className="font-bold text-slate-900 dark:text-white truncate block">
+                                  {formData.holderName}
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/60 dark:border-[#222]">
+                              <span className="text-slate-400 block text-[10px] font-medium">CATEGORY</span>
+                              <span className="font-bold text-emerald-700 dark:text-[#3ECF8E] truncate block">
+                                {formData.category}
+                              </span>
+                            </div>
+
+                            {formData.dob && (
+                              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/60 dark:border-[#222]">
+                                <span className="text-slate-400 block text-[10px] font-medium">DOB</span>
+                                <span className="font-semibold text-slate-800 dark:text-neutral-200">
+                                  {new Date(formData.dob).toLocaleDateString('en-IN')}
+                                </span>
+                              </div>
+                            )}
+
+                            {formData.issueDate && (
+                              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/60 dark:border-[#222]">
+                                <span className="text-slate-400 block text-[10px] font-medium">ISSUE DATE</span>
+                                <span className="font-semibold text-slate-800 dark:text-neutral-200">
+                                  {formData.issueDate}
+                                </span>
+                              </div>
+                            )}
+
+                            {formData.expiryDate && (
+                              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/60 dark:border-[#222]">
+                                <span className="text-slate-400 block text-[10px] font-medium">EXPIRY</span>
+                                <span className="font-semibold text-slate-800 dark:text-neutral-200">
+                                  {formData.expiryDate}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : file && file.type === 'application/pdf' ? (
+                    /* PDF Document Preview */
+                    <div className="w-full max-w-md p-6 rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#262626] shadow-xl text-center space-y-3">
+                      <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto ring-1 ring-red-500/20">
+                        <FileText size={32} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                          {file.name}
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB • PDF Document Archive
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/60 dark:border-[#222] text-xs text-slate-600 dark:text-neutral-300 flex items-center justify-center gap-2">
+                        <ShieldCheck size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                        <span>Ready to store in zero-knowledge encrypted vault</span>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Empty Standby Viewfinder */
+                    <div className="w-full max-w-md py-12 px-6 rounded-3xl border-2 border-dashed border-slate-300 dark:border-[#262626] text-center space-y-4">
+                      <div className="w-16 h-16 rounded-3xl bg-slate-200/70 dark:bg-[#141414] text-slate-400 dark:text-neutral-500 flex items-center justify-center mx-auto shadow-inner">
+                        <Camera size={30} />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                          Live Document Preview • असली स्कैन प्रिव्यू
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-neutral-400 max-w-xs mx-auto leading-relaxed">
+                          Aap jo bhi photo ya scan upload karenge, wo yahan real-time live preview hogi aur Gemini AI number, category & details auto-detect karega.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-center gap-1.5 pt-2">
+                        {['Aadhaar Card', 'PAN Card', 'Driving License', 'RC', 'Health Card', 'Bills'].map((t) => (
+                          <span key={t} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-[#202024] text-slate-600 dark:text-neutral-400">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  /* VIEW 2: Realistic Smart Sovereign Card (Rendered with REAL User Data!) */
+                  <div className="w-full max-w-[500px] rounded-2xl bg-gradient-to-br from-[#1B253B] via-[#141C2E] to-[#0F1726] border border-slate-700/60 shadow-2xl p-5 text-white relative overflow-hidden">
+                    {/* Tricolor accent bar */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] opacity-90"></div>
+
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between pb-3 border-b border-slate-700/60 mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm border border-emerald-500/30">
+                          {formData.category === 'Medical & Health' ? '🏥' : formData.category === 'Bank & Property' ? '🏦' : '🇮🇳'}
+                        </div>
+                        <div>
+                          <div className="text-[11px] tracking-wider uppercase font-bold text-white">
+                            {formData.category === 'ID Cards' ? 'REPUBLIC OF INDIA • भारत गणराज्य' : 'GHARVAULT SECURE ARCHIVE'}
+                          </div>
+                          <div className="text-[10px] text-slate-400 leading-tight">
+                            {formData.title || formData.category || 'Official Family Document'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end">
+                        <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold tracking-wider text-[10px] border border-emerald-500/40">
+                          {aiScanResult ? 'AI VERIFIED' : 'SECURE COPY'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 mt-0.5">{formData.category}</span>
+                      </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="grid grid-cols-12 gap-4 items-center">
+                      <div className="col-span-4 flex flex-col items-center">
+                        <div className="relative w-24 h-28 rounded-lg overflow-hidden border border-slate-600/60 shadow-md bg-slate-800">
+                          {previewUrl || frontPreview ? (
+                            <img
+                              src={uploadMode === 'twosided' && activePreviewSide === 'back' && backPreview ? backPreview : (previewUrl || frontPreview)}
+                              alt="Scan Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-400 font-bold text-2xl">
+                              {(formData.holderName || assignedMemberObj?.name || user?.name || 'M')[0]}
+                            </div>
+                          )}
+                          <div className="absolute bottom-0 inset-x-0 bg-black/80 text-center py-0.5">
+                            <span className="text-[9px] uppercase tracking-wider text-emerald-400 font-semibold">
+                              Authentic Scan
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col-span-8 space-y-1.5">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block font-medium">HOLDER NAME / नाम</span>
+                          <div className="text-sm font-bold text-white tracking-wide truncate">
+                            {formData.holderName || assignedMemberObj?.name || user?.name || 'Self / Family Member'}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <div>
+                            <span className="text-[10px] text-slate-400 block font-medium">DOB / DATE</span>
+                            <span className="text-xs font-semibold text-white">
+                              {formData.dob ? new Date(formData.dob).toLocaleDateString('en-IN') : (formData.issueDate || 'As on record')}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-400 block font-medium">VALIDITY</span>
+                            <span className="text-xs font-semibold text-emerald-400">
+                              {formData.expiryDate ? new Date(formData.expiryDate).toLocaleDateString('en-IN') : 'Permanent / Lifetime'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Document Number Bar */}
+                    <div className="mt-4 pt-2 border-t border-slate-700/60 flex items-center justify-between bg-black/40 px-3.5 py-2 rounded-xl border border-slate-700/40">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-emerald-400">
+                          <Shield size={18} />
+                        </span>
+                        <div>
+                          <div className="text-[9px] tracking-wider uppercase text-slate-400 font-medium">
+                            {formData.category} Number
+                          </div>
+                          <div className="text-sm font-bold tracking-widest text-white font-mono flex items-center gap-2">
+                            {showUnmaskedDocNumber ? (
+                              <span>{formData.documentNumber || '•••• •••• ••••'}</span>
+                            ) : (
+                              <span>{formData.documentNumber ? `•••• •••• ${formData.documentNumber.slice(-4)}` : '•••• •••• ••••'}</span>
+                            )}
+                            {formData.documentNumber && (
+                              <button
+                                type="button"
+                                onClick={() => setShowUnmaskedDocNumber((prev) => !prev)}
+                                className="text-slate-400 hover:text-emerald-400 transition-colors ml-1 cursor-pointer"
+                              >
+                                {showUnmaskedDocNumber ? <EyeOff size={14} /> : <Eye size={14} />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
-              {/* Realistic Simulated Physical Card Surface */}
-              <div className="p-5 sm:p-7 bg-slate-100/70 dark:bg-[#070E1D] flex flex-col items-center">
-                <div className="w-full max-w-[520px] rounded-2xl bg-gradient-to-br from-[#1B253B] via-[#141C2E] to-[#0F1726] border border-slate-700/60 shadow-2xl p-5 text-white relative overflow-hidden">
-                  {/* Subtle Indian Govt Tricolor Micro-Accent Top Bar */}
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] opacity-85"></div>
-                  {/* Background Guilloche Watermark Representation */}
-                  <div className="absolute -right-12 -bottom-12 w-48 h-48 rounded-full border border-emerald-500/10 pointer-events-none opacity-40"></div>
-                  <div className="absolute -right-6 -bottom-6 w-36 h-36 rounded-full border border-emerald-500/15 pointer-events-none opacity-30"></div>
-
-                  {/* Card Header: Ashoka Seal & Govt of India */}
-                  <div className="flex items-start justify-between pb-3 border-b border-slate-700/60 mb-4">
-                    <div className="flex items-center gap-3">
-                      {/* Ashoka Emblem SVG */}
-                      <div className="w-8 h-8 flex items-center justify-center text-emerald-400">
-                        <svg aria-label="Ashoka Emblem" className="w-7 h-7 fill-current" viewBox="0 0 24 24">
-                          <circle cx="12" cy="12" fill="none" r="3" stroke="currentColor" strokeWidth="1.5"></circle>
-                          <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="currentColor" strokeWidth="1.2"></path>
-                        </svg>
-                      </div>
-                      <div>
-                        <div className="text-[11px] tracking-wider uppercase font-bold text-white">
-                          भारत सरकार • GOVT. OF INDIA
-                        </div>
-                        <div className="text-[10px] text-slate-400 leading-tight">
-                          Unique Identification Authority of India (UIDAI)
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end">
-                      <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold tracking-wider text-[10px] border border-emerald-500/40">
-                        VERIFIED
-                      </span>
-                      <span className="text-[10px] text-slate-400 mt-0.5">UID: Secure Q-Scan</span>
-                    </div>
-                  </div>
-
-                  {/* Card Body: Photo & OCR Key-Values */}
-                  <div className="grid grid-cols-12 gap-4 items-center">
-                    {/* Resident Photo & Biometric Stamp */}
-                    <div className="col-span-4 flex flex-col items-center">
-                      <div className="relative w-24 h-28 rounded-lg overflow-hidden border border-slate-600/60 shadow-md bg-slate-800">
-                        <img
-                          src={
-                            (uploadMode === 'twosided' && activePreviewSide === 'back' && backPreview)
-                              ? backPreview
-                              : (previewUrl || frontPreview || assignedMemberObj?.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250')
-                          }
-                          alt="Resident Photo"
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute bottom-0 inset-x-0 bg-black/80 text-center py-0.5">
-                          <span className="text-[9px] uppercase tracking-wider text-slate-300 font-semibold">
-                            Photo Verified
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Resident Metadata in Bilingual Text */}
-                    <div className="col-span-8 space-y-1.5">
-                      <div>
-                        <span className="text-[10px] text-slate-400 block font-medium">Name / नाम</span>
-                        <div className="text-sm font-bold text-white tracking-wide truncate">
-                          {formData.holderName || assignedMemberObj?.name || user?.name || 'Rajesh Kumar Sharma'}
-                        </div>
-                        <div className="text-xs text-emerald-400 font-medium">
-                          {formData.holderName ? '' : 'राजेश कुमार शर्मा'}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 pt-1">
-                        <div>
-                          <span className="text-[10px] text-slate-400 block font-medium">DOB / जन्म तिथि</span>
-                          <span className="text-xs font-semibold text-white">
-                            {formData.dob ? new Date(formData.dob).toLocaleDateString('en-GB') : '14/08/1962'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-slate-400 block font-medium">Gender / लिंग</span>
-                          <span className="text-xs font-semibold text-white">
-                            {aiScanResult?.gender || 'Male / पुरुष'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* UID Masked Number Bar */}
-                  <div className="mt-4 pt-2 border-t border-slate-700/60 flex items-center justify-between bg-black/40 px-3.5 py-2 rounded-xl border border-slate-700/40">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-emerald-400">
-                        <Shield size={18} />
-                      </span>
-                      <div>
-                        <div className="text-[9px] tracking-wider uppercase text-slate-400 font-medium">
-                          Aadhaar Number (Safe Masked)
-                        </div>
-                        <div className="text-sm font-bold tracking-widest text-white font-mono flex items-center gap-2">
-                          {showUnmaskedDocNumber ? (
-                            <span>{formData.documentNumber || '9876 5432 4829'}</span>
-                          ) : (
-                            <>
-                              <span>XXXX  XXXX</span>
-                              <span className="text-emerald-400">
-                                {formData.documentNumber ? formData.documentNumber.slice(-4) : '4829'}
-                              </span>
-                            </>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setShowUnmaskedDocNumber((prev) => !prev)}
-                            className="text-slate-400 hover:text-emerald-400 transition-colors ml-1 cursor-pointer"
-                            title="Toggle unmask"
-                          >
-                            {showUnmaskedDocNumber ? <EyeOff size={14} /> : <Eye size={14} />}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Mini QR Representation */}
-                    <div className="w-9 h-9 bg-slate-800 rounded border border-slate-700 p-1 flex items-center justify-center shrink-0">
-                      <svg className="w-full h-full fill-slate-300" viewBox="0 0 24 24">
-                        <path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm8-2h7v7h-7V3zm2 2v3h3V5h-3zM3 13h7v7H3v-7zm2 2v3h3v-3H5zm13-2h-3v3h3v-3zm3 0h-2v2h2v-2zm-3 3h-2v4h2v-4zm3 2h-2v2h2v-2zm0-4h2v-2h-2v2z"></path>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div className="text-center mt-2.5">
-                    <span className="text-[10px] text-slate-400">मेरा आधार, मेरी पहचान (आधार - आम आदमी का अधिकार)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Telemetry & Front/Back Switcher Footer */}
-              <div className="p-4 bg-slate-50 dark:bg-[#141414] border-t border-slate-200/80 dark:border-[#262626] flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400">
-                  <CheckCircle2 size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
-                  <span>OCR Confidence: <strong className="text-slate-900 dark:text-white font-bold">{aiScanResult?.confidence ? `${Math.round(aiScanResult.confidence * 100)}%` : '99.4%'}</strong> • 300 DPI Clear Scan</span>
+              {/* Inspector Footer */}
+              <div className="p-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-200/80 dark:border-[#262626] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-neutral-400">
+                  <CheckCircle2 size={15} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                  <span>
+                    {aiScanResult
+                      ? `OCR Confidence: ${Math.round((aiScanResult.confidence || 0.96) * 100)}% • Devanagari & English Multi-lingual`
+                      : 'AES-256 Zero-Knowledge Encrypted Repository'}
+                  </span>
                 </div>
 
                 {uploadMode === 'twosided' && (
-                  <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-[#1C1C20] rounded-xl border border-slate-200 dark:border-[#262626] text-xs">
+                  <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 dark:bg-[#1C1C20] rounded-xl text-xs font-bold">
                     <button
                       type="button"
                       onClick={() => setActivePreviewSide('front')}
-                      className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                      className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
                         activePreviewSide === 'front'
-                          ? 'bg-white dark:bg-[#262626] text-emerald-700 dark:text-[#3ECF8E] shadow-xs'
+                          ? 'bg-white dark:bg-[#262626] text-emerald-700 dark:text-[#3ECF8E] shadow-2xs'
                           : 'text-slate-500 dark:text-neutral-400'
                       }`}
                     >
@@ -1876,36 +2112,18 @@ export default function DocumentUploadPage() {
                     <button
                       type="button"
                       onClick={() => setActivePreviewSide('back')}
-                      className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                      className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
                         activePreviewSide === 'back'
-                          ? 'bg-white dark:bg-[#262626] text-emerald-700 dark:text-[#3ECF8E] shadow-xs'
+                          ? 'bg-white dark:bg-[#262626] text-emerald-700 dark:text-[#3ECF8E] shadow-2xs'
                           : 'text-slate-500 dark:text-neutral-400'
                       }`}
                     >
-                      <span>Back (Address) {backFile ? '✓' : ''}</span>
+                      <span>Back Side {backFile ? '✓' : ''}</span>
                     </button>
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Live AI Vision Scanning Laser HUD */}
-            {isScanning && (
-              <div className="relative rounded-3xl overflow-hidden bg-slate-950 border border-emerald-500/50 shadow-2xl animate-fadeIn">
-                <div className="h-48 relative flex items-center justify-center bg-black">
-                  <div className="absolute inset-0 bg-emerald-950/20 pointer-events-none" />
-                  <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-[#3ECF8E] rounded-tl-lg shadow-[0_0_12px_#3ECF8E]" />
-                  <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-[#3ECF8E] rounded-tr-lg shadow-[0_0_12px_#3ECF8E]" />
-                  <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-[#3ECF8E] rounded-bl-lg shadow-[0_0_12px_#3ECF8E]" />
-                  <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-[#3ECF8E] rounded-br-lg shadow-[0_0_12px_#3ECF8E]" />
-                  <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#3ECF8E] to-transparent shadow-[0_0_20px_#3ECF8E] animate-laser-beam z-10" />
-                  <div className="text-center z-20">
-                    <Sparkles size={36} className="text-[#3ECF8E] animate-spin mx-auto mb-2" style={{ animationDuration: '3s' }} />
-                    <p className="text-xs font-mono font-bold text-white">Gemini AI OCR Ingesting... {scanElapsed}s</p>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Duplicate Document Alert */}
             {detectedDuplicate && (
@@ -2367,7 +2585,7 @@ export default function DocumentUploadPage() {
       </div>
 
       {/* Mobile Sticky Save Action Bar (Hidden on Desktop) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-lg border-t border-slate-200 dark:border-[#262626] z-40 shadow-lg">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-lg border-t border-slate-200 dark:border-[#262626] z-40 shadow-lg">
         <button
           type="button"
           disabled={loading}
