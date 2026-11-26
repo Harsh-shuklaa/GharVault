@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -65,6 +65,14 @@ export default function AppLayout() {
   const [isAskAIOpen, setIsAskAIOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Guard: If user is authenticated but has no family created/joined yet, redirect to setup
+  useEffect(() => {
+    if (user && !user.familyId && !family) {
+      navigate('/family/setup', { replace: true });
+    }
+  }, [user, family, navigate]);
 
   // Notification states
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -373,6 +381,7 @@ export default function AppLayout() {
                   <img
                     src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=3ECF8E&color=121212`}
                     alt={user?.name || 'User'}
+                    referrerPolicy="no-referrer"
                     className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-300 dark:ring-neutral-700 shrink-0"
                   />
                   <span
@@ -542,6 +551,7 @@ export default function AppLayout() {
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=${isBlue ? '2563EB' : '3ECF8E'}&color=121212`
                 }
                 alt={user?.name || 'User'}
+                referrerPolicy="no-referrer"
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-700"
               />
             </Link>

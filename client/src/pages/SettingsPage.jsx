@@ -41,7 +41,7 @@ import JoinFamilyModal from '../components/common/JoinFamilyModal';
 import SendPushModal from '../components/common/SendPushModal';
 
 export default function SettingsPage() {
-  const { user, family, updateUser, updateFamily, openLogoutModal } = useAuth();
+  const { user, family, updateUser, updateFamily, openLogoutModal, setIsEmergencyModalOpen } = useAuth();
   const { theme, isDark, setTheme, darkStyle, setDarkStyle, accentColor, isBlue, setAccentColor } = useTheme();
   const { toast } = useToast();
   const { isStandalone, isIOS, isAndroid, triggerNativeInstall } = usePWAInstall();
@@ -649,6 +649,39 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </form>
+
+              {/* Dedicated Emergency Health Card & Hospital Ready Section */}
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-[#262626]">
+                <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/90 dark:border-[#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-red-500/10 dark:bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                      <HeartPulse size={22} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                          Family Emergency Health Card
+                        </h3>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-300 font-bold border border-red-200 dark:border-red-500/30">
+                          Hospital Ready
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
+                        Instant hospital admission card with Blood Group, Allergies, Mediclaim policy & emergency contact.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsEmergencyModalOpen(true)}
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold font-mono bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer active:scale-95 shadow-2xs"
+                  >
+                    <HeartPulse size={14} className="animate-pulse" />
+                    <span>View & Share Health Card</span>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

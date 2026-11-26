@@ -88,7 +88,7 @@ router.post('/sync', async (req, res) => {
     let user = null;
     let family = null;
     let isNewUser = false;
-    let useMongo = isConnected && mongoose.connection.readyState === 1;
+    let useMongo = Boolean(isConnected || mongoose.connection.readyState === 1);
 
     if (useMongo) {
       try {
@@ -122,34 +122,26 @@ router.post('/sync', async (req, res) => {
               });
             } else {
               isNewUser = true;
-              const newInviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
-              family = await Family.create({
-                name: `${cleanName.split(' ')[0]}'s Family Vault`,
-                inviteCode: newInviteCode,
-                storageLimitBytes: 53687091200,
-                storageUsedBytes: 0,
-              });
-
+              // User signed in without an invite code: DO NOT auto-create a family!
+              // They will choose to either Create or Join on /family/setup
               user = await User.create({
                 email: cleanEmail,
                 name: cleanName,
                 avatar: userAvatar,
                 googleId: googleId || 'google_' + Date.now(),
-                role: 'ADMIN',
-                relationship: 'Head of Family',
-                familyId: family._id,
+                role: 'MEMBER',
+                relationship: 'Pending Setup',
+                familyId: null,
                 permissions: {
                   canUpload: true,
                   canDownload: true,
-                  canDelete: true,
+                  canDelete: false,
                   canViewSensitive: true,
                   canSignQuorum: true,
                   canArmBreakGlass: true,
                 },
               });
-
-              family.adminId = user._id;
-              await family.save();
+              family = null;
             }
           } catch (createErr) {
             if (createErr.code === 11000) {
@@ -161,30 +153,15 @@ router.post('/sync', async (req, res) => {
           }
         }
         
-        if (user && !family) {
+        if (user) {
           if (targetFamily) {
             user.familyId = targetFamily._id;
             user.role = 'MEMBER';
             if (relationship) user.relationship = relationship;
             await user.save();
             family = targetFamily;
-          } else {
-            if (user.familyId) {
-              family = await Family.findById(user.familyId);
-            }
-            if (!family) {
-              isNewUser = true;
-              const newInviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
-              family = await Family.create({
-                name: `${cleanName.split(' ')[0]}'s Family Vault`,
-                inviteCode: newInviteCode,
-                adminId: user._id,
-                storageLimitBytes: 53687091200,
-                storageUsedBytes: 0,
-              });
-              user.familyId = family._id;
-              await user.save();
-            }
+          } else if (user.familyId) {
+            family = await Family.findById(user.familyId);
           }
         }
       } catch (mongoErr) {
@@ -219,37 +196,26 @@ router.post('/sync', async (req, res) => {
           memoryStore.users.push(user);
         } else {
           isNewUser = true;
-          const newInviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
-          family = {
-            _id: 'fam_' + Date.now(),
-            name: `${cleanName.split(' ')[0]}'s Family Vault`,
-            inviteCode: newInviteCode,
-            adminId: null,
-            storageLimitBytes: 53687091200,
-            storageUsedBytes: 0,
-            createdAt: new Date(),
-          };
           user = {
             _id: 'user_' + Date.now(),
             email: cleanEmail,
             name: cleanName,
             avatar: userAvatar,
             googleId: googleId || 'google_' + Date.now(),
-            role: 'ADMIN',
-            relationship: 'Head of Family',
-            familyId: family._id,
+            role: 'MEMBER',
+            relationship: 'Pending Setup',
+            familyId: null,
             permissions: {
               canUpload: true,
               canDownload: true,
-              canDelete: true,
+              canDelete: false,
               canViewSensitive: true,
               canSignQuorum: true,
               canArmBreakGlass: true,
             },
             createdAt: new Date(),
           };
-          family.adminId = user._id;
-          memoryStore.families.push(family);
+          family = null;
           memoryStore.users.push(user);
         }
       } else {
@@ -258,22 +224,8 @@ router.post('/sync', async (req, res) => {
           user.role = 'MEMBER';
           if (relationship) user.relationship = relationship;
           family = targetFamily;
-        } else {
-          family = memoryStore.families.find((f) => f._id.toString() === user.familyId?.toString());
-          if (!family) {
-            isNewUser = true;
-            family = {
-              _id: 'fam_' + Date.now(),
-              name: `${cleanName.split(' ')[0]}'s Family Vault`,
-              inviteCode: 'GHAR-' + Math.floor(1000 + Math.random() * 9000),
-              adminId: user._id,
-              storageLimitBytes: 53687091200,
-              storageUsedBytes: 0,
-              createdAt: new Date(),
-            };
-            user.familyId = family._id;
-            memoryStore.families.push(family);
-          }
+        } else if (user.familyId) {
+          family = memoryStore.families.find((f) => f._id.toString() === user.familyId?.toString()) || null;
         }
       }
     }
@@ -318,7 +270,7 @@ router.post('/google', async (req, res) => {
 
     let user = null;
     let family = null;
-    let useMongo = isConnected && mongoose.connection.readyState === 1;
+    let useMongo = Boolean(isConnected || mongoose.connection.readyState === 1);
 
     if (useMongo) {
       try {
@@ -351,34 +303,26 @@ router.post('/google', async (req, res) => {
                 },
               });
             } else {
-              const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
-              family = await Family.create({
-                name: `${cleanName.split(' ')[0]}'s Family Vault`,
-                inviteCode,
-                storageLimitBytes: 53687091200, // 50 GB Free Tier
-                storageUsedBytes: 0,
-              });
-
+              // User signed in without an invite code: DO NOT auto-create a family!
+              // They will choose to either Create or Join on /family/setup
               user = await User.create({
                 email: cleanEmail,
                 name: cleanName,
                 avatar: userAvatar,
                 googleId: googleId || 'google_' + Date.now(),
-                role: 'ADMIN',
-                relationship: 'Head of Family',
-                familyId: family._id,
+                role: 'MEMBER',
+                relationship: 'Pending Setup',
+                familyId: null,
                 permissions: {
                   canUpload: true,
                   canDownload: true,
-                  canDelete: true,
+                  canDelete: false,
                   canViewSensitive: true,
                   canSignQuorum: true,
                   canArmBreakGlass: true,
                 },
               });
-
-              family.adminId = user._id;
-              await family.save();
+              family = null;
             }
           } catch (createErr) {
             if (createErr.code === 11000) {
@@ -389,29 +333,15 @@ router.post('/google', async (req, res) => {
           }
         }
         
-        if (user && !family) {
+        if (user) {
           if (targetFamily) {
             user.familyId = targetFamily._id;
             user.role = 'MEMBER';
             if (relationship) user.relationship = relationship;
             await user.save();
             family = targetFamily;
-          } else {
-            if (user.familyId) {
-              family = await Family.findById(user.familyId);
-            }
-            if (!family) {
-              const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
-              family = await Family.create({
-                name: `${cleanName.split(' ')[0]}'s Family Vault`,
-                inviteCode,
-                adminId: user._id,
-                storageLimitBytes: 53687091200,
-                storageUsedBytes: 0,
-              });
-              user.familyId = family._id;
-              await user.save();
-            }
+          } else if (user.familyId) {
+            family = await Family.findById(user.familyId);
           }
         }
       } catch (mongoErr) {
@@ -446,45 +376,26 @@ router.post('/google', async (req, res) => {
           };
           memoryStore.users.push(user);
         } else {
-          const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
-          family = {
-            _id: 'fam_' + Date.now(),
-            name: `${cleanName.split(' ')[0]}'s Family Vault`,
-            inviteCode,
-            adminId: null,
-            settings: {
-              quorumRequiredForSensitive: false,
-              quorumThreshold: 2,
-              breakGlassDelayHours: 48,
-              autoColdBackupEnabled: true,
-            },
-            storageLimitBytes: 53687091200,
-            storageUsedBytes: 0,
-            createdAt: new Date(),
-          };
-
           user = {
             _id: 'user_' + Date.now(),
             email: cleanEmail,
             name: cleanName,
             avatar: userAvatar,
             googleId: googleId || 'google_' + Date.now(),
-            role: 'ADMIN',
-            relationship: 'Head of Family',
-            familyId: family._id,
+            role: 'MEMBER',
+            relationship: 'Pending Setup',
+            familyId: null,
             permissions: {
               canUpload: true,
               canDownload: true,
-              canDelete: true,
+              canDelete: false,
               canViewSensitive: true,
               canSignQuorum: true,
               canArmBreakGlass: true,
             },
             createdAt: new Date(),
           };
-
-          family.adminId = user._id;
-          memoryStore.families.push(family);
+          family = null;
           memoryStore.users.push(user);
         }
       } else {
@@ -493,22 +404,8 @@ router.post('/google', async (req, res) => {
           user.role = 'MEMBER';
           if (relationship) user.relationship = relationship;
           family = targetFamily;
-        } else {
-          family = memoryStore.families.find((f) => f._id.toString() === user.familyId?.toString());
-          if (!family) {
-            const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
-            family = {
-              _id: 'fam_' + Date.now(),
-              name: `${cleanName.split(' ')[0]}'s Family Vault`,
-              inviteCode,
-              adminId: user._id,
-              storageLimitBytes: 53687091200,
-              storageUsedBytes: 0,
-              createdAt: new Date(),
-            };
-            user.familyId = family._id;
-            memoryStore.families.push(family);
-          }
+        } else if (user.familyId) {
+          family = memoryStore.families.find((f) => f._id.toString() === user.familyId?.toString()) || null;
         }
       }
     }

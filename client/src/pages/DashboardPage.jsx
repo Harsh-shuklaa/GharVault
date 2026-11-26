@@ -48,7 +48,6 @@ import JoinFamilyModal from '../components/common/JoinFamilyModal';
 import PersonalKycPromptModal from '../components/common/PersonalKycPromptModal';
 import SendPushModal from '../components/common/SendPushModal';
 import DashboardSkeleton from '../components/common/DashboardSkeleton';
-import EmergencyHealthCardWidget from '../components/common/EmergencyHealthCardWidget';
 import { usePushNotification } from '../context/PushNotificationContext';
 
 export default function DashboardPage() {
@@ -82,6 +81,7 @@ export default function DashboardPage() {
   const [showKycDetails, setShowKycDetails] = useState(true);
   const [isPushBannerDismissed, setIsPushBannerDismissed] = useState(false);
   const [isPersonalKycBannerDismissed, setIsPersonalKycBannerDismissed] = useState(false);
+  const [mobileTab, setMobileTab] = useState('ids'); // 'ids' | 'alerts' | 'folders'
 
   useEffect(() => {
     loadDashboard();
@@ -532,10 +532,10 @@ export default function DashboardPage() {
         type: 'health',
         badge: '🏥 HEALTH & AYUSHMAN',
         dept: 'National Health Authority • Cashless TPA',
-        gradient: isBlue ? 'from-blue-600/15 via-blue-500/5 to-cyan-500/10' : 'from-emerald-500/15 via-teal-500/5 to-emerald-600/10',
-        border: isBlue ? 'border-blue-500/30 hover:border-blue-500/60' : 'border-emerald-500/30 hover:border-[#3ECF8E]/60',
-        accentPill: isBlue ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30' : 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/30',
-        stripe: isBlue ? 'h-1 bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-400' : 'h-1 bg-gradient-to-r from-emerald-600 via-[#3ECF8E] to-teal-400',
+        gradient: 'from-sky-500/15 via-blue-500/5 to-cyan-500/10',
+        border: 'border-sky-500/30 hover:border-sky-400/60',
+        accentPill: 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/30',
+        stripe: 'h-1 bg-gradient-to-r from-sky-600 via-sky-400 to-cyan-400',
       };
     }
     if (!isMed && (/\b(driving licen[cs]e|driver licen[cs]e|driving|\bdl\b|\brc\b|vehicle rc|vehicle|car|bike)\b/i.test(text) && !/\b(parchi|parcha|march|research)\b/i.test(text))) {
@@ -576,23 +576,47 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 font-sans pb-24 lg:pb-8">
+    <div className="max-w-[1400px] mx-auto p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 font-sans pb-24 lg:pb-8 relative">
+      {/* Engineering Dot Grid Texture */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]"
+        style={{
+          backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+      {/* Top Ambient Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+
       {/* ================= 1. HEADER & PERSONA SWITCHER ================= */}
-      <div className="bg-white dark:bg-[#18181B] rounded-2xl p-4 sm:p-5 border border-slate-200/90 dark:border-[#27272A] shadow-xs transition-colors space-y-4">
+      <div className="relative z-10 bg-white dark:bg-[#121622] rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-md transition-colors space-y-4">
         {/* Top Bar: Family Name + Status + Quick Desktop Buttons */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] animate-pulse shrink-0" />
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">
-                {family?.name || `${user?.name?.split(' ')[0] || 'Family'}'s Vault`}
-              </h1>
-              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/20">
-                <ShieldCheck size={11} />
-                <span>100% Secure & Private</span>
-              </span>
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse shrink-0" />
+                <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">
+                  {family?.name || `${user?.name?.split(' ')[0] || 'Family'}'s Vault`}
+                </h1>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/20">
+                  <ShieldCheck size={11} />
+                  <span>100% Secure</span>
+                </span>
+              </div>
+
+              {/* Mobile Discrete Emergency Pill */}
+              <button
+                type="button"
+                onClick={() => setIsEmergencyModalOpen(true)}
+                className="sm:hidden px-2.5 py-1 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0 active:scale-95"
+                title="Hospital Ready Emergency Health Card"
+              >
+                <HeartPulse size={13} className="text-red-500" />
+                <span className="text-[11px] font-mono">Emergency</span>
+              </button>
             </div>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               All your family's vital documents, organized and instantly accessible.
             </p>
           </div>
@@ -602,7 +626,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setIsEmergencyModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-2xs"
             >
               <HeartPulse size={14} className="text-red-600 dark:text-red-400" />
               <span>Emergency Card</span>
@@ -611,9 +635,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Level 2: Family Persona Story Avatars (Horizontal Scroll) */}
-        <div className="pt-2 border-t border-slate-100 dark:border-[#27272A]">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400 mb-2 font-medium">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400 flex items-center gap-1.5">
+        <div className="pt-2 border-t border-slate-100 dark:border-[#1E293B]">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
               <span>Family Members</span>
               <span className="font-normal lowercase text-[10px] text-slate-400">• tap to filter</span>
             </span>
@@ -621,7 +645,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setSelectedMemberId('ALL')}
-                className="text-emerald-700 dark:text-[#3ECF8E] hover:underline text-[11px] font-bold cursor-pointer"
+                className="text-sky-600 dark:text-sky-400 hover:underline text-[11px] font-bold cursor-pointer"
               >
                 Show All ✕
               </button>
@@ -635,15 +659,15 @@ export default function DashboardPage() {
               onClick={() => setSelectedMemberId('ALL')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                 selectedMemberId === 'ALL'
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-black border-slate-900 dark:border-white shadow-xs'
-                  : 'bg-slate-50 dark:bg-[#141414] text-slate-700 dark:text-neutral-300 border-slate-200 dark:border-[#27272A] hover:border-slate-300 dark:hover:border-neutral-700'
+                  ? 'bg-sky-500 text-white border-sky-500 shadow-sm'
+                  : 'bg-slate-50 dark:bg-[#0B0F19] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1E293B] hover:border-slate-300 dark:hover:border-slate-600'
               }`}
             >
-              <span className={`w-5 h-5 rounded-full ${isBlue ? 'bg-blue-600 dark:bg-blue-500' : 'bg-[#10B981] dark:bg-[#3ECF8E]'} text-white dark:text-[#121212] flex items-center justify-center text-[10px] font-bold`}>
+              <span className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-bold">
                 ★
               </span>
               <span>All Documents</span>
-              <span className="text-[10px] opacity-70 font-mono">({documents.length})</span>
+              <span className="text-[10px] opacity-75 font-mono">({documents.length})</span>
             </button>
 
             {/* Individual Member Story Pills */}
@@ -661,24 +685,22 @@ export default function DashboardPage() {
                   onClick={() => setSelectedMemberId(member._id)}
                   className={`flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs font-semibold shrink-0 transition-all cursor-pointer ${
                     isSelected
-                      ? (isBlue
-                          ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-500/15 text-blue-900 dark:text-blue-300 ring-2 ring-blue-500/30 shadow-xs'
-                          : 'border-[#10B981] dark:border-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-900 dark:text-[#3ECF8E] ring-2 ring-[#3ECF8E]/30 shadow-xs')
-                      : 'bg-slate-50 dark:bg-[#141414] text-slate-700 dark:text-neutral-300 border-slate-200 dark:border-[#27272A] hover:border-slate-300 dark:hover:border-neutral-700'
+                      ? 'border-sky-500 bg-sky-50 dark:bg-sky-500/15 text-sky-900 dark:text-sky-300 ring-2 ring-sky-500/30 shadow-xs'
+                      : 'bg-slate-50 dark:bg-[#0B0F19] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#1E293B] hover:border-slate-300 dark:hover:border-slate-600'
                   }`}
                 >
                   <div className="relative shrink-0">
                     <img
                       src={
                         member.avatar ||
-                        `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'Member')}&background=${isBlue ? '2563EB' : '3ECF8E'}&color=000&size=64`
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'Member')}&background=0284c7&color=ffffff&size=64`
                       }
                       alt={member.name}
-                      className="w-5 h-5 rounded-full object-cover border border-slate-200 dark:border-neutral-700"
+                      className="w-5 h-5 rounded-full object-cover border border-slate-200 dark:border-slate-700"
                     />
                     <span
-                      className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-white dark:ring-[#141414] ${
-                        isMemberKycDone ? (isBlue ? 'bg-blue-600 dark:bg-blue-500' : 'bg-[#10B981] dark:bg-[#3ECF8E]') : 'bg-amber-500'
+                      className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-white dark:ring-[#0B0F19] ${
+                        isMemberKycDone ? 'bg-sky-500' : 'bg-amber-500'
                       }`}
                       title={isMemberKycDone ? 'Essential IDs Uploaded' : 'IDs Pending'}
                     />
@@ -692,13 +714,13 @@ export default function DashboardPage() {
                   <span
                     className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
                       isMemberKycDone
-                        ? (isBlue ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300' : 'bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]')
+                        ? 'bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300'
                         : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
                     }`}
                   >
                     {isMemberKycDone ? 'Ready' : 'Pending'}
                   </span>
-                  <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-mono">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                     ({memberDocCount})
                   </span>
                 </button>
@@ -708,9 +730,9 @@ export default function DashboardPage() {
             {/* + Add Member Shortcut */}
             <Link
               to="/family"
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full border border-dashed border-slate-300 dark:border-neutral-700 ${isBlue ? 'hover:border-blue-500' : 'hover:border-emerald-500'} text-slate-600 dark:text-neutral-400 text-xs font-semibold shrink-0 transition-colors`}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-dashed border-slate-300 dark:border-[#1E293B] hover:border-sky-500 text-slate-600 dark:text-slate-400 hover:text-sky-500 text-xs font-semibold shrink-0 transition-colors"
             >
-              <UserPlus size={13} className={isBlue ? "text-blue-600 dark:text-blue-400" : "text-[#10B981] dark:text-[#3ECF8E]"} />
+              <UserPlus size={13} className="text-sky-500" />
               <span>+ Member</span>
             </Link>
           </div>
@@ -718,14 +740,14 @@ export default function DashboardPage() {
       </div>
 
       {/* ================= 2. UNIVERSAL FAST SEARCH BAR (WITH CAMERA SCAN SHORTCUT) ================= */}
-      <div className="relative flex items-center bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200/90 dark:border-[#27272A] shadow-2xs px-3.5 py-2 sm:py-2.5 gap-2.5">
-        <Search size={18} className="text-slate-400 dark:text-neutral-500 shrink-0" />
+      <div className="relative z-10 flex items-center bg-white dark:bg-[#121622] rounded-2xl border border-slate-200 dark:border-[#1E293B] shadow-sm px-3.5 py-2 sm:py-2.5 gap-2.5">
+        <Search size={18} className="text-slate-400 dark:text-slate-500 shrink-0" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search Aadhaar, PAN, bills, medical, policy..."
-          className="w-full bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 text-xs sm:text-sm focus:outline-none"
+          className="w-full bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none"
         />
         <div className="flex items-center gap-1 shrink-0">
           {searchQuery && (
@@ -739,7 +761,7 @@ export default function DashboardPage() {
           )}
           <Link
             to="/vault/upload"
-            className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#222] dark:hover:bg-[#2a2a2a] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#202b40] text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors cursor-pointer"
             title="Scan / Upload Document"
           >
             <Camera size={15} />
@@ -747,29 +769,72 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ================= 2.5 1-TAP EMERGENCY HEALTH CARD (HOSPITAL READY & GEMINI AUTO-SYNCED) ================= */}
-      <EmergencyHealthCardWidget onOpenFullModal={() => setIsEmergencyModalOpen(true)} />
+      {/* ================= MOBILE SEGMENTED COCKPIT SWITCHER (< 768px) ================= */}
+      <div className="relative z-10 md:hidden flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-[#1E293B] gap-1 shadow-2xs select-none">
+        <button
+          type="button"
+          onClick={() => setMobileTab('ids')}
+          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'ids'
+              ? 'bg-white dark:bg-[#182030] text-slate-900 dark:text-sky-400 shadow-xs border border-slate-200/60 dark:border-sky-500/30'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+          }`}
+        >
+          <CreditCard size={14} className={mobileTab === 'ids' ? 'text-sky-500 dark:text-sky-400' : ''} />
+          <span>Quick IDs</span>
+          <span className="text-[10px] opacity-75 font-mono">({idCards.length})</span>
+        </button>
 
-      {/* ================= 3. 4 BIG VISUAL FAMILY CATEGORIES (STITCH DESIGN SYSTEM) ================= */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
+        <button
+          type="button"
+          onClick={() => setMobileTab('alerts')}
+          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'alerts'
+              ? 'bg-white dark:bg-[#182030] text-slate-900 dark:text-sky-400 shadow-xs border border-slate-200/60 dark:border-sky-500/30'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+          }`}
+        >
+          <Clock size={14} className={mobileTab === 'alerts' ? 'text-sky-500 dark:text-sky-400' : ''} />
+          <span>Alerts</span>
+          {expiringDocs.length > 0 && (
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileTab('folders')}
+          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'folders'
+              ? 'bg-white dark:bg-[#182030] text-slate-900 dark:text-sky-400 shadow-xs border border-slate-200/60 dark:border-sky-500/30'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+          }`}
+        >
+          <FolderOpen size={14} className={mobileTab === 'folders' ? 'text-sky-500 dark:text-sky-400' : ''} />
+          <span>Folders</span>
+        </button>
+      </div>
+
+      {/* ================= 3. 4 BIG VISUAL FAMILY CATEGORIES (DESKTOP: ALWAYS VISIBLE | MOBILE: IN FOLDERS TAB) ================= */}
+      <div className={`relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5 ${mobileTab === 'folders' ? 'grid' : 'hidden md:grid'}`}>
         {/* Category 1: Identity Cards */}
         <Link
           to={`/vault?category=${encodeURIComponent('ID Cards')}${selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''}`}
-          className={`p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#18181B] border ${isBlue ? 'border-blue-500/20 dark:border-[#27272A] hover:border-blue-500' : 'border-emerald-500/20 dark:border-[#27272A] hover:border-emerald-500'} shadow-2xs hover:shadow-md transition-all group flex flex-col justify-between`}
+          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200 dark:border-[#1E293B] hover:border-sky-500/50 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-start justify-between mb-2">
-            <div className={`w-10 h-10 rounded-xl ${isBlue ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-[#10B981] dark:text-[#3ECF8E]'} flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform`}>
+            <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
               🪪
             </div>
-            <span className={`font-mono text-xl sm:text-2xl font-bold tracking-tight ${isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-[#10B981] dark:text-[#3ECF8E]'} leading-none`}>
+            <span className="font-mono text-xl sm:text-2xl font-bold tracking-tight text-sky-600 dark:text-sky-400 leading-none">
               {String(categoryCounts.idCount).padStart(2, '0')}
             </span>
           </div>
           <div>
-            <h3 className={`text-xs sm:text-sm font-bold text-slate-900 dark:text-white ${isBlue ? 'group-hover:text-blue-600 dark:group-hover:text-blue-400' : 'group-hover:text-[#10B981] dark:group-hover:text-[#3ECF8E]'} transition-colors leading-tight`}>
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors leading-tight">
               Identity Cards
             </h3>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               Aadhaar, PAN, Voter, DL
             </p>
           </div>
@@ -778,7 +843,7 @@ export default function DashboardPage() {
         {/* Category 2: Health & Medical */}
         <Link
           to={`/vault?category=${encodeURIComponent('Medical & Health')}${selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''}`}
-          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-rose-500/20 dark:border-[#27272A] hover:border-rose-500 shadow-2xs hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200 dark:border-[#1E293B] hover:border-rose-500/50 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-start justify-between mb-2">
             <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
@@ -792,7 +857,7 @@ export default function DashboardPage() {
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors leading-tight">
               Health & Medical
             </h3>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               Mediclaim, ABHA, Reports
             </p>
           </div>
@@ -801,7 +866,7 @@ export default function DashboardPage() {
         {/* Category 3: Bank & Property */}
         <Link
           to={`/vault?category=${encodeURIComponent('Bank & Property')}${selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''}`}
-          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-blue-500/20 dark:border-[#27272A] hover:border-blue-500 shadow-2xs hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200 dark:border-[#1E293B] hover:border-blue-500/50 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-start justify-between mb-2">
             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
@@ -815,7 +880,7 @@ export default function DashboardPage() {
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
               Bank & Property
             </h3>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               Registry, FD, Passbooks
             </p>
           </div>
@@ -824,7 +889,7 @@ export default function DashboardPage() {
         {/* Category 4: Vehicles & Bills */}
         <Link
           to={`/vault?category=${encodeURIComponent('Vehicles & Transport')}${selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''}`}
-          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-amber-500/20 dark:border-[#27272A] hover:border-amber-500 shadow-2xs hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200 dark:border-[#1E293B] hover:border-amber-500/50 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-start justify-between mb-2">
             <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
@@ -838,18 +903,18 @@ export default function DashboardPage() {
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors leading-tight">
               Vehicles & Bills
             </h3>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               RC, PUCC, Electricity Bills
             </p>
           </div>
         </Link>
       </div>
 
-      {/* ================= GENTLE ALERT CHIPS (COMPACT & CLEAN) ================= */}
-      <div className="space-y-2">
+      {/* ================= GENTLE ALERT CHIPS (DESKTOP: ALWAYS | MOBILE: IN ALERTS TAB) ================= */}
+      <div className={`relative z-10 space-y-2 ${mobileTab === 'alerts' ? 'block' : 'hidden md:block'}`}>
         {/* Push Notification Opt-in Chip */}
         {isSupported && !isSubscribed && permission === 'default' && !isPushBannerDismissed && (
-          <div className={`${isBlue ? 'bg-blue-500/10 border-blue-500/20' : 'bg-emerald-500/10 border-emerald-500/20'} border rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 text-xs text-slate-800 dark:text-neutral-200 animate-fadeIn`}>
+          <div className="bg-sky-500/10 border border-sky-500/20 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 text-xs text-slate-800 dark:text-slate-200 animate-fadeIn">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-base shrink-0">📲</span>
               <span className="truncate">Get instant phone notifications when family documents are uploaded</span>
@@ -859,7 +924,7 @@ export default function DashboardPage() {
                 type="button"
                 onClick={requestPushPermission}
                 disabled={pushLoading}
-                className={`px-2.5 py-1 rounded-lg ${isBlue ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-[#10B981] hover:bg-emerald-600 text-white dark:text-[#121212]'} font-bold text-[11px] cursor-pointer`}
+                className="px-2.5 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-white font-bold text-[11px] cursor-pointer"
               >
                 {pushLoading ? '...' : 'Allow'}
               </button>
@@ -892,14 +957,14 @@ export default function DashboardPage() {
                   const msg = `⚠️ Reminder: Our family document *${doc.title}* is expiring on ${new Date(doc.expiryDate).toLocaleDateString()}. Please renew soon.`;
                   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                 }}
-                className={`px-2.5 py-1 rounded-lg ${isBlue ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-500/30' : 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] border-emerald-300 dark:border-emerald-500/30'} font-bold text-[11px] flex items-center gap-1 border cursor-pointer`}
+                className="px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-500/15 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-500/30 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
               >
                 <MessageCircle size={12} />
                 <span>WhatsApp Alert</span>
               </button>
               <Link
                 to={`/vault/documents/${expiringDocs[0]._id}`}
-                className="px-2.5 py-1 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-[11px]"
+                className="px-2.5 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-white font-bold text-[11px]"
               >
                 View Document →
               </Link>
@@ -914,7 +979,7 @@ export default function DashboardPage() {
               <span className="text-base shrink-0">💡</span>
               <div className="min-w-0">
                 <span className="font-bold">Essential documents needed for {user?.name?.split(' ')[0] || 'your profile'}</span>
-                <span className="text-slate-500 dark:text-neutral-400 ml-1.5 hidden sm:inline">
+                <span className="text-slate-500 dark:text-slate-400 ml-1.5 hidden sm:inline">
                   ({myPersonalKycStatus.missing.map(m => m.title).join(', ')})
                 </span>
               </div>
@@ -923,7 +988,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setIsPersonalKycModalOpen(true)}
-                className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] shadow-xs cursor-pointer"
+                className="px-3 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-white font-bold text-[11px] shadow-xs cursor-pointer"
               >
                 + Upload
               </button>
@@ -940,7 +1005,7 @@ export default function DashboardPage() {
         )}
 
         {/* Essential Family KYC Checklist (Collapsible Strip) */}
-        <div className="rounded-2xl border border-slate-200/90 dark:border-[#27272A] bg-white dark:bg-[#18181B] p-3 sm:p-4 shadow-2xs transition-all">
+        <div className="rounded-2xl border border-slate-200 dark:border-[#1E293B] bg-white dark:bg-[#121622] p-3 sm:p-4 shadow-sm transition-all">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="text-lg shrink-0">{kycStatus.isComplete ? '🛡️' : '📋'}</span>
@@ -951,7 +1016,7 @@ export default function DashboardPage() {
                   </h3>
                   <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${
                     kycStatus.isComplete
-                      ? 'bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]'
+                      ? 'bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-400'
                       : 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
                   }`}>
                     {kycStatus.completedCount} of {kycStatus.total} Complete ({kycStatus.progressPercent}%)
@@ -965,7 +1030,7 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={handleKycReminderWhatsApp}
-                  className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg ${isBlue ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30' : 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/30'} text-[11px] font-bold cursor-pointer`}
+                  className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/30 text-[11px] font-bold cursor-pointer"
                 >
                   <MessageCircle size={12} />
                   <span>Family Reminder</span>
@@ -974,7 +1039,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowKycDetails(prev => !prev)}
-                className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#252525] flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182030] flex items-center gap-1 cursor-pointer"
               >
                 <span>{showKycDetails ? 'Hide Checklist' : 'View Checklist'}</span>
                 {showKycDetails ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -983,12 +1048,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-2.5 w-full h-1.5 rounded-full bg-slate-100 dark:bg-[#252525] overflow-hidden">
+          <div className="mt-2.5 w-full h-1.5 rounded-full bg-slate-100 dark:bg-[#182030] overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 kycStatus.isComplete
-                  ? (isBlue ? 'bg-gradient-to-r from-blue-600 to-blue-400' : 'bg-gradient-to-r from-emerald-500 to-[#3ECF8E]')
-                  : (isBlue ? 'bg-gradient-to-r from-amber-500 via-blue-500 to-blue-400' : 'bg-gradient-to-r from-amber-500 via-emerald-500 to-[#3ECF8E]')
+                  ? 'bg-sky-500'
+                  : 'bg-gradient-to-r from-amber-500 to-sky-500'
               }`}
               style={{ width: `${Math.max(kycStatus.progressPercent, 5)}%` }}
             />
@@ -996,21 +1061,21 @@ export default function DashboardPage() {
 
           {/* Collapsible 4 Checklist Cards */}
           {showKycDetails && (
-            <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-[#27272A] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 animate-fadeIn">
+            <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-[#1E293B] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 animate-fadeIn">
               {kycStatus.items.map(item => (
                 <div
                   key={item.id}
                   className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${
                     item.done
-                      ? (isBlue ? 'bg-blue-50/50 dark:bg-blue-500/5 border-blue-200/80 dark:border-blue-500/20' : 'bg-emerald-50/50 dark:bg-[#3ECF8E]/5 border-emerald-200/80 dark:border-[#3ECF8E]/20')
-                      : 'bg-slate-50 dark:bg-[#141414] border-dashed border-slate-300 dark:border-[#2D2D2D]'
+                      ? 'bg-sky-50/50 dark:bg-sky-500/5 border-sky-200/80 dark:border-sky-500/20'
+                      : 'bg-slate-50 dark:bg-[#0B0F19] border-dashed border-slate-300 dark:border-[#1E293B]'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-base">{item.icon}</span>
                       {item.done ? (
-                        <span className={`text-[10px] font-bold ${isBlue ? 'text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/20' : 'text-emerald-700 dark:text-[#3ECF8E] bg-emerald-100 dark:bg-[#3ECF8E]/20'} flex items-center gap-1 px-2 py-0.5 rounded-full`}>
+                        <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 bg-sky-100 dark:bg-sky-500/20 flex items-center gap-1 px-2 py-0.5 rounded-full">
                           <CheckCircle2 size={11} />
                           <span>Uploaded</span>
                         </span>
@@ -1023,13 +1088,13 @@ export default function DashboardPage() {
                     <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                       {item.title}
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 leading-snug">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
                       {item.desc}
                     </p>
                   </div>
-                  <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-[#262626]">
+                  <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-[#1E293B]">
                     {item.done ? (
-                      <Link to="/vault" className={`text-[11px] font-bold ${isBlue ? 'text-blue-700 dark:text-blue-400' : 'text-emerald-700 dark:text-[#3ECF8E]'} hover:underline flex items-center justify-between`}>
+                      <Link to="/vault" className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center justify-between">
                         <span>View Document</span>
                         <ChevronRight size={12} />
                       </Link>
@@ -1038,7 +1103,7 @@ export default function DashboardPage() {
                         to={`/vault/upload?category=${encodeURIComponent(item.category)}&title=${encodeURIComponent(item.title)}${
                           selectedMemberId !== 'ALL' ? `&member=${selectedMemberId}` : ''
                         }`}
-                        className={`w-full py-1.5 px-2 rounded-lg ${isBlue ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212]'} text-xs font-bold flex items-center justify-center gap-1`}
+                        className="w-full py-1.5 px-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold flex items-center justify-center gap-1"
                       >
                         <Plus size={12} strokeWidth={2.5} />
                         <span>Upload Now</span>
@@ -1053,35 +1118,35 @@ export default function DashboardPage() {
       </div>
 
       {/* ================= 4. MAIN BENTO GRID (DESKTOP 2-COLUMN, MOBILE FLUID) ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
         {/* ================= LEFT MAIN COLUMN (Col 1 to 7) ================= */}
         <div className="lg:col-span-7 space-y-4 sm:space-y-5">
           {/* Bento: The Indian Digital Wallet (Apple Wallet Style Snap Carousel on Mobile, Grid on Desktop) */}
-          <div className="space-y-2.5">
+          <div className={`space-y-2.5 ${mobileTab === 'ids' ? 'block' : 'hidden md:block'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CreditCard size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                <CreditCard size={16} className="text-sky-500 dark:text-sky-400" />
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                   Quick ID Cards (1-Tap Copy)
                 </h2>
               </div>
-              <span className="text-[11px] font-mono text-slate-400 dark:text-neutral-500">
+              <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">
                 {idCards.length} Cards Available
               </span>
             </div>
 
             {idCards.length === 0 ? (
-              <div className="p-6 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#27272A] text-center space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#141414] text-slate-400 dark:text-neutral-500 flex items-center justify-center mx-auto">
+              <div className="p-6 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200 dark:border-[#1E293B] text-center space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#0B0F19] text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto">
                   <CreditCard size={20} />
                 </div>
-                <div className="text-xs font-bold text-slate-800 dark:text-neutral-200">No ID Numbers Found</div>
-                <p className="text-[11px] text-slate-500 dark:text-neutral-400 max-w-xs mx-auto">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">No ID Numbers Found</div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
                   Upload Aadhaar, PAN, or Driving License to enable 1-tap instant number copying.
                 </p>
                 <Link
                   to="/vault/upload"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] text-xs font-bold mt-1"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold mt-1 shadow-sm"
                 >
                   <Plus size={13} />
                   <span>Upload ID Card</span>
@@ -1099,7 +1164,7 @@ export default function DashboardPage() {
                     <div
                       key={doc._id}
                       onClick={() => navigate(`/vault/documents/${doc._id}`)}
-                      className={`w-[85vw] max-w-[340px] lg:w-auto shrink-0 snap-center rounded-2xl bg-white dark:bg-[#18181B] border ${theme.border} p-3.5 sm:p-4 shadow-xs relative overflow-hidden transition-all hover:shadow-md cursor-pointer flex flex-col justify-between space-y-3 group`}
+                      className={`w-[85vw] max-w-[340px] lg:w-auto shrink-0 snap-center rounded-2xl bg-white dark:bg-[#121622] border ${theme.border} p-3.5 sm:p-4 shadow-sm relative overflow-hidden transition-all hover:shadow-md cursor-pointer flex flex-col justify-between space-y-3 group`}
                     >
                       {/* Top Accent Gradient Stripe */}
                       <div className={`absolute top-0 inset-x-0 ${theme.stripe}`} />
@@ -1113,7 +1178,7 @@ export default function DashboardPage() {
                           <h3 className="text-xs font-bold text-slate-900 dark:text-white mt-1 truncate">
                             {doc.title}
                           </h3>
-                          <p className="text-[10px] text-slate-500 dark:text-neutral-400 truncate">
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                             {doc.assignedMember?.name || user?.name || 'Family Member'}
                           </p>
                         </div>
@@ -1127,16 +1192,16 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Number Display Box with Eye Reveal + Copy Button */}
-                      <div className="pt-2 border-t border-slate-100 dark:border-[#27272A] space-y-1.5">
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-neutral-500 font-medium">
+                      <div className="pt-2 border-t border-slate-100 dark:border-[#1E293B] space-y-1.5">
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                           <span>DOCUMENT NUMBER:</span>
                           {doc.expiryDate && (
                             <span className="font-mono">Exp: {new Date(doc.expiryDate).toLocaleDateString()}</span>
                           )}
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-[#121212] border border-slate-200/80 dark:border-[#27272A]">
-                          <span className="font-mono font-bold text-xs sm:text-sm tracking-widest text-slate-900 dark:text-[#3ECF8E] truncate">
+                        <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-[#1E293B]">
+                          <span className="font-mono font-bold text-xs sm:text-sm tracking-widest text-slate-900 dark:text-sky-400 truncate">
                             {displayNum}
                           </span>
 
@@ -1145,7 +1210,7 @@ export default function DashboardPage() {
                             <button
                               type="button"
                               onClick={(e) => toggleReveal(doc._id, e)}
-                              className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+                              className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-[#182030] text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
                               title={isRevealed ? 'Hide Number' : 'Reveal Number'}
                             >
                               {isRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
@@ -1160,10 +1225,8 @@ export default function DashboardPage() {
                               }}
                               className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
                                 copiedId === doc._id
-                                  ? (isBlue ? 'bg-blue-600 text-white' : 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212]')
-                                  : (isBlue
-                                      ? 'bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30'
-                                      : 'bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-[#3ECF8E]/30')
+                                  ? 'bg-sky-500 text-white'
+                                  : 'bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#202b40] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-sky-500/20'
                               }`}
                             >
                               {copiedId === doc._id ? <Check size={11} /> : <Copy size={11} />}
@@ -1177,12 +1240,12 @@ export default function DashboardPage() {
                           <button
                             type="button"
                             onClick={(e) => handleQuickWhatsAppShare(doc, e)}
-                            className={`text-[10px] font-bold ${isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-700 dark:text-[#3ECF8E]'} hover:underline inline-flex items-center gap-1 cursor-pointer`}
+                            className="text-[10px] font-bold text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
                           >
                             <MessageCircle size={11} />
                             <span>Share 24h via WhatsApp</span>
                           </button>
-                          <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-mono">
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                             {(doc.fileSize / (1024 * 1024)).toFixed(1)} MB
                           </span>
                         </div>
@@ -1195,21 +1258,21 @@ export default function DashboardPage() {
           </div>
 
           {/* Bento: Recent Documents & Activity List */}
-          <div className="bg-white dark:bg-[#18181B] rounded-2xl p-4 sm:p-5 border border-slate-200/90 dark:border-[#27272A] shadow-xs space-y-3 transition-colors">
+          <div className={`bg-white dark:bg-[#121622] rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-[#1E293B] shadow-sm space-y-3 transition-colors ${mobileTab === 'ids' ? 'block' : 'hidden md:block'}`}>
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <FileText size={16} className={isBlue ? "text-blue-600 dark:text-blue-400" : "text-[#10B981] dark:text-[#3ECF8E]"} />
+                  <FileText size={16} className="text-sky-500 dark:text-sky-400" />
                   <span>Recent Documents</span>
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-neutral-400">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Recently uploaded family documents
                 </p>
               </div>
 
               <Link
                 to="/vault"
-                className={`text-xs font-bold ${isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-700 dark:text-[#3ECF8E]'} hover:underline inline-flex items-center gap-1`}
+                className="text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1"
               >
                 <span>View All ({filteredDocuments.length})</span>
                 <ChevronRight size={13} />
@@ -1217,19 +1280,19 @@ export default function DashboardPage() {
             </div>
 
             {filteredDocuments.length === 0 ? (
-              <div className="py-8 text-center text-slate-400 dark:text-neutral-500 text-xs">
+              <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs">
                 No documents found matching the current member or search filter.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 dark:divide-[#27272A]">
+              <div className="divide-y divide-slate-100 dark:divide-[#1E293B]">
                 {filteredDocuments.slice(0, 5).map(doc => (
                   <div
                     key={doc._id}
                     onClick={() => navigate(`/vault/documents/${doc._id}`)}
-                    className="py-2.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.03] px-2 rounded-xl transition-colors cursor-pointer group gap-2"
+                    className="py-2.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-[#182030]/50 px-2 rounded-xl transition-colors cursor-pointer group gap-2"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className={`w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#27272A] ${isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-[#10B981] dark:text-[#3ECF8E]'} flex items-center justify-center shrink-0`}>
+                      <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#0B0F19] border border-slate-200 dark:border-[#1E293B] text-sky-500 dark:text-sky-400 flex items-center justify-center shrink-0">
                         {doc.category === 'ID Cards' ? (
                           <CreditCard size={15} />
                         ) : doc.category === 'Medical & Health' ? (
@@ -1240,10 +1303,10 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className={`text-xs font-bold text-slate-900 dark:text-white ${isBlue ? 'group-hover:text-blue-600 dark:group-hover:text-blue-400' : 'group-hover:text-[#10B981] dark:group-hover:text-[#3ECF8E]'} truncate`}>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-sky-500 dark:group-hover:text-sky-400 truncate">
                           {doc.title}
                         </div>
-                        <div className="text-[10px] text-slate-500 dark:text-neutral-400 flex items-center gap-1.5 mt-0.5 truncate">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
                           <span className="font-medium">{doc.category}</span>
                           {doc.assignedMember && <span>• {doc.assignedMember.name}</span>}
                           {doc.notes && <span className="text-amber-700 dark:text-amber-400 truncate">• 🗄️ {doc.notes}</span>}
@@ -1259,13 +1322,13 @@ export default function DashboardPage() {
                             e.stopPropagation();
                             copyText(doc.documentNumber, `Copied ${doc.title} number!`, doc._id);
                           }}
-                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#262626] dark:hover:bg-[#333] text-slate-700 dark:text-neutral-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#202b40] text-slate-700 dark:text-slate-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
                         >
-                          {copiedId === doc._id ? <Check size={11} className={isBlue ? "text-blue-600 dark:text-blue-400" : "text-[#10B981] dark:text-[#3ECF8E]"} /> : <Copy size={11} />}
+                          {copiedId === doc._id ? <Check size={11} className="text-sky-500 dark:text-sky-400" /> : <Copy size={11} />}
                           <span className="hidden sm:inline">{copiedId === doc._id ? 'Copied' : 'Copy'}</span>
                         </button>
                       )}
-                      <ChevronRight size={15} className={`text-slate-400 ${isBlue ? 'group-hover:text-blue-600 dark:group-hover:text-blue-400' : 'group-hover:text-[#10B981] dark:group-hover:text-[#3ECF8E]'} transition-colors`} />
+                      <ChevronRight size={15} className="text-slate-400 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors" />
                     </div>
                   </div>
                 ))}
@@ -1277,7 +1340,7 @@ export default function DashboardPage() {
         {/* ================= RIGHT UTILITY COLUMN (Col 8 to 12) ================= */}
         <div className="lg:col-span-5 space-y-4 sm:space-y-5">
           {/* Bento: Physical Paper Locator (Home Almirah / Locker Tracker) */}
-          <div className="bg-white dark:bg-[#18181B] rounded-2xl p-4 sm:p-5 border border-slate-200/90 dark:border-[#27272A] shadow-xs space-y-3 transition-colors">
+          <div className={`bg-white dark:bg-[#121622] rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-[#1E293B] shadow-sm space-y-3 transition-colors ${mobileTab === 'folders' ? 'block' : 'hidden md:block'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Box size={16} className="text-amber-600 dark:text-amber-400" />
@@ -1290,7 +1353,7 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            <p className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
               Track where physical paper originals are kept at home (Almirah, Drawer, Safe).
             </p>
 
@@ -1305,7 +1368,7 @@ export default function DashboardPage() {
                     className={`p-2.5 rounded-xl border text-left transition-all flex items-center justify-between cursor-pointer ${
                       isSelected
                         ? 'border-amber-500/60 bg-amber-500/10 text-amber-900 dark:text-amber-200'
-                        : 'border-slate-200 dark:border-[#27272A] bg-slate-50 dark:bg-[#121212] hover:border-slate-300 dark:hover:border-neutral-700'
+                        : 'border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#0B0F19] hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -1314,12 +1377,12 @@ export default function DashboardPage() {
                         <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {loc.name}
                         </div>
-                        <div className="text-[10px] text-slate-500 dark:text-neutral-400 truncate">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                           {loc.count > 0 ? `${loc.count} documents tagged here` : 'Tap to view physical papers'}
                         </div>
                       </div>
                     </div>
-                    <span className="text-xs font-mono font-bold text-slate-400 dark:text-neutral-500 shrink-0">
+                    <span className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500 shrink-0">
                       {isSelected ? 'Active ✕' : `${loc.count} docs →`}
                     </span>
                   </button>
@@ -1329,26 +1392,26 @@ export default function DashboardPage() {
           </div>
 
           {/* Bento: Family Vault Hub & Invite Code */}
-          <div className={`${isDark ? 'bg-[#18181B] dark:bg-[#18181B] border-[#27272A] dark:border-[#27272A]' : isBlue ? 'bg-blue-50/70 border-blue-200/80' : 'bg-emerald-50/70 border-emerald-200/80'} rounded-2xl p-4 sm:p-5 border shadow-xs space-y-3.5 transition-colors`}>
+          <div className={`bg-white dark:bg-[#121622] rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-[#1E293B] shadow-sm space-y-3.5 transition-colors ${mobileTab === 'folders' ? 'block' : 'hidden md:block'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <UserPlus size={16} className={isBlue ? "text-blue-600 dark:text-blue-400" : "text-[#10B981] dark:text-[#3ECF8E]"} />
+                <UserPlus size={16} className="text-sky-500 dark:text-sky-400" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                   Family Sync & Invite Code
                 </h3>
               </div>
-              <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded-full ${isBlue ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300' : 'bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]'} font-bold`}>
+              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 font-bold">
                 Sync All Phones
               </span>
             </div>
 
-            <p className="text-[11px] text-slate-600 dark:text-neutral-400 leading-relaxed">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
               Enter this code on other family phones to sync documents securely.
             </p>
 
             {/* Invite Code Box & Buttons */}
-            <div className="p-2.5 rounded-xl bg-white dark:bg-[#121212] border border-slate-200 dark:border-[#27272A] flex items-center justify-between gap-2">
-              <code className={`font-mono font-bold text-sm tracking-widest text-slate-900 ${isBlue ? 'dark:text-blue-400' : 'dark:text-[#3ECF8E]'}`}>
+            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-[#1E293B] flex items-center justify-between gap-2">
+              <code className="font-mono font-bold text-sm tracking-widest text-slate-900 dark:text-sky-400">
                 {family?.inviteCode || 'GHAR-4892'}
               </code>
 
@@ -1356,10 +1419,10 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={handleCopyInviteCode}
-                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#262626] dark:hover:bg-[#333] text-slate-800 dark:text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#202b40] text-slate-800 dark:text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                 >
                   {copiedInvite ? (
-                    <Check size={12} className={isBlue ? "text-blue-600 dark:text-blue-400" : "text-[#10B981] dark:text-[#3ECF8E]"} />
+                    <Check size={12} className="text-sky-500 dark:text-sky-400" />
                   ) : (
                     <Copy size={12} />
                   )}
@@ -1369,7 +1432,7 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={handleWhatsAppInvite}
-                  className={`px-2.5 py-1.5 rounded-lg ${isBlue ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212]'} text-xs font-bold transition-all flex items-center gap-1 cursor-pointer`}
+                  className="px-2.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                   title="Invite via WhatsApp"
                 >
                   <MessageCircle size={13} />
@@ -1382,41 +1445,41 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setIsJoinModalOpen(true)}
-                className={`text-slate-600 dark:text-neutral-400 ${isBlue ? 'hover:text-blue-600 dark:hover:text-blue-400' : 'hover:text-emerald-700 dark:hover:text-[#3ECF8E]'} font-bold underline cursor-pointer`}
+                className="text-slate-600 dark:text-slate-400 hover:text-sky-500 dark:hover:text-sky-400 font-bold underline cursor-pointer"
               >
                 Join Another Family Code →
               </button>
-              <Link to="/family" className={`${isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-700 dark:text-[#3ECF8E]'} font-bold hover:underline`}>
+              <Link to="/family" className="text-sky-600 dark:text-sky-400 font-bold hover:underline">
                 Manage {members.length} Members →
               </Link>
             </div>
           </div>
 
           {/* Bento: Vault Health & Free Tier Storage Gauge */}
-          <div className="bg-white dark:bg-[#18181B] rounded-2xl p-4 sm:p-5 border border-slate-200/90 dark:border-[#27272A] shadow-xs space-y-3 transition-colors">
+          <div className={`bg-white dark:bg-[#121622] rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-[#1E293B] shadow-sm space-y-3 transition-colors ${mobileTab === 'folders' ? 'block' : 'hidden md:block'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <HardDrive size={16} className={isBlue ? "text-blue-600 dark:text-blue-400" : "text-[#10B981] dark:text-[#3ECF8E]"} />
+                <HardDrive size={16} className="text-sky-500 dark:text-sky-400" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                   Encrypted Storage (50 GB Free)
                 </h3>
               </div>
-              <span className={`text-[10px] font-mono font-bold ${isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-700 dark:text-[#3ECF8E]'}`}>
+              <span className="text-[10px] font-mono font-bold text-sky-600 dark:text-sky-400">
                 {vaultSecurityScore}% Secure
               </span>
             </div>
 
             {/* Storage Progress Bar */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400 font-medium">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
                 <span>
                   {familyData?.totalSizeBytes ? (familyData.totalSizeBytes / (1024 * 1024)).toFixed(1) + ' MB' : '0 MB'} used
                 </span>
                 <span className="font-mono">50 GB Free Tier</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-[#27272A] overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-[#182030] overflow-hidden">
                 <div
-                  className={`h-full ${isBlue ? 'bg-gradient-to-r from-blue-600 to-blue-400' : 'bg-gradient-to-r from-[#10B981] to-[#3ECF8E]'} rounded-full transition-all`}
+                  className="h-full bg-gradient-to-r from-sky-500 to-sky-400 rounded-full transition-all"
                   style={{
                     width: `${Math.min(
                       Math.max(((familyData?.totalSizeBytes || 1024 * 1024 * 5) / (50 * 1024 * 1024 * 1024)) * 100, 2),
@@ -1428,37 +1491,37 @@ export default function DashboardPage() {
             </div>
 
             {/* Quick Metrics Grid */}
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-[#27272A] text-center">
-              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#121212]">
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-[#1E293B] text-center">
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#0B0F19]">
                 <div className="text-xs font-bold text-slate-900 dark:text-white">{documents.length}</div>
-                <div className="text-[10px] text-slate-400 dark:text-neutral-500">Docs</div>
+                <div className="text-[10px] text-slate-400 dark:text-slate-500">Docs</div>
               </div>
-              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#121212]">
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#0B0F19]">
                 <div className="text-xs font-bold text-slate-900 dark:text-white">{members.length}</div>
-                <div className="text-[10px] text-slate-400 dark:text-neutral-500">Members</div>
+                <div className="text-[10px] text-slate-400 dark:text-slate-500">Members</div>
               </div>
-              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#121212]">
-                <div className={`text-xs font-bold ${isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-700 dark:text-[#3ECF8E]'}`}>Active</div>
-                <div className="text-[10px] text-slate-400 dark:text-neutral-500">MPIN Guard</div>
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#0B0F19]">
+                <div className="text-xs font-bold text-sky-600 dark:text-sky-400">Active</div>
+                <div className="text-[10px] text-slate-400 dark:text-slate-500">MPIN Guard</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Helpful Parent Accessibility Tip Card (From Stitch Design) */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/90 dark:border-[#27272A] shadow-xs flex items-start gap-3 transition-colors">
-        <div className={`w-9 h-9 rounded-xl ${isBlue ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E]'} flex items-center justify-center text-lg shrink-0 mt-0.5 shadow-2xs`}>
+      {/* Helpful Parent Accessibility Tip Card */}
+      <div className="relative z-10 p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200 dark:border-[#1E293B] shadow-sm flex items-start gap-3 transition-colors">
+        <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-lg shrink-0 mt-0.5 shadow-2xs">
           💡
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
             <span>Offline & Emergency Ready</span>
-            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${isBlue ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300' : 'bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E]'} font-bold`}>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 font-bold">
               100% Local Access
             </span>
           </h4>
-          <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
             Your family's health insurance cards, Aadhaar numbers, and vehicle papers stay encrypted on this device and can be opened instantly even when you have zero mobile network or hospital Wi-Fi.
           </p>
         </div>

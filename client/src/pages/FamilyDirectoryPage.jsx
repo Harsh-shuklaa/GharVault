@@ -32,12 +32,14 @@ import {
   ShieldCheck,
   Shield,
   MessageCircle,
+  Sparkles,
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import EditMemberModal from '../components/common/EditMemberModal';
 import JoinFamilyModal from '../components/common/JoinFamilyModal';
 import DeleteMemberModal from '../components/common/DeleteMemberModal';
 import TransferOwnershipModal from '../components/common/TransferOwnershipModal';
+import FamilyTreeGraph from '../components/family/FamilyTreeGraph';
 
 export default function FamilyDirectoryPage() {
   const { family, user } = useAuth();
@@ -58,14 +60,14 @@ export default function FamilyDirectoryPage() {
   // Hover Collapsible Sidebar State (matches AppLayout behavior)
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
-  // Tab State: 'members' | 'medical' | 'roles'
+  // Tab State: 'members' | 'tree' | 'medical' | 'roles'
   const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(() => {
-    return tabParam === 'medical' || tabParam === 'roles' ? tabParam : 'members';
+    return ['tree', 'medical', 'roles'].includes(tabParam) ? tabParam : 'members';
   });
 
   useEffect(() => {
-    if (tabParam && ['members', 'medical', 'roles'].includes(tabParam)) {
+    if (tabParam && ['members', 'tree', 'medical', 'roles'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -374,6 +376,48 @@ export default function FamilyDirectoryPage() {
               </span>
             </button>
 
+            {/* Nav Item: Family Tree Graph */}
+            <button
+              type="button"
+              onClick={() => handleTabChange('tree')}
+              title={!isSidebarHovered ? 'Family Tree Graph' : undefined}
+              className={`w-full group/item flex items-center h-9 px-2.5 rounded-md transition-all select-none cursor-pointer text-left ${
+                activeTab === 'tree'
+                  ? 'bg-sky-50 text-sky-700 font-medium shadow-xs dark:bg-sky-500/15 dark:text-sky-300'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-normal dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6] dark:hover:bg-white/[0.04]'
+              }`}
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <Sparkles
+                  size={18}
+                  strokeWidth={1.75}
+                  className={activeTab === 'tree' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500'}
+                />
+              </div>
+              <span
+                className={`whitespace-nowrap overflow-hidden transition-all duration-200 text-[13px] leading-tight ${
+                  isSidebarHovered ? 'opacity-100 max-w-[140px] ml-2.5' : 'opacity-0 max-w-0 ml-0 pointer-events-none'
+                } ${activeTab === 'tree' ? 'text-sky-700 dark:text-sky-300 font-medium' : 'text-slate-600 font-normal'}`}
+              >
+                Tree Graph
+              </span>
+              <span
+                className={`ml-auto shrink-0 transition-all duration-200 ${
+                  isSidebarHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                }`}
+              >
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+                    activeTab === 'tree'
+                      ? 'bg-sky-200/60 text-sky-800 dark:bg-sky-500/20 dark:text-sky-400 font-bold'
+                      : 'bg-slate-100 dark:bg-[#262626] text-slate-500'
+                  }`}
+                >
+                  Graph
+                </span>
+              </span>
+            </button>
+
             {/* Nav Item: Emergency Medical Deck */}
             <button
               type="button"
@@ -556,6 +600,17 @@ export default function FamilyDirectoryPage() {
             <span>Roster ({members.length})</span>
           </button>
           <button
+            onClick={() => handleTabChange('tree')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 ${
+              activeTab === 'tree'
+                ? 'bg-sky-600 text-white'
+                : 'bg-white dark:bg-[#1C1C1C] text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-[#262626]'
+            }`}
+          >
+            <Sparkles size={14} />
+            <span>Tree Graph</span>
+          </button>
+          <button
             onClick={() => handleTabChange('medical')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 ${
               activeTab === 'medical'
@@ -586,6 +641,8 @@ export default function FamilyDirectoryPage() {
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 {activeTab === 'members'
                   ? 'Family Roster'
+                  : activeTab === 'tree'
+                  ? 'Family Tree Graph'
                   : activeTab === 'medical'
                   ? 'Emergency Medical Deck'
                   : 'Vault Roles & Ownership'}
@@ -595,10 +652,17 @@ export default function FamilyDirectoryPage() {
                   {members.length} {members.length === 1 ? 'Member' : 'Members'}
                 </span>
               )}
+              {activeTab === 'tree' && (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-200/60 dark:border-sky-500/20">
+                  Interactive Generational Graph
+                </span>
+              )}
             </div>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 mt-1">
               {activeTab === 'members'
                 ? `Directory of all members registered in ${family?.name || 'your family vault'}.`
+                : activeTab === 'tree'
+                ? 'Visual generational map with rounded profile avatars, spouse bridges, and parent-child hierarchy.'
                 : activeTab === 'medical'
                 ? 'High-contrast blood groups, verified insurance policies, and hospital triage directives.'
                 : 'Primary administration status, family invite code sharing, and access permissions.'}
@@ -696,6 +760,11 @@ export default function FamilyDirectoryPage() {
           </div>
         ) : (
           <>
+            {/* TAB: FAMILY TREE GRAPH */}
+            {activeTab === 'tree' && (
+              <FamilyTreeGraph members={members} family={family || {}} />
+            )}
+
             {/* TAB 1: FAMILY ROSTER */}
             {activeTab === 'members' && (
               <div className="space-y-4">

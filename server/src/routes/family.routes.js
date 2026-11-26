@@ -284,9 +284,10 @@ router.post('/setup', async (req, res) => {
     const inviteCode = 'GHAR-' + Math.floor(1000 + Math.random() * 9000);
     const vaultName = name?.trim() || 'My Family Vault';
 
+    const isMongo = Boolean(isConnected || mongoose.connection.readyState === 1);
     let user = req.user;
     if (!user && req.userId) {
-      if (isConnected) {
+      if (isMongo) {
         user = await User.findById(req.userId);
       } else {
         user = memoryStore.users.find(u => u._id.toString() === req.userId.toString());
@@ -294,7 +295,7 @@ router.post('/setup', async (req, res) => {
     }
 
     let family;
-    if (isConnected) {
+    if (isMongo) {
       family = await Family.create({
         name: vaultName,
         inviteCode,
@@ -390,6 +391,52 @@ router.post('/setup', async (req, res) => {
   }
 });
 
+// GET /api/family/verify-code/:inviteCode - Pre-verifies family code and reveals Admin Name for unambiguous relationship mapping
+router.get('/verify-code/:inviteCode', async (req, res) => {
+  try {
+    const { inviteCode } = req.params;
+    if (!inviteCode || !inviteCode.trim()) {
+      return res.status(400).json({ error: 'Please provide an invite code' });
+    }
+
+    const cleanCode = inviteCode.trim().toUpperCase();
+    let family = null;
+    let admin = null;
+
+    if (isConnected) {
+      family = await Family.findOne({ inviteCode: cleanCode }).populate('adminId', 'name avatar email relationship');
+      if (family?.adminId) {
+        admin = family.adminId;
+      }
+    } else {
+      family = memoryStore.families.find(
+        f => f.inviteCode?.toUpperCase() === cleanCode
+      );
+      if (family && family.adminId) {
+        admin = memoryStore.users.find(u => u._id?.toString() === family.adminId?.toString());
+      }
+    }
+
+    if (!family) {
+      return res.status(404).json({ valid: false, error: 'Family invite code not found' });
+    }
+
+    res.json({
+      valid: true,
+      family: {
+        id: family._id,
+        name: family.name,
+        inviteCode: family.inviteCode,
+        adminName: admin?.name || 'Family Head',
+        adminRelationship: admin?.relationship || 'Self / Admin',
+        adminAvatar: admin?.avatar || '',
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/family/join
 router.post('/join', async (req, res) => {
   try {
@@ -401,8 +448,9 @@ router.post('/join', async (req, res) => {
 
     const cleanCode = inviteCode.trim().toUpperCase();
 
+    const isMongo = Boolean(isConnected || mongoose.connection.readyState === 1);
     let family = null;
-    if (isConnected) {
+    if (isMongo) {
       family = await Family.findOne({ inviteCode: cleanCode });
     } else {
       family = memoryStore.families.find(
@@ -419,7 +467,7 @@ router.post('/join', async (req, res) => {
     const userEmail = (user?.email || email || '').toLowerCase().trim();
 
     if (!user && (userEmail || req.userId)) {
-      if (isConnected) {
+      if (isMongo) {
         if (req.userId) {
           try {
             user = await User.findById(req.userId);
@@ -438,9 +486,10 @@ router.post('/join', async (req, res) => {
 
     if (user) {
       // Existing user: Link them to this family!
-      if (isConnected) {
+      if (isMongo) {
         user.familyId = family._id;
         if (relationship) user.relationship = relationship;
+        if (family.adminId) user.relativeTo = family.adminId;
         if (phone) user.phone = phone;
         if (bloodGroup) user.bloodGroup = bloodGroup;
         if (family.adminId && family.adminId.toString() !== user._id.toString()) {
@@ -450,6 +499,7 @@ router.post('/join', async (req, res) => {
       } else {
         user.familyId = family._id;
         if (relationship) user.relationship = relationship;
+        if (family.adminId) user.relativeTo = family.adminId;
         if (phone) user.phone = phone;
         if (bloodGroup) user.bloodGroup = bloodGroup;
         if (family.adminId && family.adminId.toString() !== user._id.toString()) {
@@ -461,12 +511,13 @@ router.post('/join', async (req, res) => {
       const cleanName = name?.trim() || userEmail.split('@')[0] || 'Family Member';
       const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=3ECF8E&color=000&size=150`;
 
-      if (isConnected) {
+      if (isMongo) {
         user = await User.create({
           name: cleanName,
           email: userEmail || `member_${Date.now()}@gharvault.local`,
           avatar,
           relationship: relationship || 'Family Member',
+          relativeTo: family.adminId || null,
           role: 'MEMBER',
           familyId: family._id,
           phone: phone || '',

@@ -12,7 +12,9 @@ import {
   KeyRound,
   UserPlus,
   Users,
-  Sparkles
+  Sparkles,
+  ArrowLeft,
+  Fingerprint
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -48,7 +50,7 @@ export default function LoginPage() {
       const wasLoggedOut = sessionStorage.getItem('gharvault_logged_out');
       if (wasLoggedOut) {
         sessionStorage.removeItem('gharvault_logged_out');
-        setSuccessMsg('You have been securely logged out. Your family vault is locked.');
+        setSuccessMsg('Aapka session securely lock ho gaya hai. Dobara access ke liye login karein.');
       }
     } catch (e) {}
   }, []);
@@ -59,7 +61,6 @@ export default function LoginPage() {
       setLoading(true);
       setError('');
       setSuccessMsg('');
-      // Clean any leftover pending invites
       sessionStorage.removeItem('pending_invite_code');
       sessionStorage.removeItem('pending_invite_relation');
       sessionStorage.removeItem('pending_invite_name');
@@ -69,7 +70,7 @@ export default function LoginPage() {
         navigate(from, { replace: true });
       }
     } catch (err) {
-      setError(err.message || 'Google authentication failed');
+      setError(err.message || 'Google authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -78,7 +79,7 @@ export default function LoginPage() {
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     if (!emailInput || !emailInput.includes('@')) {
-      setError('Please enter a valid email address');
+      setError('Kripya ek valid email address enter karein');
       return;
     }
     try {
@@ -91,10 +92,11 @@ export default function LoginPage() {
 
       const res = await loginWithGoogle(emailInput.trim());
       if (res?.token) {
-        navigate(from, { replace: true });
+        const hasFamily = Boolean(res.family?._id || res.user?.familyId);
+        navigate(hasFamily ? from : '/family/setup', { replace: true });
       }
     } catch (err) {
-      setError(err.message || 'Failed to sign in with email');
+      setError(err.message || 'Email se sign in karne me samasya aayi');
     } finally {
       setLoading(false);
     }
@@ -104,14 +106,13 @@ export default function LoginPage() {
   const handleGoogleJoin = async () => {
     const cleanCode = inviteCode.trim().toUpperCase();
     if (!cleanCode) {
-      setError('Please enter your 6-character Family Invite Code (e.g. GHAR-8578)');
+      setError('Kripya apna Family Invite Code enter karein (jaise GHAR-8578)');
       return;
     }
 
     try {
       setLoading(true);
       setError('');
-      // Store in BOTH localStorage and sessionStorage so it never gets wiped by cross-domain OAuth redirects!
       localStorage.setItem('pending_invite_code', cleanCode);
       localStorage.setItem('pending_invite_relation', relationship);
       if (joinName.trim()) {
@@ -134,11 +135,11 @@ export default function LoginPage() {
     e.preventDefault();
     const cleanCode = inviteCode.trim().toUpperCase();
     if (!cleanCode) {
-      setError('Please enter your 6-character Family Invite Code (e.g. GHAR-8578)');
+      setError('Kripya apna Family Invite Code enter karein (jaise GHAR-8578)');
       return;
     }
     if (!joinEmail || !joinEmail.includes('@')) {
-      setError('Please enter your email address to link your profile');
+      setError('Apna account link karne ke liye email address darj karein');
       return;
     }
 
@@ -162,58 +163,75 @@ export default function LoginPage() {
         localStorage.setItem('gharvault_token', res.token);
       }
 
-      setSuccessMsg(`Successfully joined ${res.family?.name || 'the family vault'}! Redirecting...`);
+      setSuccessMsg(`Badhai ho! Aap successfully ${res.family?.name || 'parivar vault'} se jud gaye hain. Redirecting...`);
       await refreshSession();
 
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 800);
     } catch (err) {
-      setError(err.message || 'Failed to join family. Please verify the invite code.');
+      setError(err.message || 'Family join karne me samasya aayi. Invite code check karein.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#121212] text-slate-900 dark:text-[#EDEDED] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-[#3ECF8E] selection:text-black transition-colors">
-      {/* Top Bar with Theme Toggle */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 flex items-center gap-2">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090A0F] text-slate-900 dark:text-[#F8FAFC] flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-sky-500 selection:text-white transition-colors">
+      
+      {/* Subtle Engineering Dot Grid Texture */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]"
+        style={{
+          backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      {/* Top Ambient Security Glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[320px] bg-sky-500/10 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Top Bar with Back Link & Theme Toggle */}
+      <div className="absolute top-4 inset-x-4 sm:top-6 sm:inset-x-8 z-20 flex items-center justify-between max-w-5xl mx-auto">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#1E293B] bg-white/80 dark:bg-[#121622]/80 backdrop-blur-md text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Home</span>
+        </Link>
+
         <button
           type="button"
           onClick={toggleTheme}
           title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
-          className="w-9 h-9 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-[#3ECF8E] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+          className="w-9 h-9 rounded-lg border border-slate-200 dark:border-[#1E293B] bg-white/80 dark:bg-[#121622]/80 backdrop-blur-md hover:bg-slate-100 dark:hover:bg-[#1A2234] text-slate-700 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer shadow-xs"
         >
-          {isDark ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+          {isDark ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-slate-700" />}
         </button>
       </div>
 
-      {/* Decorative Subtle Emerald Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[320px] bg-emerald-500/5 dark:bg-[#3ECF8E]/5 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
-        <Link to="/" className="inline-flex items-center justify-center gap-2.5 mb-5 group">
-          <DastavejLogo size={42} />
-          <span className="font-headline font-extrabold text-2xl tracking-tight text-slate-900 dark:text-[#EDEDED]">
-            Dastavej
-          </span>
+      {/* Brand Header */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center mt-6 sm:mt-0">
+        <Link to="/" className="inline-flex items-center justify-center gap-2.5 mb-4 group">
+          <DastavejLogo size={40} showWordmark={true} />
         </Link>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#EDEDED]">
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           {authMode === 'signin' ? 'Welcome to Your Family Space' : 'Join Your Family Vault'}
         </h2>
-        <p className="mt-1 text-xs text-slate-600 dark:text-[#8F8F8F]">
+        <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
           {authMode === 'signin'
-            ? 'Access your private vault or create a brand new encrypted family safe.'
-            : 'Enter the invite code shared by your family admin to link your account.'}
+            ? 'Apne private digital vault me pravesh karein ya naya secure parivar safe banayein.'
+            : 'Apne family head se mila hua invite code enter karke account link karein.'}
         </p>
       </div>
 
+      {/* Main Auth Card (SafePaper Deep Carbon Style) */}
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-white dark:bg-[#1C1C1C] py-6 px-6 sm:px-7 shadow-xl dark:shadow-2xl rounded-2xl border border-slate-200 dark:border-[#2E2E2E] space-y-5 transition-colors">
+        <div className="bg-white dark:bg-[#121622] py-6 px-5 sm:px-7 rounded-2xl border border-slate-200 dark:border-[#1E293B] shadow-xl dark:shadow-2xl space-y-5 transition-colors">
           
-          {/* TWO-MODE TAB SWITCHER */}
-          <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-100 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626]">
+          {/* TWO-MODE TAB SWITCHER (Segmented Pill Capsule) */}
+          <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-100 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-[#1E293B]">
             <button
               type="button"
               onClick={() => {
@@ -221,13 +239,13 @@ export default function LoginPage() {
                 setError('');
                 setSuccessMsg('');
               }}
-              className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 authMode === 'signin'
-                  ? 'bg-white dark:bg-[#1F1F1F] text-slate-900 dark:text-white shadow-xs border border-slate-200/60 dark:border-[#333]'
-                  : 'text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-[#182030] text-slate-900 dark:text-sky-400 shadow-xs border border-slate-200/60 dark:border-sky-500/30'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <Shield size={14} className={authMode === 'signin' ? 'text-[#10B981] dark:text-[#3ECF8E]' : ''} />
+              <Shield size={14} className={authMode === 'signin' ? 'text-sky-500 dark:text-sky-400' : ''} />
               <span>Sign In / Create</span>
             </button>
             <button
@@ -237,28 +255,28 @@ export default function LoginPage() {
                 setError('');
                 setSuccessMsg('');
               }}
-              className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 authMode === 'join'
-                  ? 'bg-white dark:bg-[#1F1F1F] text-slate-900 dark:text-white shadow-xs border border-slate-200/60 dark:border-[#333]'
-                  : 'text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-[#182030] text-slate-900 dark:text-sky-400 shadow-xs border border-slate-200/60 dark:border-sky-500/30'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <KeyRound size={14} className={authMode === 'join' ? 'text-[#10B981] dark:text-[#3ECF8E]' : ''} />
-              <span>Join with Invite Code</span>
+              <KeyRound size={14} className={authMode === 'join' ? 'text-sky-500 dark:text-sky-400' : ''} />
+              <span>Join Family</span>
             </button>
           </div>
 
           {/* Feedback Alerts */}
           {error && (
-            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
               <span>{error}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-[#3ECF8E] text-xs font-medium flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-[#10B981] dark:text-[#3ECF8E]" />
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-400 text-xs font-medium flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500 dark:text-emerald-400" />
               <span>{successMsg}</span>
             </div>
           )}
@@ -266,16 +284,16 @@ export default function LoginPage() {
           {/* ================= TAB 1: SIGN IN / CREATE NEW VAULT ================= */}
           {authMode === 'signin' ? (
             <div className="space-y-4">
-              <p className="text-xs text-slate-600 dark:text-[#8F8F8F] text-center leading-relaxed">
-                Sign in with your Google account. Zero passwords to remember, 100% encrypted & free.
+              <p className="text-xs text-slate-600 dark:text-slate-400 text-center leading-relaxed">
+                Apne Google account se sign in karein. Zero passwords, 100% free bank-grade encryption.
               </p>
 
-              {/* Single Prominent One-Click Google Login Button */}
+              {/* High-Contrast One-Click Google Login Button */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 py-3 px-5 border border-[#dadce0] dark:border-[#3c4043] hover:border-[#4285F4] dark:hover:border-[#4285F4] rounded-xl bg-white hover:bg-[#F8FAFD] dark:bg-[#131314] dark:hover:bg-[#1c1c1e] text-[#3c4043] dark:text-[#EDEDED] font-semibold text-sm shadow-xs hover:shadow-sm transition-all cursor-pointer group disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-3 py-3 px-5 border border-slate-300 dark:border-[#262F40] hover:border-slate-400 dark:hover:border-sky-500/50 rounded-xl bg-white hover:bg-slate-50 dark:bg-[#0B0F19] dark:hover:bg-[#121824] text-slate-800 dark:text-slate-100 font-semibold text-sm shadow-xs transition-all cursor-pointer group active:scale-95 disabled:opacity-50"
               >
                 <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                   <path
@@ -299,26 +317,26 @@ export default function LoginPage() {
               </button>
 
               {/* Direct Email Sign-In Option */}
-              <div className="pt-3 border-t border-slate-200 dark:border-[#262626]">
+              <div className="pt-3 border-t border-slate-200 dark:border-[#1E293B]">
                 <form onSubmit={handleEmailLogin} className="space-y-2.5">
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F]">
-                    Or sign in with email
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Ya email se sign in karein
                   </label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <Mail className="w-4 h-4 text-slate-400 dark:text-[#8F8F8F] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <input
                         type="email"
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
-                        placeholder="name@example.com"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-xs text-slate-900 dark:text-[#EDEDED] placeholder-slate-400 dark:placeholder-[#555] focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
+                        placeholder="apna.email@gmail.com"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#0B0F19] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-sky-500 dark:focus:border-sky-500 focus:outline-none transition-colors"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loading || !emailInput}
-                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-[#2E2E2E] dark:hover:bg-[#383838] text-white dark:text-[#EDEDED] text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-950 text-xs font-bold transition-all disabled:opacity-40 cursor-pointer active:scale-95 shrink-0"
                     >
                       Sign In
                     </button>
@@ -326,59 +344,60 @@ export default function LoginPage() {
                 </form>
               </div>
 
+              {/* Zero-Knowledge Security Badge */}
               <div className="pt-2 text-center space-y-1">
-                <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-[#8F8F8F] font-medium">
-                  <Lock className="w-3.5 h-3.5 text-[#10B981] dark:text-[#3ECF8E]" />
-                  <span>End-to-End Encrypted Sovereign Vault</span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>256-Bit Zero-Knowledge Encrypted</span>
                 </span>
-                <p className="text-[11px] text-slate-500 dark:text-neutral-500 leading-relaxed">
-                  First time here? Logging in will create your private family vault with 0 documents.
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  First time? Sign in karte hi aapka encrypted family safe 0 documents ke sath active ho jayega.
                 </p>
               </div>
             </div>
           ) : (
             /* ================= TAB 2: JOIN WITH INVITE CODE ================= */
             <div className="space-y-4">
-              <p className="text-xs text-slate-600 dark:text-[#8F8F8F] leading-relaxed">
-                Connect your account to your family's vault. Enter the 6-character code provided by your family head.
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Apne family head dwara share kiya gaya 6-character ka code darj karein aur vault se jud jayein.
               </p>
 
               <div className="space-y-3">
                 {/* Invite Code Input */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300 mb-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
                     Family Invite Code <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <KeyRound className="w-4 h-4 text-emerald-600 dark:text-[#3ECF8E] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <KeyRound className="w-4 h-4 text-sky-500 dark:text-sky-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="text"
                       value={inviteCode}
                       onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                       placeholder="e.g. GHAR-8578"
                       maxLength={12}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] font-mono font-bold text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-600 focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors uppercase tracking-wider"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#0B0F19] font-mono font-bold text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-sky-500 dark:focus:border-sky-500 focus:outline-none transition-colors uppercase tracking-widest"
                     />
                   </div>
                 </div>
 
                 {/* Relationship Dropdown */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300 mb-1">
-                    Relationship to Family
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    Parivar Se Rishta (Relationship)
                   </label>
                   <select
                     value={relationship}
                     onChange={(e) => setRelationship(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-xs text-slate-900 dark:text-white focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#0B0F19] text-xs text-slate-900 dark:text-white focus:border-sky-500 dark:focus:border-sky-500 focus:outline-none transition-colors"
                   >
-                    <option value="Mother">Mother</option>
-                    <option value="Father">Father</option>
-                    <option value="Spouse">Spouse (Wife/Husband)</option>
-                    <option value="Son">Son</option>
-                    <option value="Daughter">Daughter</option>
-                    <option value="Brother">Brother</option>
-                    <option value="Sister">Sister</option>
+                    <option value="Mother">Mummy (Mother)</option>
+                    <option value="Father">Papa (Father)</option>
+                    <option value="Spouse">Spouse (Pati/Patni)</option>
+                    <option value="Son">Beta (Son)</option>
+                    <option value="Daughter">Beti (Daughter)</option>
+                    <option value="Brother">Bhai (Brother)</option>
+                    <option value="Sister">Behan (Sister)</option>
                     <option value="Member">Family Member</option>
                     <option value="Other">Other</option>
                   </select>
@@ -386,15 +405,15 @@ export default function LoginPage() {
 
                 {/* Name Input */}
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-300 mb-1">
-                    Your Full Name <span className="text-slate-400 font-normal">(Optional)</span>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    Aapka Naam <span className="text-slate-400 font-normal">(Optional)</span>
                   </label>
                   <input
                     type="text"
                     value={joinName}
                     onChange={(e) => setJoinName(e.target.value)}
-                    placeholder="e.g. Priya Sharma"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-600 focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
+                    placeholder="jaise Priya Sharma"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#0B0F19] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-sky-500 dark:focus:border-sky-500 focus:outline-none transition-colors"
                   />
                 </div>
 
@@ -404,7 +423,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={handleGoogleJoin}
                     disabled={loading || !inviteCode.trim()}
-                    className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-[#dadce0] dark:border-[#3c4043] hover:border-[#4285F4] dark:hover:border-[#4285F4] rounded-xl bg-white hover:bg-[#F8FAFD] dark:bg-[#131314] dark:hover:bg-[#1c1c1e] text-[#3c4043] dark:text-[#EDEDED] font-semibold text-xs shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-slate-300 dark:border-[#262F40] hover:border-slate-400 dark:hover:border-sky-500/50 rounded-xl bg-white hover:bg-slate-50 dark:bg-[#0B0F19] dark:hover:bg-[#121824] text-slate-800 dark:text-slate-100 font-semibold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50 active:scale-95"
                   >
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path
@@ -429,26 +448,26 @@ export default function LoginPage() {
                 </div>
 
                 {/* Or Join with Direct Email */}
-                <div className="pt-3 border-t border-slate-200 dark:border-[#262626]">
+                <div className="pt-3 border-t border-slate-200 dark:border-[#1E293B]">
                   <form onSubmit={handleEmailJoin} className="space-y-2">
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#8F8F8F]">
-                      Or join with email address
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Ya email address se judein
                     </label>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
-                        <Mail className="w-4 h-4 text-slate-400 dark:text-[#8F8F8F] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
                           type="email"
                           value={joinEmail}
                           onChange={(e) => setJoinEmail(e.target.value)}
-                          placeholder="your.email@example.com"
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#2E2E2E] bg-white dark:bg-[#141414] text-xs text-slate-900 dark:text-[#EDEDED] placeholder-slate-400 dark:placeholder-[#555] focus:border-[#10B981] dark:focus:border-[#3ECF8E] focus:outline-none transition-colors"
+                          placeholder="apna.email@gmail.com"
+                          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#0B0F19] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-sky-500 dark:focus:border-sky-500 focus:outline-none transition-colors"
                         />
                       </div>
                       <button
                         type="submit"
                         disabled={loading || !inviteCode.trim() || !joinEmail}
-                        className="px-4 py-2.5 rounded-xl bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-black text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+                        className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-950 text-xs font-bold transition-all disabled:opacity-40 cursor-pointer active:scale-95 shadow-xs shrink-0"
                       >
                         Join Vault
                       </button>
@@ -459,6 +478,12 @@ export default function LoginPage() {
             </div>
           )}
 
+        </div>
+
+        {/* Security Footnote */}
+        <div className="mt-5 text-center flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <Fingerprint className="w-4 h-4 text-sky-400" />
+          <span>Secured by Sovereign Zero-Knowledge Cryptography</span>
         </div>
       </div>
     </div>

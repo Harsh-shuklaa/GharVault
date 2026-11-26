@@ -158,6 +158,12 @@ export const api = {
     });
   },
 
+  async verifyInviteCode(inviteCode) {
+    return request(`${API_BASE}/family/verify-code/${encodeURIComponent(inviteCode)}`, {
+      headers: getHeaders(),
+    });
+  },
+
   async joinFamily(data) {
     return request(`${API_BASE}/family/join`, {
       method: 'POST',
@@ -318,8 +324,24 @@ export const api = {
     });
   },
 
-  async getSharedDocument(token) {
-    return request(`${API_BASE}/documents/shared/${token}`);
+  async getSharedDocument(token, password = '') {
+    const headers = {};
+    if (password) {
+      headers['x-share-password'] = password;
+    }
+    return request(`${API_BASE}/documents/shared/${token}`, {
+      headers,
+    });
+  },
+
+  async notifySharedDownload(token) {
+    try {
+      return await request(`${API_BASE}/documents/shared/${token}/download-notify`, {
+        method: 'POST',
+      });
+    } catch (e) {
+      return { success: false };
+    }
   },
 
   async updateWhoCanView(id, whoCanView) {

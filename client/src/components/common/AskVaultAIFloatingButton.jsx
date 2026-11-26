@@ -163,7 +163,7 @@ export default function AskVaultAIFloatingButton({ onClick }) {
         isDragging ? 'opacity-90 scale-105 cursor-grabbing' : 'transition-transform duration-150'
       }`}
     >
-      <div className="flex items-center gap-1 bg-white/95 dark:bg-[#121212]/95 backdrop-blur-md rounded-full border border-slate-200/90 dark:border-[#2C2C2E] shadow-xl shadow-black/10 dark:shadow-black/60 p-1 group">
+      <div className="flex items-center gap-1 bg-white/95 dark:bg-[#0C101A]/95 backdrop-blur-md rounded-full border border-slate-200/90 dark:border-[#1E293B] shadow-xl shadow-black/10 dark:shadow-black/70 p-1 group">
         {/* Main Clickable AI Assistant Trigger */}
         <button
           type="button"
@@ -171,10 +171,10 @@ export default function AskVaultAIFloatingButton({ onClick }) {
           onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
           onTouchStart={(e) => e.touches[0] && handleStart(e.touches[0].clientX, e.touches[0].clientY)}
           title="Ask Vault AI (Click to chat, or drag to move away from buttons)"
-          className="flex items-center gap-2 px-2.5 py-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-[#202022] transition-colors cursor-pointer text-slate-900 dark:text-white"
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-[#151D2E] transition-colors cursor-pointer text-slate-900 dark:text-white"
         >
-          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-600 to-[#10B981] dark:from-[#3ECF8E] dark:to-emerald-400 text-white dark:text-black flex items-center justify-center shrink-0 shadow-xs">
-            <Sparkles size={12} className="animate-pulse" />
+          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#38BDF8] to-[#10B981] text-black flex items-center justify-center shrink-0 shadow-xs">
+            <Sparkles size={12} strokeWidth={2.2} />
           </div>
           {!isCompact && (
             <span className="text-xs font-bold tracking-tight pr-1 hidden xs:inline sm:inline">

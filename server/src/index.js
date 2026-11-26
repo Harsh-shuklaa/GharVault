@@ -103,12 +103,24 @@ const startServer = async () => {
     await connectDB();
     await ensureBucketExists();
 
-    app.listen(PORT, '0.0.0.0', () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`====================================================`);
       console.log(`🛡️  GharVault Backend Server running on port ${PORT}`);
       console.log(`📍  API Health: http://localhost:${PORT}/api/health`);
       console.log(`🔒  Zero-Knowledge Encryption: Active (256-bit AES)`);
       console.log(`====================================================`);
+    });
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`\n❌ [PORT ${PORT} ALREADY IN USE]`);
+        console.error(`👉 Backend server pehle se kisi doosre terminal ya background me chal raha hai.`);
+        console.error(`💡 Free karne ke liye PowerShell me yeh command chalayein:`);
+        console.error(`   Stop-Process -Id (Get-NetTCPConnection -LocalPort ${PORT}).OwningProcess -Force\n`);
+        process.exit(1);
+      } else {
+        console.error('[Server Error]', err);
+      }
     });
   } catch (err) {
     console.error('Failed to start server:', err);

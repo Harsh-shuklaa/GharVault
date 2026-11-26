@@ -1385,6 +1385,28 @@ router.get('/shared/:token', async (req, res) => {
       });
     }
 
+    // Check if link is PIN/Password protected
+    const providedPassword = req.headers['x-share-password'] || req.query.pwd || req.query.password;
+    if (doc.shareLink?.isPasswordProtected) {
+      if (!providedPassword) {
+        return res.json({
+          requiresPassword: true,
+          title: doc.title,
+          category: doc.category,
+          expiresAt: doc.shareLink.expiresAt,
+          message: 'This document is protected with a security password or PIN.',
+        });
+      }
+
+      const providedHash = crypto.createHash('sha256').update(String(providedPassword).trim()).digest('hex');
+      if (providedHash !== doc.shareLink.passwordHash) {
+        return res.status(401).json({
+          requiresPassword: true,
+          error: 'Incorrect security PIN or password. Access denied.',
+        });
+      }
+    }
+
     // Generate time-limited signed URL for viewing
     let signedUrl = '';
     try {
@@ -1405,11 +1427,11 @@ router.get('/shared/:token', async (req, res) => {
       req,
     }).catch(e => console.warn('[Audit Warning] Shared view log error:', e.message));
 
-    // Instant Security Notification for Family: Someone accessed/downloaded via Safe Share Link
+    // Instant Security Notification for Family: Someone accessed via Safe Share Link
     createVaultNotification({
       familyId: doc.familyId,
-      title: '⚠️ External Download via Safe Link',
-      message: `An external recipient accessed and downloaded "${doc.title}" via your 24-hour Safe Share Link.`,
+      title: '👁️ Safe Share Link Accessed',
+      message: `An external recipient opened and viewed "${doc.title}" via your Safe Share Link.`,
       type: 'WARNING',
       link: `/vault/documents/${doc._id}`,
     }).catch(e => console.warn('[Notification Warning] External access notif error:', e.message));
@@ -1434,6 +1456,54 @@ router.get('/shared/:token', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to access shared document: ' + err.message });
+  }
+});
+
+// POST /api/documents/shared/:token/download-notify — External download notification
+router.post('/shared/:token/download-notify', async (req, res) => {
+  try {
+    const { token } = req.params;
+    let doc = null;
+
+    if (isConnected) {
+      try {
+        doc = await Document.findOne({ 'shareLink.token': token });
+      } catch (e) {
+        doc = null;
+      }
+    }
+    if (!doc && Array.isArray(memoryStore.documents)) {
+      doc = memoryStore.documents.find(d => d.shareLink?.token === token);
+    }
+
+    if (!doc) {
+      return res.status(404).json({ error: 'Shared document link not found or invalid.' });
+    }
+
+    // Immutable SHA-256 Chained Audit Log for Shared Document Download
+    recordAuditLog({
+      familyId: doc.familyId,
+      action: 'DOCUMENT_DOWNLOAD',
+      performedBy: null,
+      performerName: 'External Recipient (Safe Share Link)',
+      documentId: doc._id,
+      documentTitle: doc.title,
+      details: { category: doc.category, viaShareLink: true, originalFileName: doc.originalFileName },
+      req,
+    }).catch(e => console.warn('[Audit Warning] Shared download log error:', e.message));
+
+    // Instant Security Notification for Family: Someone downloaded file
+    createVaultNotification({
+      familyId: doc.familyId,
+      title: '📥 External Download via Safe Link',
+      message: `An external recipient downloaded a copy of "${doc.title}" via your Safe Share Link.`,
+      type: 'WARNING',
+      link: `/vault/documents/${doc._id}`,
+    }).catch(e => console.warn('[Notification Warning] External download notif error:', e.message));
+
+    res.json({ success: true, message: 'Download event logged.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
