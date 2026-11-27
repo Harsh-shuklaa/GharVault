@@ -26,6 +26,8 @@ export function detectHeuristicDuplicate({
   matchedMemberId,
   existingDocs = [],
   familyMembers = [],
+  scanCategory,
+  ocrExtractedData,
 }) {
   const resolveMemberName = (doc) => {
     const memberObj = doc.assignedMemberId;
@@ -45,6 +47,37 @@ export function detectHeuristicDuplicate({
       return new Date(dateVal).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     } catch (e) {
       return 'Earlier';
+    }
+  };
+
+  // Helper to extract educational semester or class (e.g. "sem5", "6thsem", "class12")
+  const extractSemester = (text, ocr) => {
+    if (ocr?.academicDetails?.semesterOrYear) {
+      return ocr.academicDetails.semesterOrYear.toLowerCase().replace(/[\s\-_]/g, '');
+    }
+    const combined = `${text || ''}`.toLowerCase();
+    const m = combined.match(/\b(sem(?:ester)?\s*([0-9]+|[ivx]+)|class\s*([0-9]+|10|12)|([0-9]+)(?:st|nd|rd|th)\s*sem(?:ester)?|term\s*([0-9]+)|year\s*([0-9]+))\b/i);
+    return m ? m[0].replace(/[\s\-_]/g, '') : null;
+  };
+
+  // Helper to extract bill period (e.g. "aug2024", "sep")
+  const extractBillPeriod = (text, ocr) => {
+    if (ocr?.utilityBillDetails?.billingCycle) {
+      return ocr.utilityBillDetails.billingCycle.toLowerCase().replace(/[\s\-_]/g, '');
+    }
+    const combined = `${text || ''}`.toLowerCase();
+    const m = combined.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*(20\d\d)?\b/i);
+    return m ? m[0].replace(/[\s\-_]/g, '') : null;
+  };
+
+  // Helper to extract medical date (YYYY-MM-DD)
+  const extractMedicalDate = (dateVal, ocr) => {
+    const raw = ocr?.medicalDetails?.consultationDate || dateVal;
+    if (!raw) return null;
+    try {
+      return new Date(raw).toISOString().slice(0, 10);
+    } catch (e) {
+      return null;
     }
   };
 
@@ -68,14 +101,127 @@ export function detectHeuristicDuplicate({
     }
   }
 
-  // Tier 2: Semantic Document ID Number Match (Offline Regex & OCR)
+  // Tier 2: Semantic Document ID Number Match (with Composite Key Rules & Member Isolation)
   const cleanScanDocNum = (scanDocNumber || '').replace(/[\s\-_/]/g, '').toUpperCase();
   if (cleanScanDocNum.length >= 5) {
-    const docNumMatch = existingDocs.find(d => {
+    const candidateMatches = existingDocs.filter(d => {
       const cleanExisting = (d.documentNumber || '').replace(/[\s\-_/]/g, '').toUpperCase();
       return cleanExisting.length >= 5 && cleanExisting === cleanScanDocNum;
     });
-    if (docNumMatch) {
+
+    for (const docNumMatch of candidateMatches) {
+      const existingCat = (docNumMatch.category || '').toLowerCase();
+      const currentCat = (scanCategory || '').toLowerCase();
+
+      // Check if both documents have identifiable holders or assigned members
+      const newHolder = (ocrExtractedData?.holderName || ocrExtractedData?.beneficiaryName || '').toLowerCase().trim();
+      const existingHolder = (docNumMatch.ocrExtractedData?.holderName || docNumMatch.ocrExtractedData?.beneficiaryName || '').toLowerCase().trim();
+      const docMemberId = (docNumMatch.assignedMemberId?._id || docNumMatch.assignedMemberId)?.toString();
+      const currentMemberId = matchedMemberId?.toString();
+      const isDiffMember = Boolean(currentMemberId && docMemberId && currentMemberId !== docMemberId);
+
+      // Rule 1: Ayushman Card, Health Insurance & Ration Cards (Shared Family Policy / Household ID)
+      const isHealthScheme = currentCat.includes('health') || currentCat.includes('medical') || existingCat.includes('health') || existingCat.includes('medical') ||
+        /\b(ayushman|pmjay|pm-jay|abha|mediclaim|insurance|policy|ration|parivar)\b/i.test(
+          `${suggestedTitle} ${fileName} ${docNumMatch.title} ${scanDocType} ${ocrExtractedData?.docType || ''} ${docNumMatch.ocrExtractedData?.docType || ''}`
+        );
+      
+      if (isHealthScheme) {
+        // If different family member or different cardholder name, they legitimately share the Family ID!
+        if (isDiffMember || (newHolder && existingHolder && newHolder !== existingHolder)) {
+          console.log(`[Duplicate Engine] Bypassing Ayushman/Health Scheme duplicate: Shared Family ID (${cleanScanDocNum}) but distinct member/holder: "${newHolder || currentMemberId}" vs "${existingHolder || docMemberId}"`);
+          continue; // Distinct beneficiary card under the same family scheme!
+        }
+      }
+
+      // Rule 1B: Distinct Cardholder / Beneficiary Name across ANY personal document
+      // If both documents have detected distinct holder names (e.g. "Suraj" vs "Aditya"), they cannot be duplicates!
+      if (newHolder && existingHolder && newHolder !== existingHolder && !newHolder.includes(existingHolder) && !existingHolder.includes(newHolder)) {
+        console.log(`[Duplicate Engine] Bypassing duplicate: Same ID (${cleanScanDocNum}) but distinct cardholder names: "${newHolder}" vs "${existingHolder}"`);
+        continue;
+      }
+
+      // Rule 2: Education Composite Key (Roll Number + Semester / Year / Class)
+      const isEdu = currentCat.includes('education') || existingCat.includes('education') ||
+        /\b(marksheet|semester|degree|dmc|diploma|college|university)\b/i.test(`${suggestedTitle} ${fileName} ${docNumMatch.title} ${scanDocType}`);
+      if (isEdu) {
+        const newSem = extractSemester(`${suggestedTitle} ${fileName} ${scanDocType}`, ocrExtractedData);
+        const existingSem = extractSemester(`${docNumMatch.title} ${docNumMatch.originalFileName || ''}`, docNumMatch.ocrExtractedData);
+        // If BOTH have detectable semesters and they are DIFFERENT, this is NOT a duplicate!
+        if (newSem && existingSem && newSem !== existingSem) {
+          console.log(`[Duplicate Engine] Bypassing Education duplicate: Same Roll No (${cleanScanDocNum}) but different semesters: "${newSem}" vs "${existingSem}"`);
+          continue; // Different semester marksheets! Not a duplicate.
+        }
+        if (isDiffMember) {
+          continue; // Different students!
+        }
+      }
+
+      // Rule 3: Utility Bill Composite Key (Consumer Number + Billing Period / Due Date)
+      const isBill = currentCat.includes('utility') || currentCat.includes('bill') || existingCat.includes('utility') ||
+        /\b(electricity|bill|bijli|water|gas|utility)\b/i.test(`${suggestedTitle} ${fileName} ${docNumMatch.title} ${scanDocType}`);
+      if (isBill) {
+        const newPeriod = extractBillPeriod(`${suggestedTitle} ${fileName}`, ocrExtractedData);
+        const existingPeriod = extractBillPeriod(`${docNumMatch.title}`, docNumMatch.ocrExtractedData);
+        if (newPeriod && existingPeriod && newPeriod !== existingPeriod) {
+          console.log(`[Duplicate Engine] Bypassing Utility Bill duplicate: Same Consumer ID (${cleanScanDocNum}) but different periods: "${newPeriod}" vs "${existingPeriod}"`);
+          continue; // Different billing month!
+        }
+      }
+
+      // Rule 4: Medical Record Composite Key (Patient ID / UHID + Consultation Date)
+      const isMed = currentCat.includes('medical') || existingCat.includes('medical') ||
+        /\b(prescription|parchi|clinic|hospital|discharge|consultation)\b/i.test(`${suggestedTitle} ${fileName} ${docNumMatch.title} ${scanDocType}`);
+      if (isMed) {
+        const newMedDate = extractMedicalDate(null, ocrExtractedData);
+        const existingMedDate = extractMedicalDate(docNumMatch.issueDate, docNumMatch.ocrExtractedData);
+        if (newMedDate && existingMedDate && newMedDate !== existingMedDate) {
+          console.log(`[Duplicate Engine] Bypassing Medical duplicate: Same UHID (${cleanScanDocNum}) but different dates: "${newMedDate}" vs "${existingMedDate}"`);
+          continue; // Different consultation date!
+        }
+        if (isDiffMember) {
+          continue; // Different family patients
+        }
+      }
+
+      // Rule 5: Property / Land Record Composite Key (Khasra No + Document Subtype)
+      const isProp = currentCat.includes('property') || currentCat.includes('bank') || existingCat.includes('property') || existingCat.includes('bank') ||
+        /\b(registry|bainama|deed|khasra|khatauni|mutation|dakhil|tax|fard)\b/i.test(`${suggestedTitle} ${fileName} ${docNumMatch.title} ${scanDocType}`);
+      if (isProp) {
+        const getPropSubtype = (t) => {
+          if (/tax|receipt|bill|lagan/i.test(t)) return 'tax';
+          if (/mutation|dakhil|kharij/i.test(t)) return 'mutation';
+          if (/registry|bainama|sale deed/i.test(t)) return 'deed';
+          if (/khasra|khatauni|jamabandi|fard/i.test(t)) return 'fard';
+          return null;
+        };
+        const subA = getPropSubtype(`${suggestedTitle} ${fileName} ${scanDocType}`);
+        const subB = getPropSubtype(`${docNumMatch.title} ${docNumMatch.category}`);
+        if (subA && subB && subA !== subB) {
+          console.log(`[Duplicate Engine] Bypassing Property duplicate: Same Plot/Khasra (${cleanScanDocNum}) but different document types: "${subA}" vs "${subB}"`);
+          continue;
+        }
+      }
+
+      // Rule 6: Vehicle Subtype Key (RC vs PUC vs Insurance vs DL)
+      const isVeh = /\b(rc|vehicle|driving|license|licence|puc|pollution|insurance|car|bike)\b/i.test(`${suggestedTitle} ${fileName} ${docNumMatch.title} ${scanDocType}`);
+      if (isVeh) {
+        const getVehType = (t) => {
+          if (/puc|pollution|emission/i.test(t)) return 'puc';
+          if (/rc|registration certificate/i.test(t)) return 'rc';
+          if (/insurance|policy/i.test(t)) return 'insurance';
+          if (/driving|license|licence|dl\b/i.test(t)) return 'dl';
+          return null;
+        };
+        const vA = getVehType(`${suggestedTitle} ${fileName} ${scanDocType}`);
+        const vB = getVehType(`${docNumMatch.title} ${docNumMatch.category}`);
+        if (vA && vB && vA !== vB) {
+          console.log(`[Duplicate Engine] Bypassing Vehicle duplicate: Same Vehicle ID (${cleanScanDocNum}) but different doc types: "${vA}" vs "${vB}"`);
+          continue;
+        }
+      }
+
+      // If we reach here, it IS a genuine duplicate!
       const memberName = resolveMemberName(docNumMatch);
       const uploadDate = formatDate(docNumMatch.createdAt);
       const docTypeLabel = scanDocType || 'Document';
@@ -93,16 +239,18 @@ export function detectHeuristicDuplicate({
     }
   }
 
-  // Tier 3: Heuristic Title & Filename Token Similarity (Fuzzy Keyword Matching)
+  // Tier 3: Heuristic Title & Filename Token Similarity (Strict Member Isolation)
+  const memberNames = (familyMembers || []).map(m => (m.name || '').toLowerCase().split(/\s+/)[0]).filter(Boolean);
+
   const normalizeTokens = (str) => {
     if (!str) return [];
     return str
       .toLowerCase()
       .replace(/\.[^/.]+$/, '')
-      .replace(/['’]s\b/g, '') // strip possessives like papa's -> papa
+      .replace(/['’]s\b/g, '')
       .replace(/[^a-z0-9]/g, ' ')
       .split(/\s+/)
-      .filter(w => w.length >= 3 && !['copy', 'final', 'new', 'scan', 'file', 'photo', 'jpeg', 'image'].includes(w));
+      .filter(w => w.length >= 3 && !['copy', 'final', 'new', 'scan', 'file', 'photo', 'jpeg', 'image', 'card', ...memberNames].includes(w));
   };
 
   const candidateTokens = new Set([
@@ -112,6 +260,48 @@ export function detectHeuristicDuplicate({
 
   if (candidateTokens.size >= 2) {
     for (const doc of existingDocs) {
+      const existingCat = (doc.category || '').toLowerCase().trim();
+      const currentCat = (scanCategory || '').toLowerCase().trim();
+
+      // Strict Category Isolation: If categories are explicitly different (e.g. 'education' vs 'id cards'),
+      // they can NEVER be a heuristic title duplicate!
+      if (existingCat && currentCat && existingCat !== currentCat) {
+        continue;
+      }
+
+      // Member Isolation: If two documents belong to two DIFFERENT family members,
+      // title similarity (e.g. "Ayushman Bharat Card" or "Aadhaar Card") can NEVER be a duplicate!
+      const docMemberId = (doc.assignedMemberId?._id || doc.assignedMemberId)?.toString();
+      const currentMemberId = matchedMemberId?.toString();
+      const isDifferentMember = Boolean(
+        currentMemberId &&
+        docMemberId &&
+        currentMemberId !== docMemberId
+      );
+
+      if (isDifferentMember) {
+        continue; // Different people! Suraj's Ayushman card cannot duplicate Aditya's Ayushman card.
+      }
+
+      // Check cardholder names if available
+      const newHolder = (ocrExtractedData?.holderName || ocrExtractedData?.beneficiaryName || '').toLowerCase().trim();
+      const existingHolder = (doc.ocrExtractedData?.holderName || doc.ocrExtractedData?.beneficiaryName || '').toLowerCase().trim();
+      if (newHolder && existingHolder && newHolder !== existingHolder) {
+        continue; // Different holders!
+      }
+
+      // Semester bypass in title match
+      const isEdu = currentCat.includes('education') || existingCat.includes('education') ||
+        /\b(marksheet|semester|degree|dmc|diploma)\b/i.test(`${suggestedTitle} ${fileName} ${doc.title}`);
+
+      if (isEdu) {
+        const newSem = extractSemester(`${suggestedTitle} ${fileName}`, ocrExtractedData);
+        const existingSem = extractSemester(`${doc.title} ${doc.originalFileName || ''}`, doc.ocrExtractedData);
+        if (newSem && existingSem && newSem !== existingSem) {
+          continue; // Different semester!
+        }
+      }
+
       const existingTokens = normalizeTokens(doc.title);
       if (existingTokens.length < 2) continue;
 
@@ -119,14 +309,20 @@ export function detectHeuristicDuplicate({
       const minLen = Math.min(candidateTokens.size, existingTokens.length);
       const overlapRatio = matchCount / minLen;
 
-      const docMemberId = doc.assignedMemberId?._id || doc.assignedMemberId;
       const sameMember = Boolean(
-        matchedMemberId &&
+        currentMemberId &&
         docMemberId &&
-        docMemberId.toString() === matchedMemberId.toString()
+        docMemberId === currentMemberId
       );
 
-      if (overlapRatio >= 0.75 || (sameMember && overlapRatio >= 0.6)) {
+      // Title match only triggers if:
+      // 1. Same member has very high overlap (>= 0.6)
+      // 2. Or neither document has a member assigned (unassigned family asset) with very high overlap (>= 0.85)
+      const isEligibleTitleDuplicate = sameMember
+        ? overlapRatio >= 0.6
+        : (!currentMemberId && !docMemberId && overlapRatio >= 0.85);
+
+      if (isEligibleTitleDuplicate) {
         const memberName = resolveMemberName(doc);
         const uploadDate = formatDate(doc.createdAt);
         return {
@@ -666,7 +862,7 @@ router.post('/ai-scan', (req, res, next) => {
               familyId,
               status: { $ne: 'ARCHIVED' },
             })
-              .select('_id title category documentNumber sha256Hash assignedMemberId createdAt')
+              .select('_id title category documentNumber sha256Hash assignedMemberId ocrExtractedData expiryDate issueDate createdAt')
               .populate('assignedMemberId', 'name relationship')
               .lean();
           } else if (memoryStore.documents) {
@@ -684,6 +880,8 @@ router.post('/ai-scan', (req, res, next) => {
             matchedMemberId: scanResult.matchedMemberId,
             existingDocs,
             familyMembers,
+            scanCategory: scanResult.category,
+            ocrExtractedData: scanResult,
           });
         } catch (dupErr) {
           console.warn('[AI Scan] Duplicate check error:', dupErr.message);
@@ -880,8 +1078,10 @@ router.post('/check-duplicate', async (req, res) => {
       documentNumber = '',
       title = '',
       fileName = '',
+      category = '',
       assignedMemberId = null,
       fileSha256 = null,
+      ocrExtractedData = null,
     } = req.body;
 
     let familyId = req.familyId || req.user?.familyId;
@@ -904,7 +1104,7 @@ router.post('/check-duplicate', async (req, res) => {
     if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
       [existingDocs, familyMembers] = await Promise.all([
         Document.find({ familyId, status: { $ne: 'ARCHIVED' } })
-          .select('_id title category documentNumber sha256Hash assignedMemberId createdAt')
+          .select('_id title category documentNumber sha256Hash assignedMemberId ocrExtractedData expiryDate issueDate createdAt')
           .populate('assignedMemberId', 'name relationship')
           .lean(),
         User.find({ familyId }).select('_id name relationship').lean(),
@@ -919,12 +1119,14 @@ router.post('/check-duplicate', async (req, res) => {
     const duplicateWarning = detectHeuristicDuplicate({
       fileSha256,
       scanDocNumber: (documentNumber || '').trim(),
-      scanDocType: 'Document',
+      scanDocType: category || 'Document',
       suggestedTitle: (title || '').trim(),
       fileName: (fileName || '').trim(),
       matchedMemberId: assignedMemberId,
       existingDocs,
       familyMembers,
+      scanCategory: category,
+      ocrExtractedData,
     });
 
     return res.json({
@@ -1159,7 +1361,7 @@ router.post('/upload', (req, res, next) => {
         if (isConnected && mongoose.Types.ObjectId.isValid(familyId)) {
           [existingDocs, familyMembers] = await Promise.all([
             Document.find({ familyId, status: { $ne: 'ARCHIVED' } })
-              .select('_id title category documentNumber sha256Hash assignedMemberId createdAt')
+              .select('_id title category documentNumber sha256Hash assignedMemberId ocrExtractedData expiryDate issueDate createdAt')
               .populate('assignedMemberId', 'name relationship')
               .lean(),
             User.find({ familyId }).select('_id name relationship').lean(),
@@ -1171,6 +1373,15 @@ router.post('/upload', (req, res, next) => {
           familyMembers = (memoryStore.users || []).filter(u => u.familyId?.toString() === familyId.toString());
         }
 
+        let parsedOcrData = null;
+        if (req.body.ocrExtractedData) {
+          try {
+            parsedOcrData = typeof req.body.ocrExtractedData === 'string'
+              ? JSON.parse(req.body.ocrExtractedData)
+              : req.body.ocrExtractedData;
+          } catch (e) {}
+        }
+
         const duplicateWarning = detectHeuristicDuplicate({
           fileSha256: sha256Hash,
           scanDocNumber: finalDocNumber,
@@ -1180,6 +1391,8 @@ router.post('/upload', (req, res, next) => {
           matchedMemberId: finalMemberId,
           existingDocs,
           familyMembers,
+          scanCategory: category,
+          ocrExtractedData: parsedOcrData,
         });
 
         if (duplicateWarning?.isDuplicate) {

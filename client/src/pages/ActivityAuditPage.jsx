@@ -191,7 +191,7 @@ export default function ActivityAuditPage() {
 
           <button
             onClick={handleOpenManifest}
-            className="px-4 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer active:scale-95"
           >
             <span className="material-symbols-outlined text-base">code</span>
             <span>Cryptographic Manifest JSON</span>
@@ -276,8 +276,8 @@ export default function ActivityAuditPage() {
               onClick={() => setFilterAction(action.key)}
               className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 filterAction === action.key
-                  ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
-                  : 'bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-400'
+                  ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-xs border border-sky-400/30 font-bold'
+                  : 'bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#202b40] text-slate-600 dark:text-neutral-400 border border-slate-200/90 dark:border-[#1E293B]'
               }`}
             >
               {action.label}
@@ -434,7 +434,7 @@ export default function ActivityAuditPage() {
                 </button>
                 <button
                   onClick={handleDownloadManifest}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-emerald-300 dark:border-[#3ECF8E]/30 bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs transition-all cursor-pointer text-center"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200/90 dark:border-[#1E293B] bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-800 dark:text-sky-400 font-bold text-xs transition-all cursor-pointer text-center active:scale-95 shadow-2xs"
                   title="Download .json file for legal evidence"
                 >
                   <Download size={14} />
@@ -447,7 +447,7 @@ export default function ActivityAuditPage() {
                     toast.success('Manifest JSON copied to clipboard!');
                     setTimeout(() => setCopiedManifest(false), 2000);
                   }}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer text-center"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer text-center active:scale-95"
                 >
                   {copiedManifest ? <Check size={14} /> : <Copy size={14} />}
                   <span>{copiedManifest ? 'Copied JSON' : 'Copy JSON'}</span>

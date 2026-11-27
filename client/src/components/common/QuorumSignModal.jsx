@@ -248,7 +248,7 @@ export default function QuorumSignModal({ isOpen, onClose, quorumRequest, onSign
               type="button"
               onClick={handleSign}
               disabled={signing || isUserSigned}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 disabled:opacity-50 transition-all cursor-pointer text-center"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 disabled:opacity-50 transition-all cursor-pointer text-center active:scale-95"
             >
               <KeyRound size={15} strokeWidth={2.2} />
               <span>

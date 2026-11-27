@@ -167,7 +167,7 @@ export default function PersonalKycPromptModal({
             <Link
               to={`/vault/upload?category=${encodeURIComponent(firstMissing.category)}&title=${encodeURIComponent(firstMissing.title)}&member=${encodeURIComponent(user?._id || user?.id || '')}`}
               onClick={onClose}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer text-center flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer text-center flex items-center justify-center gap-1.5 active:scale-95"
             >
               <span>Upload {firstMissing.title} Now</span>
               <ArrowRight size={14} />

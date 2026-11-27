@@ -128,7 +128,7 @@ export default function DeleteMemberModal({ isOpen, onClose, member, onDeleted }
             <img
               src={member.avatar || member.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}`}
               alt={member.name}
-              className="w-12 h-12 rounded-xl object-cover ring-2 ring-slate-200 dark:ring-[#262626]"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover ring-2 ring-slate-200 dark:ring-[#262626]"
             />
             <div>
               <h4 className="font-bold text-sm text-slate-900 dark:text-white">

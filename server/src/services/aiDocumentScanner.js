@@ -179,13 +179,27 @@ export function generateSmartDocumentTitle(params = {}) {
   }
 
   // 3. Academic Certificate / Degree / Semester DMC Title logic
-  if (academicDetails) {
-    if (academicDetails.certificateTitle) {
+  const isEducationDoc = category === 'Education' ||
+    /result\s*cum|detailed\s*marks|statement\s*of\s*marks|marksheet|dmc|grade\s*card/i.test(`${cleanType} ${originalFileName} ${summary}`);
+
+  if (academicDetails || isEducationDoc) {
+    const rawContext = `${cleanType} ${originalFileName} ${summary} ${searchKeywords} ${academicDetails?.semesterOrYear || ''}`.toLowerCase();
+    const semMatch = rawContext.match(/\b(sem(?:ester)?\s*([0-9]+|[ivx]+)|([0-9]+)(?:st|nd|rd|th)\s*sem(?:ester)?|sixth|fifth|fourth|third|second|first|final\s*sem(?:ester)?)\b/i);
+    const courseMatch = rawContext.match(/\b(bca|mca|b\.?tech|m\.?tech|bba|mba|b\.?sc|m\.?sc|b\.?com|ba|ma|cbse)\b/i);
+
+    const semLabel = academicDetails?.semesterOrYear || (semMatch ? semMatch[0].replace(/\b\w/g, l => l.toUpperCase()) : 'Semester');
+    const courseLabel = academicDetails?.courseOrDegree || (courseMatch ? courseMatch[0].toUpperCase() : '');
+
+    if (academicDetails?.certificateTitle) {
       cleanType = academicDetails.certificateTitle.trim();
-    } else if (academicDetails.semesterOrYear && academicDetails.courseOrDegree) {
-      cleanType = `${academicDetails.semesterOrYear} DMC (${academicDetails.courseOrDegree})`;
-    } else if (academicDetails.courseOrDegree) {
-      cleanType = `${academicDetails.courseOrDegree} Degree`;
+    } else if (courseLabel && semLabel) {
+      cleanType = `${courseLabel} - ${semLabel} Marksheet`;
+    } else if (semLabel) {
+      cleanType = `${semLabel} Marksheet`;
+    } else if (courseLabel) {
+      cleanType = `${courseLabel} Degree / Marksheet`;
+    } else {
+      cleanType = 'Semester Marksheet';
     }
   }
 

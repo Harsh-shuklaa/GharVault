@@ -54,6 +54,8 @@ import {
   ArrowDown,
   ArrowRight,
   CreditCard,
+  QrCode,
+  ShieldCheck,
 } from 'lucide-react';
 import MpinModal from '../components/common/MpinModal';
 import VaultSecurityLoader from '../components/common/VaultSecurityLoader';
@@ -121,7 +123,7 @@ export default function DocumentPreviewPage() {
     if (diffDays === 0) {
       return { text: 'Due Today', color: 'text-amber-600 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20' };
     }
-    return { text: `Due in ${diffDays} day${diffDays > 1 ? 's' : ''}`, color: 'text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 border-emerald-200 dark:border-[#3ECF8E]/20' };
+    return { text: `Due in ${diffDays} day${diffDays > 1 ? 's' : ''}`, color: 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border-sky-200 dark:border-sky-500/20' };
   };
 
   // Sibling navigation
@@ -176,8 +178,8 @@ export default function DocumentPreviewPage() {
       return {
         type: 'general',
         label: 'Document',
-        strip: 'from-[#10B981] to-[#3ECF8E]',
-        tagStyle: 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] border-emerald-200/60 dark:border-[#3ECF8E]/20',
+        strip: 'from-sky-500 via-indigo-500 to-blue-600',
+        tagStyle: 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-200/60 dark:border-sky-500/30',
         badgeEmoji: '📑',
       };
     const text = `${d.title || ''} ${d.category || ''} ${d.tags?.join(' ') || ''}`.toLowerCase();
@@ -236,8 +238,8 @@ export default function DocumentPreviewPage() {
       return {
         type: 'vehicle',
         label: text.includes('driving') || text.includes('license') ? 'Driving License' : 'Vehicle RC',
-        strip: 'from-emerald-600 via-teal-600 to-emerald-700',
-        tagStyle: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-[#3ECF8E] border-emerald-200/80 dark:border-[#3ECF8E]/30',
+        strip: 'from-blue-600 via-indigo-600 to-cyan-600',
+        tagStyle: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-500/30',
         badgeEmoji: '🚗',
       };
     }
@@ -277,8 +279,8 @@ export default function DocumentPreviewPage() {
     return {
       type: 'general',
       label: d.category || 'Document',
-      strip: 'from-[#10B981] to-[#3ECF8E]',
-      tagStyle: 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] border-emerald-200/60 dark:border-[#3ECF8E]/20',
+      strip: 'from-sky-500 via-indigo-500 to-blue-600',
+      tagStyle: 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-200/60 dark:border-sky-500/30',
       badgeEmoji: '📑',
     };
   };
@@ -1034,7 +1036,25 @@ export default function DocumentPreviewPage() {
         ctx.fillText('NAME / नाम', 40, 295);
         ctx.fillStyle = '#0f172a';
         ctx.font = 'bold 22px sans-serif';
-        ctx.fillText((d.assignedMember?.name || user?.name || 'CITIZEN').toUpperCase(), 40, 328);
+        const cardholderCanvasName = (d.ocrExtractedData?.holderName || d.assignedMember?.name || user?.name || 'CITIZEN').toUpperCase();
+        ctx.fillText(cardholderCanvasName, 40, 328);
+
+        // Father / Spouse or DOB
+        if (d.ocrExtractedData?.fatherOrSpouseName) {
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText('FATHER / SPOUSE / पिता या पति', 420, 295);
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.fillText(d.ocrExtractedData.fatherOrSpouseName.toUpperCase(), 420, 328);
+        } else if (d.ocrExtractedData?.dob) {
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText('DOB / जन्म तिथि', 420, 295);
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.fillText(d.ocrExtractedData.dob, 420, 328);
+        }
 
         // Category
         ctx.fillStyle = '#64748b';
@@ -1210,7 +1230,7 @@ export default function DocumentPreviewPage() {
         <AlertCircle size={44} className="text-slate-300 dark:text-neutral-600 mx-auto" />
         <h2 className="text-lg font-bold text-slate-800 dark:text-white">Document Not Found</h2>
         <p className="text-xs text-slate-500 dark:text-neutral-400">The document you are looking for may have been removed or you do not have permission to view it.</p>
-        <Link to="/vault" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#262626] text-xs text-emerald-700 dark:text-[#3ECF8E] font-bold hover:bg-slate-200 transition-colors">
+        <Link to="/vault" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#182030] text-xs text-sky-600 dark:text-sky-400 font-bold hover:bg-slate-200 dark:hover:bg-[#222c42] border border-slate-200 dark:border-[#1E293B] transition-colors">
           <ArrowLeft size={14} />
           <span>Return to Family Vault</span>
         </Link>
@@ -1270,37 +1290,43 @@ export default function DocumentPreviewPage() {
   const visual = getDocVisual(doc);
 
   return (
-    <div
-      className={`max-w-[1600px] mx-auto p-2.5 sm:p-4 lg:p-4 transition-all ${
-        isFullscreen
-          ? 'fixed inset-0 z-50 bg-[#F8FAFC] dark:bg-[#121212] overflow-y-auto max-w-none p-3 sm:p-6'
-          : 'pb-6 lg:pb-2 lg:h-[calc(100vh-4.25rem)] lg:max-h-[calc(100vh-4.25rem)] lg:overflow-hidden flex flex-col space-y-2 sm:space-y-2.5'
-      }`}
-    >
-      {/* Top Header Card: Ultra-Compact & Responsive */}
-      <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] shadow-xs overflow-hidden transition-colors shrink-0">
+    <div className="relative min-h-[calc(100vh-4rem)] bg-[#F8FAFC] dark:bg-[#090A0F] text-slate-900 dark:text-[#F8FAFC] transition-colors">
+      {/* Background Texture & Ambient Top Glow matching Landing & Upload page */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.03] dark:opacity-[0.06] text-slate-900 dark:text-white"
+        aria-hidden="true"
+      />
+      <div
+        className={`relative z-10 max-w-[1600px] mx-auto p-2.5 sm:p-4 lg:p-4 transition-all ${
+          isFullscreen
+            ? 'fixed inset-0 z-50 bg-[#F8FAFC] dark:bg-[#090A0F] overflow-y-auto max-w-none p-3 sm:p-6'
+            : 'pb-28 lg:pb-2 lg:h-[calc(100vh-4.25rem)] lg:max-h-[calc(100vh-4.25rem)] lg:overflow-hidden flex flex-col space-y-2 sm:space-y-2.5'
+        }`}
+      >
+      {/* Top Header Card: Ultra-Clean, Touch-Friendly & Accessible for All Users */}
+      <div className="bg-white dark:bg-[#121622] rounded-2xl border border-slate-200/80 dark:border-[#1E293B] shadow-xs overflow-hidden transition-colors shrink-0">
         {/* Top Visual Accent Strip */}
         <div className={`h-1.5 w-full bg-gradient-to-r ${visual.strip}`} />
 
-        <div className="p-2.5 sm:px-4 sm:py-3 space-y-2">
+        <div className="p-3 sm:px-4 sm:py-3 space-y-2">
           {/* Main Top Bar */}
           <div className="flex items-center justify-between gap-2">
             {/* Left: Back + Title + Indian Badge */}
-            <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <Link
                 to="/vault"
-                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-600 dark:text-neutral-300 flex items-center justify-center transition-colors shrink-0"
+                className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 flex items-center justify-center transition-all shrink-0 active:scale-95"
                 title="Back to Family Vault"
               >
-                <ArrowLeft size={16} />
+                <ArrowLeft size={18} />
               </Link>
 
-              <div className="min-w-0 flex items-center gap-1.5 truncate">
-                <h1 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+              <div className="min-w-0 flex items-center gap-2 truncate">
+                <h1 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">
                   {doc.title}
                 </h1>
 
-                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${visual.tagStyle}`}>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border shrink-0 ${visual.tagStyle}`}>
                   <span>{visual.badgeEmoji}</span>
                   <span className="hidden xs:inline">{visual.label}</span>
                 </span>
@@ -1308,34 +1334,34 @@ export default function DocumentPreviewPage() {
             </div>
 
             {/* Right: Sibling Switcher + Quick Actions */}
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               {/* Previous / Next Sibling Switcher */}
               {(siblingDocs.prev || siblingDocs.next) && (
-                <div className="flex items-center gap-0.5 shrink-0">
+                <div className="flex items-center gap-1 shrink-0 bg-slate-100 dark:bg-[#182030] p-0.5 rounded-xl border border-slate-200 dark:border-[#1E293B]">
                   {siblingDocs.prev ? (
                     <Link
                       to={`/vault/documents/${siblingDocs.prev._id || siblingDocs.prev.id}`}
-                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 transition-colors border border-slate-200 dark:border-[#262626]"
+                      className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 transition-colors"
                       title={`Previous: ${siblingDocs.prev.title}`}
                     >
-                      <ChevronLeft size={13} />
+                      <ChevronLeft size={15} />
                     </Link>
                   ) : (
-                    <span className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#18181B] text-slate-300 dark:text-neutral-600 cursor-not-allowed">
-                      <ChevronLeft size={13} />
+                    <span className="p-1.5 rounded-lg text-slate-300 dark:text-neutral-600 cursor-not-allowed">
+                      <ChevronLeft size={15} />
                     </span>
                   )}
                   {siblingDocs.next ? (
                     <Link
                       to={`/vault/documents/${siblingDocs.next._id || siblingDocs.next.id}`}
-                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 transition-colors border border-slate-200 dark:border-[#262626]"
+                      className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 transition-colors"
                       title={`Next: ${siblingDocs.next.title}`}
                     >
-                      <ChevronRight size={13} />
+                      <ChevronRight size={15} />
                     </Link>
                   ) : (
-                    <span className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#18181B] text-slate-300 dark:text-neutral-600 cursor-not-allowed">
-                      <ChevronRight size={13} />
+                    <span className="p-1.5 rounded-lg text-slate-300 dark:text-neutral-600 cursor-not-allowed">
+                      <ChevronRight size={15} />
                     </span>
                   )}
                 </div>
@@ -1345,10 +1371,10 @@ export default function DocumentPreviewPage() {
               <button
                 type="button"
                 onClick={handleOpenEdit}
-                className="px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-bold flex items-center gap-1 border border-slate-200 dark:border-[#262626] transition-colors cursor-pointer"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300 text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-[#1E293B] transition-colors cursor-pointer"
                 title="Edit title, ID number, expiry, notes or file"
               >
-                <Edit3 size={12} />
+                <Edit3 size={13} />
                 <span className="hidden sm:inline">Edit</span>
               </button>
 
@@ -1357,15 +1383,15 @@ export default function DocumentPreviewPage() {
                 type="button"
                 disabled={isTogglingMpin}
                 onClick={handleToggleMpinProtection}
-                className={`px-2 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer border ${
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border ${
                   (doc.isMpinProtected || doc.isSensitive)
                     ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-400'
-                    : 'bg-slate-100 dark:bg-[#141414] border-slate-200 dark:border-[#262626] text-slate-600 dark:text-neutral-400'
+                    : 'bg-slate-100 dark:bg-[#182030] border-slate-200 dark:border-[#1E293B] text-slate-600 dark:text-neutral-400'
                 }`}
                 title={(doc.isMpinProtected || doc.isSensitive) ? 'MPIN Protected' : 'Lock with MPIN'}
               >
-                <Lock size={12} className={(doc.isMpinProtected || doc.isSensitive) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
-                <span className="hidden md:inline">{(doc.isMpinProtected || doc.isSensitive) ? 'MPIN' : 'Lock'}</span>
+                <Lock size={13} className={(doc.isMpinProtected || doc.isSensitive) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
+                <span className="hidden sm:inline">{(doc.isMpinProtected || doc.isSensitive) ? 'MPIN' : 'Lock'}</span>
               </button>
 
               {/* Desktop-Only Direct Download & 24h Link */}
@@ -1373,9 +1399,9 @@ export default function DocumentPreviewPage() {
                 <button
                   type="button"
                   onClick={() => handleShareSafely()}
-                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#262626] hover:bg-slate-50 dark:hover:bg-[#141414] text-slate-700 dark:text-neutral-300 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#1E293B] hover:bg-slate-50 dark:hover:bg-[#141414] text-slate-700 dark:text-neutral-300 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
                 >
-                  <Share2 size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                  <Share2 size={13} className="text-sky-500 dark:text-sky-400" />
                   <span>24h Link</span>
                 </button>
 
@@ -1383,7 +1409,7 @@ export default function DocumentPreviewPage() {
                   type="button"
                   onClick={handleDownloadDocument}
                   disabled={isDownloading}
-                  className="px-3 py-1.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] text-xs font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white shadow-md shadow-sky-500/25 border border-sky-400/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 active:scale-95"
                   title="Download Document Image"
                 >
                   {isDownloading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
@@ -1402,80 +1428,93 @@ export default function DocumentPreviewPage() {
             </div>
           </div>
 
-          {/* Sub Row: Document ID with Reveal & Copy + Member Name + WhatsApp Pill */}
-          <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap pt-1 border-t border-slate-100 dark:border-[#27272A] text-xs">
-            <div className="flex items-center gap-2 min-w-0">
+          {/* Sub Row: Document ID with Large Font + Unmask & 1-Tap Copy + Member Pill */}
+          <div className="flex items-center justify-between gap-2 flex-wrap pt-1.5 border-t border-slate-100 dark:border-[#1E293B] text-xs">
+            <div className="flex items-center gap-2 flex-wrap">
               {doc.documentNumber && (
-                <div className="flex items-center gap-1 bg-slate-50 dark:bg-[#141414] px-2 py-0.5 rounded-lg border border-slate-200 dark:border-[#262626]">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">ID:</span>
-                  <code className="font-mono font-bold text-xs text-slate-900 dark:text-white">
+                <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-[#182030] px-2.5 py-1 rounded-xl border border-slate-200/80 dark:border-[#1E293B] shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID:</span>
+                  <code className="font-mono font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white tracking-wider">
                     {formatDocNumber(doc.documentNumber, isNumberUnmasked, visual.type === 'aadhaar')}
                   </code>
                   <button
                     type="button"
                     onClick={() => setIsNumberUnmasked(!isNumberUnmasked)}
-                    className="p-0.5 rounded text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer"
-                    title={isNumberUnmasked ? 'Mask' : 'Reveal'}
+                    className="p-1 rounded-md text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer transition-colors"
+                    title={isNumberUnmasked ? 'Mask ID' : 'Reveal ID'}
                   >
-                    {isNumberUnmasked ? <EyeOff size={11} /> : <Eye size={11} />}
+                    {isNumberUnmasked ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                   <button
                     type="button"
                     onClick={handleCopyNumber}
-                    className="p-0.5 px-1 rounded bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-[10px] cursor-pointer inline-flex items-center gap-0.5"
-                    title="Copy ID"
+                    className="py-1 px-2.5 rounded-lg bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-[11px] cursor-pointer inline-flex items-center gap-1 transition-all active:scale-95 shadow-2xs border border-sky-400/30"
+                    title="1-Tap Copy ID"
                   >
-                    {copiedNumber ? <Check size={10} /> : <Copy size={10} />}
+                    {copiedNumber ? <Check size={11} /> : <Copy size={11} />}
+                    <span>{copiedNumber ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
               )}
 
-              <span className="text-[11px] text-slate-500 dark:text-neutral-400 font-medium truncate">
-                {doc.assignedMember?.name || 'Family Document'}
-              </span>
+              <button
+    type="button"
+    onClick={() => {
+      const mId = (doc.assignedMember?._id || doc.assignedMemberId?._id || doc.assignedMemberId || doc.memberId)?.toString();
+      if (mId) navigate(`/family/${mId}`);
+      else navigate('/family');
+    }}
+    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#202a40] text-slate-700 dark:text-neutral-200 text-xs font-semibold transition-all cursor-pointer border border-slate-200/80 dark:border-[#1E293B]"
+    title="View Member Profile in Family Vault"
+  >
+    <User size={13} className="text-sky-500 dark:text-sky-400" />
+    <span>{doc.assignedMember?.name || 'Whole Family'}</span>
+    <ExternalLink size={10} className="text-slate-400 ml-0.5" />
+  </button>
             </div>
 
-            <button
-              type="button"
-              onClick={handleWhatsAppShare}
-              disabled={sharingLoading}
-              className="px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 text-emerald-700 dark:text-[#3ECF8E] border border-emerald-200 dark:border-emerald-500/30 text-[11px] font-bold flex items-center gap-1 shrink-0 cursor-pointer"
-              title="Share 24-hr link via WhatsApp"
-            >
-              <MessageCircle size={12} className="text-emerald-600 dark:text-[#3ECF8E]" />
-              <span>WhatsApp Share</span>
-            </button>
+            {/* Quick Almari Tag on Mobile if exists */}
+            {doc.notes && (
+              <div
+                onClick={handleOpenEdit}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/25 text-amber-800 dark:text-amber-300 text-[11px] font-bold cursor-pointer hover:bg-amber-100 transition-colors"
+                title="Tap to edit physical almirah location"
+              >
+                <span>🗄️</span>
+                <span className="truncate max-w-[180px] sm:max-w-xs">{doc.notes}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Segmented Control: [ 📄 Document Preview ] vs [ 🗄️ Details & Almari ] */}
-      <div className="lg:hidden flex items-center bg-white dark:bg-[#1C1C1C] p-1 rounded-xl border border-slate-200 dark:border-[#27272A] shadow-xs shrink-0">
+      {/* Mobile Segmented Control: Large, Thumb-Friendly & Clear for All Users */}
+      <div className="lg:hidden flex items-center bg-slate-100/90 dark:bg-[#0B0F19] p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#1E293B] shadow-xs shrink-0 gap-1.5">
         <button
           type="button"
           onClick={() => setMobileTab('PREVIEW')}
-          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
             mobileTab === 'PREVIEW'
-              ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
-              : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-md shadow-sky-500/20 border border-sky-400/30'
+              : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white bg-transparent'
           }`}
         >
-          <FileText size={13} />
-          <span>Document Preview</span>
+          <FileText size={15} />
+          <span>Document Photo / PDF</span>
         </button>
 
         <button
           type="button"
           onClick={() => setMobileTab('DETAILS')}
-          className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+          className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
             mobileTab === 'DETAILS'
-              ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
-              : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-md shadow-sky-500/20 border border-sky-400/30'
+              : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white bg-transparent'
           }`}
         >
-          <Box size={13} />
-          <span>Details & Almari</span>
-          {doc.notes && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />}
+          <Box size={15} />
+          <span>Details & Almari (विवरण)</span>
+          {doc.notes && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />}
         </button>
       </div>
 
@@ -1488,18 +1527,18 @@ export default function DocumentPreviewPage() {
         return (
           <div className={`px-3 py-2 rounded-xl border transition-all flex items-center justify-between gap-2 shadow-2xs shrink-0 text-xs ${
             shareInfo.isExpired
-              ? 'bg-slate-50 dark:bg-[#18181B] border-slate-200 dark:border-[#27272A]'
-              : 'bg-emerald-50/80 dark:bg-[#3ECF8E]/10 border-emerald-200 dark:border-[#3ECF8E]/30'
+              ? 'bg-slate-50 dark:bg-[#121622] border-slate-200 dark:border-[#1E293B]'
+              : 'bg-sky-50/80 dark:bg-sky-500/10 border-sky-200 dark:border-sky-500/30'
           }`}>
             <div className="flex items-center gap-2 min-w-0">
-              <Share2 size={14} className={shareInfo.isExpired ? 'text-slate-500' : 'text-[#10B981] dark:text-[#3ECF8E]'} />
+              <Share2 size={14} className={shareInfo.isExpired ? 'text-slate-500' : 'text-sky-500 dark:text-sky-400'} />
               <span className="font-bold text-slate-900 dark:text-white truncate">
                 {shareInfo.isExpired ? 'Share Link Expired' : 'Active Safe Share Link:'}
               </span>
               <span className="font-mono text-[11px] text-slate-600 dark:text-neutral-300 truncate max-w-[200px] sm:max-w-md select-all">
                 {fullUrl}
               </span>
-              <span className="text-[10px] font-bold text-emerald-800 dark:text-[#3ECF8E] shrink-0">
+              <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 shrink-0">
                 ({shareInfo.text})
               </span>
             </div>
@@ -1511,7 +1550,7 @@ export default function DocumentPreviewPage() {
                   navigator.clipboard.writeText(fullUrl);
                   toast.success('Safe view-only share link copied to clipboard!');
                 }}
-                className="px-2 py-1 rounded-lg bg-white dark:bg-[#18181B] border border-emerald-200 dark:border-[#3ECF8E]/30 text-emerald-800 dark:text-[#3ECF8E] text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                className="px-2 py-1 rounded-lg bg-white dark:bg-[#121622] border border-sky-200 dark:border-sky-500/30 text-sky-700 dark:text-sky-400 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
               >
                 <Copy size={11} />
                 <span>Copy</span>
@@ -1531,13 +1570,13 @@ export default function DocumentPreviewPage() {
       {/* Main Grid: Left Stage (Col-7 / Col-8) & Right Controls (Col-5 / Col-4) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 flex-1 min-h-0 lg:overflow-hidden">
         {/* Left Column: Document Canvas & Stage (7 Cols on desktop, full on mobile when PREVIEW) */}
-        <div className={`lg:col-span-7 xl:col-span-7 bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200/80 dark:border-[#262626] shadow-xs overflow-hidden h-full min-h-[380px] lg:min-h-0 transition-colors ${
+        <div className={`lg:col-span-7 xl:col-span-7 bg-white dark:bg-[#121622] rounded-2xl border border-slate-200/80 dark:border-[#1E293B] shadow-xs overflow-hidden h-full min-h-[380px] lg:min-h-0 transition-colors ${
           mobileTab === 'PREVIEW' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
         }`}>
           {/* Floating Glass Toolbar */}
-          <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 border-b border-slate-100 dark:border-[#262626] flex items-center justify-between gap-1.5 sm:gap-2 bg-slate-50/80 dark:bg-[#141414] text-xs text-slate-600 dark:text-neutral-400 shrink-0 overflow-x-auto no-scrollbar">
+          <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 border-b border-slate-100 dark:border-[#1E293B] flex items-center justify-between gap-1.5 sm:gap-2 bg-slate-50/80 dark:bg-[#182030] text-xs text-slate-600 dark:text-neutral-400 shrink-0 overflow-x-auto no-scrollbar">
             {/* View Mode Switcher */}
-            <div className="flex items-center gap-1 bg-white dark:bg-[#1C1C1C] p-0.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] shrink-0">
+            <div className="flex items-center gap-1 bg-white dark:bg-[#121622] p-0.5 rounded-xl border border-slate-200 dark:border-[#1E293B] shrink-0">
               {isImage && (
                 <button
                   type="button"
@@ -1547,7 +1586,7 @@ export default function DocumentPreviewPage() {
                   }}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     viewerMode === 'PREVIEW'
-                      ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
+                      ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-xs'
                       : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
@@ -1560,7 +1599,7 @@ export default function DocumentPreviewPage() {
                 onClick={() => setViewerMode('DIGITAL_CARD')}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   viewerMode === 'DIGITAL_CARD' || (!isImage && viewerMode === 'PREVIEW')
-                    ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-xs'
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-xs'
                     : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -1577,12 +1616,12 @@ export default function DocumentPreviewPage() {
                 onClick={() => setShowWatermark(!showWatermark)}
                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer border ${
                   showWatermark
-                    ? 'bg-emerald-50 dark:bg-[#3ECF8E]/10 border-emerald-200 dark:border-[#3ECF8E]/30 text-emerald-800 dark:text-[#3ECF8E]'
+                    ? 'bg-sky-50 dark:bg-sky-500/10 border-sky-200 dark:border-sky-500/30 text-sky-700 dark:text-sky-400'
                     : 'bg-slate-100 dark:bg-[#262626] border-slate-200 dark:border-transparent text-slate-500'
                 }`}
                 title="Toggle dynamic confidential watermark overlay"
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${showWatermark ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${showWatermark ? 'bg-sky-500 animate-pulse' : 'bg-slate-400'}`} />
                 <span className="hidden sm:inline">Watermark:</span>
                 <span className="font-bold uppercase text-[10px]">{showWatermark ? 'Active' : 'Off'}</span>
               </button>
@@ -1624,7 +1663,7 @@ export default function DocumentPreviewPage() {
                   className="inline-flex items-center gap-1 px-2 py-0.5 hover:bg-slate-200 dark:hover:bg-[#262626] rounded-lg transition-colors cursor-pointer text-slate-600 dark:text-neutral-300 text-[11px] font-semibold"
                   title="Open PDF in new tab for native full-screen viewing"
                 >
-                  <ExternalLink size={12} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                  <ExternalLink size={12} className="text-sky-500 dark:text-sky-400" />
                   <span className="hidden md:inline">Open PDF</span>
                 </a>
               )}
@@ -1658,9 +1697,9 @@ export default function DocumentPreviewPage() {
           </div>
 
           {/* Document Canvas Stage (Generous mobile height & responsive centering) */}
-          <div className="p-2 sm:p-4 bg-[#F1F5F9]/70 dark:bg-[#121212] flex items-center justify-center flex-1 min-h-[50vh] sm:min-h-[58vh] lg:min-h-0 overflow-auto relative">
+          <div className="p-2 sm:p-4 bg-[#F1F5F9]/70 dark:bg-[#090A0F] flex items-center justify-center flex-1 min-h-[50vh] sm:min-h-[58vh] lg:min-h-0 overflow-auto relative">
             {isMpinLocked ? (
-              <div className="bg-white dark:bg-[#1C1C1C] rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-[#262626] shadow-xl max-w-sm w-full text-center space-y-3 sm:space-y-4 animate-fadeIn">
+              <div className="bg-white dark:bg-[#121622] rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-[#1E293B] shadow-xl max-w-sm w-full text-center space-y-3 sm:space-y-4 animate-fadeIn">
                 <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 shadow-sm">
                   <Lock size={24} />
                 </div>
@@ -1673,7 +1712,7 @@ export default function DocumentPreviewPage() {
                 <button
                   type="button"
                   onClick={() => setShowMpinModal(true)}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/25 transition-all cursor-pointer w-full"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white shadow-md shadow-sky-500/25 font-bold text-xs shadow-md shadow-sky-500/25 transition-all cursor-pointer w-full"
                 >
                   <KeyRound size={14} />
                   <span>Enter 4-Digit MPIN to Unlock</span>
@@ -1690,7 +1729,7 @@ export default function DocumentPreviewPage() {
               >
                 {/* VIEW 1: Authentic Uploaded Image */}
                 {isImage && viewerMode === 'PREVIEW' && !imageError ? (
-                  <div className="relative max-w-full rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-[#2E2E2E] bg-white dark:bg-[#1C1C1C] group">
+                  <div className="relative max-w-full rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-[#1E293B] bg-white dark:bg-[#121622] group">
                     <img
                       src={fileUrl}
                       alt={doc.title}
@@ -1704,8 +1743,8 @@ export default function DocumentPreviewPage() {
                   </div>
                 ) : isPdf && viewerMode === 'PREVIEW' ? (
                   /* VIEW 2: PDF Document Viewer */
-                  <div className="relative w-full max-w-[580px] rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-[#2E2E2E] bg-white dark:bg-[#1C1C1C] flex flex-col">
-                    <div className="bg-slate-100 dark:bg-[#141414] px-3 py-1.5 border-b border-slate-200 dark:border-[#262626] flex items-center justify-between text-xs">
+                  <div className="relative w-full max-w-[580px] rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-[#1E293B] bg-white dark:bg-[#121622] flex flex-col">
+                    <div className="bg-slate-100 dark:bg-[#182030] px-3 py-1.5 border-b border-slate-200 dark:border-[#1E293B] flex items-center justify-between text-xs">
                       <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-neutral-300">
                         <FileText size={13} className="text-red-500" />
                         <span>PDF Document</span>
@@ -1714,7 +1753,7 @@ export default function DocumentPreviewPage() {
                         href={fileUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-[#262626] border border-slate-200 dark:border-[#333] text-emerald-700 dark:text-[#3ECF8E] font-bold text-[10px] hover:bg-slate-50 transition-colors shadow-2xs"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-[#262626] border border-slate-200 dark:border-[#1E293B] text-sky-600 dark:text-sky-400 font-bold text-[10px] hover:bg-slate-50 transition-colors shadow-2xs"
                       >
                         <span>Open Full PDF</span>
                         <ExternalLink size={10} />
@@ -1730,157 +1769,311 @@ export default function DocumentPreviewPage() {
                     </div>
                   </div>
                 ) : (
-                  /* VIEW 3: Digital Sovereign Smart Card */
-                  <div className="relative w-full max-w-[520px] max-h-[46vh] sm:max-h-[54vh] lg:max-h-[calc(100vh-240px)] overflow-y-auto bg-white dark:bg-[#1C1C1C] rounded-2xl shadow-xl flex flex-col border border-slate-200 dark:border-[#2E2E2E]">
-                    {renderWatermarkOverlay()}
+                  /* VIEW 3: Authentic Sovereign Government PVC Smart Card (DigiLocker Standard) */
+                  (() => {
+                    const ocr = doc.ocrExtractedData || {};
+                    const docTypeLower = `${doc.title || ''} ${doc.category || ''} ${ocr.docType || ''}`.toLowerCase();
 
-                    {/* Notice if photo was missing from storage */}
-                    {isImage && imageError && (
-                      <div className="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 px-3 py-1.5 flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-300 shrink-0">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <AlertTriangle size={13} className="text-amber-600 shrink-0" />
-                          <span className="truncate">Original photo file missing • Sovereign Smart Card layout active</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setIsEditModalOpen(true)}
-                          className="ml-2 font-bold underline hover:text-amber-900 dark:hover:text-amber-200 cursor-pointer shrink-0 text-[10px]"
-                        >
-                          Re-upload
-                        </button>
-                      </div>
-                    )}
+                    // Dynamic official government authority branding
+                    let govOrgHindi = 'भारत सरकार';
+                    let govOrgEnglish = 'GOVERNMENT OF INDIA';
+                    let cardSubHeading = 'OFFICIAL IDENTITY CARD • पहचान पत्र';
+                    let headerGradient = 'from-[#0B2545] via-[#12396B] to-[#0A1F38]';
+                    let sealBadgeText = 'OFFICIAL ID';
 
-                    {/* Authentic Header Bar */}
-                    <div className="bg-[#112347] dark:bg-[#0c1830] text-white px-3.5 sm:px-4 py-2.5 flex items-center justify-between shadow-sm shrink-0">
-                      <div className="flex items-center gap-2">
-                        <Award size={16} className="text-amber-400 shrink-0" />
-                        <div className="flex flex-col leading-tight min-w-0">
-                          <span className="font-mono text-[9px] uppercase tracking-widest text-amber-200 font-bold truncate">
-                            {doc.category === 'Medical & Health'
-                              ? 'National Health Registry • India'
-                              : doc.category === 'Bank & Property' || doc.category === 'Property & Legal'
-                              ? 'Land & Estate Title Office • India'
-                              : 'Republic of India'}
-                          </span>
-                          <span className="text-[11px] font-semibold text-slate-200 truncate">
-                            {doc.title || 'Official Document'} / प्रमाण-पत्र
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="font-mono text-[9px] tracking-wider text-amber-300/80">
-                          Type: {doc.category?.slice(0, 3).toUpperCase() || 'DOC'}
-                        </span>
-                        <div className="font-mono text-[11px] font-bold text-white tracking-widest">IND</div>
-                      </div>
-                    </div>
+                    if (/voter|epic|election/i.test(docTypeLower)) {
+                      govOrgHindi = 'भारत निर्वाचन आयोग';
+                      govOrgEnglish = 'ELECTION COMMISSION OF INDIA';
+                      cardSubHeading = 'ELECTOR PHOTO IDENTITY CARD • मतदाता पहचान पत्र';
+                      headerGradient = 'from-[#082647] via-[#103E70] to-[#0A203A]';
+                      sealBadgeText = 'VOTER ID';
+                    } else if (/aadhaar|adhar|uidai/i.test(docTypeLower)) {
+                      govOrgHindi = 'भारतीय विशिष्ट पहचान प्राधिकरण';
+                      govOrgEnglish = 'UNIQUE IDENTIFICATION AUTHORITY OF INDIA';
+                      cardSubHeading = 'AADHAAR • मेरा आधार, मेरी पहचान';
+                      headerGradient = 'from-[#5A1616] via-[#7B2020] to-[#421010]';
+                      sealBadgeText = 'AADHAAR';
+                    } else if (/pan|income\s*tax|nsdl/i.test(docTypeLower)) {
+                      govOrgHindi = 'आयकर विभाग, भारत सरकार';
+                      govOrgEnglish = 'INCOME TAX DEPARTMENT, GOVT. OF INDIA';
+                      cardSubHeading = 'PERMANENT ACCOUNT NUMBER CARD • पैन कार्ड';
+                      headerGradient = 'from-[#0E2C48] via-[#174670] to-[#0B2136]';
+                      sealBadgeText = 'PAN CARD';
+                    } else if (/driving|driver|license|licence|parivahan|rc|vehicle/i.test(docTypeLower)) {
+                      govOrgHindi = 'परिवहन विभाग, भारत';
+                      govOrgEnglish = 'UNION OF INDIA • TRANSPORT DEPARTMENT';
+                      cardSubHeading = 'DRIVING LICENCE • वाहन चालक अनुज्ञप्ति पत्र';
+                      headerGradient = 'from-[#14372D] via-[#1E5243] to-[#0E261F]';
+                      sealBadgeText = 'DRIVING LICENCE';
+                    } else if (/health|ayushman|abha|pmjay|insurance|medical/i.test(docTypeLower)) {
+                      govOrgHindi = 'राष्ट्रीय स्वास्थ्य प्राधिकरण';
+                      govOrgEnglish = 'NATIONAL HEALTH AUTHORITY • INDIA';
+                      cardSubHeading = 'AYUSHMAN BHARAT • NATIONAL DIGITAL HEALTH ID';
+                      headerGradient = 'from-[#113B36] via-[#1B564E] to-[#0D2D29]';
+                      sealBadgeText = 'HEALTH ID';
+                    } else if (/passport/i.test(docTypeLower)) {
+                      govOrgHindi = 'विदेश मंत्रालय, भारत सरकार';
+                      govOrgEnglish = 'MINISTRY OF EXTERNAL AFFAIRS, INDIA';
+                      cardSubHeading = 'PASSPORT CITIZEN IDENTITY • पारपत्र';
+                      headerGradient = 'from-[#0C1B37] via-[#142C56] to-[#081327]';
+                      sealBadgeText = 'PASSPORT';
+                    }
 
-                    {/* Document Bio Page Visual Layout */}
-                    <div className="flex-1 bg-[#FFFDF5] dark:bg-[#181818] p-3 sm:p-4 flex flex-col justify-between relative text-slate-900 dark:text-neutral-100">
-                      <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:12px_12px]" />
+                    const cardholderName = (ocr.holderName || doc.assignedMember?.name || doc.title || 'CITIZEN').toUpperCase();
+                    const fatherOrSpouse = ocr.fatherOrSpouseName || null;
+                    const dob = ocr.dob || doc.assignedMember?.dateOfBirth || null;
+                    const docNumber = doc.documentNumber || ocr.docNumber || 'RECORD-VERIFIED';
 
-                      {/* Top Identification Row */}
-                      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 relative z-10">
-                        {/* Photo Area */}
-                        <div className="flex items-center sm:flex-col gap-2.5 sm:gap-0 shrink-0">
-                          <div className="w-18 sm:w-24 h-22 sm:h-30 rounded-xl bg-slate-200 dark:bg-[#262626] overflow-hidden shadow-sm relative border border-slate-300 dark:border-[#333] shrink-0">
-                            {isImage && fileUrl && !imageError ? (
-                              <img src={fileUrl} alt={doc.title} className="w-full h-full object-cover" />
-                            ) : doc.assignedMember?.avatar ? (
-                              <img src={doc.assignedMember.avatar} alt={doc.assignedMember?.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 dark:from-[#262626] dark:to-[#1a1a1a] text-slate-400">
-                                <User size={24} className="text-slate-400 dark:text-neutral-500" />
-                                <span className="text-[8px] font-mono mt-1 font-semibold uppercase">ID</span>
-                              </div>
-                            )}
-                            <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-gradient-to-tr from-amber-400/50 via-emerald-400/50 to-blue-500/50 backdrop-blur-[1px] flex items-center justify-center border border-white/40 shadow-xs">
-                              <Check size={9} className="text-white stroke-[3]" />
+                    // Calculate age if DOB exists
+                    let ageLabel = '';
+                    if (dob) {
+                      const birthYear = parseInt(dob.split(/[-/]/)[0], 10) > 1900
+                        ? parseInt(dob.split(/[-/]/)[0], 10)
+                        : parseInt(dob.split(/[-/]/)[2], 10);
+                      if (birthYear > 1900 && birthYear < 2030) {
+                        ageLabel = `~${new Date().getFullYear() - birthYear}y`;
+                      }
+                    }
+
+                    return (
+                      <div className="relative w-full max-w-[480px] rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-300/80 dark:border-[#26262B] bg-gradient-to-b from-white to-slate-50 dark:from-[#0D111A] dark:to-[#07090E] flex flex-col overflow-hidden select-none transition-all my-auto">
+                        {renderWatermarkOverlay()}
+
+                        {/* Top National Tricolor Security Ribbon */}
+                        <div className="h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0" />
+
+                        {/* Notice if photo was missing from storage */}
+                        {isImage && imageError && (
+                          <div className="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 px-3 py-1 flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-300 shrink-0">
+                            <div className="flex items-center gap-1.5 truncate">
+                              <AlertTriangle size={12} className="text-amber-600 shrink-0" />
+                              <span className="truncate">Photo missing • Sovereign Smart Card layout active</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setIsEditModalOpen(true)}
+                              className="ml-2 font-bold underline hover:text-amber-900 dark:hover:text-amber-200 cursor-pointer shrink-0 text-[10px]"
+                            >
+                              Re-upload
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Authentic Official Government Header */}
+                        <div className={`bg-gradient-to-r ${headerGradient} text-white px-3.5 sm:px-4 py-2.5 flex items-center justify-between shadow-sm shrink-0`}>
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {/* Ashoka Pillar / Emblem Lion Crest Icon */}
+                            <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center shrink-0 shadow-xs">
+                              <Award size={16} className="text-amber-300" />
+                            </div>
+                            <div className="flex flex-col leading-tight min-w-0">
+                              <span className="font-sans text-[10px] sm:text-[11px] font-extrabold tracking-wide text-amber-200 truncate">
+                                {govOrgHindi}
+                              </span>
+                              <span className="font-mono text-[8.5px] uppercase tracking-wider text-slate-200 font-semibold truncate">
+                                {govOrgEnglish}
+                              </span>
+                              <span className="text-[9px] text-slate-300/90 font-medium truncate mt-0.5">
+                                {cardSubHeading}
+                              </span>
                             </div>
                           </div>
-                          <span className="font-mono text-[9px] text-slate-500 dark:text-neutral-400 mt-1 uppercase tracking-tighter truncate max-w-[80px]">
-                            {doc.assignedMember?.name || 'Certified'}
-                          </span>
+
+                          <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
+                            <span className="px-1.5 py-0.5 rounded text-[8.5px] font-bold font-mono tracking-wider bg-amber-400/20 text-amber-200 border border-amber-400/30">
+                              {sealBadgeText}
+                            </span>
+                            <div className="flex items-center gap-1 font-mono text-[10px] font-bold text-white tracking-widest mt-0.5">
+                              <span>IND</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Personal Information Table Grid */}
-                        <div className="flex-1 grid grid-cols-2 gap-x-2 gap-y-1.5 text-left w-full">
-                          <div>
-                            <span className="block font-mono text-[8px] uppercase text-slate-400 dark:text-neutral-500">
-                              Holder / नाम
-                            </span>
-                            <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide truncate block">
-                              {doc.assignedMember?.name || 'Whole Family'}
-                            </span>
+                        {/* Card Body - Micro-Guilloche Background Pattern */}
+                        <div className="p-3 sm:p-4 space-y-3 relative text-slate-900 dark:text-neutral-100 bg-[#FAFAFA] dark:bg-[#0A0D14]">
+                          {/* Subtle security watermark overlay */}
+                          <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02] pointer-events-none bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:10px_10px]" />
+
+                          {/* Top Security Row: EMV Golden Smart Chip + Contactless Wave + Encrypted Badge */}
+                          <div className="flex items-center justify-between relative z-10">
+                            <div className="flex items-center gap-2.5">
+                              {/* Realistic EMV Golden Microchip */}
+                              <div className="w-10 h-7.5 sm:w-11 sm:h-8 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-[1px] shadow-xs shrink-0 border border-amber-300/80 relative overflow-hidden">
+                                <div className="w-full h-full bg-gradient-to-br from-amber-300/40 via-amber-400/30 to-amber-500/50 rounded-[4px] relative flex flex-col justify-between p-1">
+                                  <div className="w-full h-[1px] bg-amber-800/40" />
+                                  <div className="flex items-center justify-between">
+                                    <div className="w-2.5 h-[1px] bg-amber-800/50" />
+                                    <div className="w-2 h-2 rounded-full border border-amber-800/60 bg-amber-200/50" />
+                                    <div className="w-2.5 h-[1px] bg-amber-800/50" />
+                                  </div>
+                                  <div className="w-full h-[1px] bg-amber-800/40" />
+                                </div>
+                              </div>
+
+                              {/* Contactless Wave Icon */}
+                              <div className="flex items-center gap-0.5 text-slate-400 dark:text-neutral-600 select-none" title="RFID Smart Card Standard">
+                                <span className="text-[14px] leading-none rotate-90 scale-x-75">)))</span>
+                              </div>
+                            </div>
+
+                            {/* Security Hologram Pill */}
+                            <div className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#161B26] border border-slate-200 dark:border-[#222A3A] flex items-center gap-1.5 shadow-2xs">
+                              <ShieldCheck size={11} className="text-sky-600 dark:text-sky-400" />
+                              <span className="font-mono text-[9px] font-bold text-slate-700 dark:text-slate-300 tracking-tight">
+                                256-BIT ENCRYPTED
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <span className="block font-mono text-[8px] uppercase text-slate-400 dark:text-neutral-500">
-                              Doc No. / सं.
-                            </span>
-                            <span className="font-mono text-xs font-bold text-emerald-700 dark:text-[#3ECF8E] tracking-wider truncate block">
-                              {doc.documentNumber || 'UNASSIGNED'}
-                            </span>
+
+                          {/* Identity Core Row: Passport Photo + Personal Information */}
+                          <div className="flex items-start gap-2.5 sm:gap-3.5 relative z-10">
+                            {/* Passport Photo Frame (Responsive Compact Passport Size) */}
+                            <div className="flex flex-col items-center shrink-0">
+                              <div className="w-[52px] h-[66px] sm:w-[64px] sm:h-[80px] rounded-lg sm:rounded-xl bg-slate-200 dark:bg-[#181D28] overflow-hidden shadow-xs relative border border-slate-300 dark:border-[#2A344A] shrink-0">
+                                {doc.assignedMember?.avatar ? (
+                                  <img src={doc.assignedMember.avatar} alt={cardholderName} className="w-full h-full object-cover" />
+                                ) : isImage && fileUrl && !imageError ? (
+                                  <img src={fileUrl} alt={cardholderName} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 dark:from-[#1E2536] dark:to-[#121622] text-slate-400">
+                                    <User size={20} className="text-slate-400 dark:text-neutral-500" />
+                                    <span className="text-[7.5px] font-mono mt-0.5 font-semibold uppercase text-slate-500 dark:text-neutral-400">CITIZEN</span>
+                                  </div>
+                                )}
+
+                                {/* Circular Holographic Verified Seal */}
+                                <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-amber-400 via-sky-400 to-indigo-500 flex items-center justify-center border border-white dark:border-[#0C0F17] shadow-xs">
+                                  <Check size={8} className="text-white stroke-[3]" />
+                                </div>
+                              </div>
+                              <span className="text-[8px] font-bold font-mono text-emerald-700 dark:text-[#3ECF8E] mt-0.5 flex items-center gap-0.5">
+                                <Check size={9} strokeWidth={3} /> Verified
+                              </span>
+                            </div>
+
+                            {/* Personal Details Table */}
+                            <div className="flex-1 min-w-0 space-y-2 text-left">
+                              {/* Cardholder Name */}
+                              <div>
+                                <span className="block font-sans text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                                  नाम / Name
+                                </span>
+                                <span className="text-xs sm:text-sm font-extrabold text-slate-950 dark:text-white uppercase tracking-wide truncate block">
+                                  {cardholderName}
+                                </span>
+                              </div>
+
+                              {/* Father / Spouse Name */}
+                              {fatherOrSpouse && (
+                                <div>
+                                  <span className="block font-sans text-[8.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                                    पिता / पति का नाम • Father / Spouse
+                                  </span>
+                                  <span className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 truncate block">
+                                    {fatherOrSpouse}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* DOB & Expiry Side by Side */}
+                              <div className="grid grid-cols-2 gap-2 pt-0.5">
+                                <div>
+                                  <span className="block font-sans text-[8.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                                    जन्म तिथि / DOB
+                                  </span>
+                                  <span className="font-mono text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white block truncate">
+                                    {dob || 'Recorded'} {ageLabel && <span className="text-sky-600 dark:text-sky-400 text-[10px] font-semibold">({ageLabel})</span>}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="block font-sans text-[8.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
+                                    वैधता / Validity
+                                  </span>
+                                  <span className={`font-mono text-[10.5px] sm:text-[11px] font-bold block truncate ${
+                                    doc.status === 'EXPIRED' ? 'text-red-600 dark:text-red-400' : 'text-sky-600 dark:text-sky-400'
+                                  }`}>
+                                    {doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString() : 'LIFETIME'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div className="col-span-2">
-                            <span className="block font-mono text-[8px] uppercase text-slate-400 dark:text-neutral-500">
-                              Document Title
-                            </span>
-                            <span className="text-xs font-semibold text-slate-900 dark:text-neutral-200 truncate block">
-                              {doc.title}
-                            </span>
+
+                          {/* Primary Document ID Number Bar with 1-Tap Copy */}
+                          <div className="relative z-10 px-3 py-2 rounded-xl bg-slate-100 dark:bg-[#121622] border border-slate-200 dark:border-[#222A3A] flex items-center justify-between gap-2 shadow-inner">
+                            <div className="min-w-0">
+                              <span className="block text-[8px] font-bold uppercase tracking-widest text-slate-500 dark:text-neutral-400">
+                                पहचान संख्या / OFFICIAL CARD NUMBER
+                              </span>
+                              <span className="font-mono text-xs sm:text-sm font-extrabold text-slate-950 dark:text-sky-300 tracking-wider truncate block">
+                                {docNumber}
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleCopySnippet(docNumber, 'Document ID Number')}
+                              className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1E2536] hover:bg-slate-50 dark:hover:bg-[#252E42] border border-slate-200 dark:border-[#2A354A] text-slate-700 dark:text-slate-200 text-[10px] font-bold font-mono transition-all cursor-pointer flex items-center gap-1 shadow-2xs active:scale-95 shrink-0"
+                              title="Copy ID Number"
+                            >
+                              {copiedSnippet === docNumber ? (
+                                <>
+                                  <Check size={11} className="text-sky-500" strokeWidth={3} />
+                                  <span className="text-sky-600 dark:text-sky-400">COPIED</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy size={11} />
+                                  <span>COPY</span>
+                                </>
+                              )}
+                            </button>
                           </div>
-                          <div>
-                            <span className="block font-mono text-[8px] uppercase text-slate-400 dark:text-neutral-500">
-                              Category
-                            </span>
-                            <span className="text-[11px] font-medium text-slate-800 dark:text-neutral-300 truncate block">
-                              {doc.category}
-                            </span>
+                        </div>
+
+                        {/* Bottom DigiLocker QR Verification Strip (Authentic - No Fake MRZ) */}
+                        <div className="bg-slate-100 dark:bg-[#0B0E17] px-3.5 py-2 border-t border-slate-200 dark:border-[#1C2230] flex items-center justify-between text-slate-600 dark:text-neutral-400 shrink-0">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {/* Authentic DigiLocker QR Pattern Icon */}
+                            <div className="w-7 h-7 rounded bg-white dark:bg-[#141824] border border-slate-300 dark:border-[#262F44] flex items-center justify-center p-0.5 shrink-0">
+                              <QrCode size={18} className="text-slate-800 dark:text-slate-200" />
+                            </div>
+                            <div className="flex flex-col leading-tight min-w-0">
+                              <span className="font-mono text-[9px] font-bold text-slate-800 dark:text-slate-200 truncate">
+                                DIGILOCKER VERIFIED
+                              </span>
+                              <span className="font-mono text-[8px] text-slate-500 dark:text-neutral-400 truncate">
+                                SHA-256: {doc.sha256Hash ? doc.sha256Hash.substring(0, 12).toUpperCase() : 'VERIFIED'}
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <span className="block font-mono text-[8px] uppercase text-slate-400 dark:text-neutral-500">
-                              Expiry
-                            </span>
-                            <span className={`font-mono text-[11px] font-bold ${doc.status === 'EXPIRED' ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white'} block`}>
-                              {doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString() : 'LIFETIME'}
+
+                          <div className="text-right shrink-0">
+                            <span className="inline-flex items-center gap-1 font-mono text-[8.5px] font-bold text-sky-600 dark:text-sky-400">
+                              <ShieldCheck size={11} />
+                              <span>SOVEREIGN RECORD</span>
                             </span>
                           </div>
                         </div>
                       </div>
-
-                      {/* Optical Machine Readable Zone (MRZ) */}
-                      <div className="mt-2.5 pt-2 bg-slate-950 text-[#10B981] dark:text-[#3ECF8E] p-2 rounded-lg font-mono text-[9px] sm:text-[10px] leading-tight tracking-[0.15em] uppercase select-all overflow-x-auto shadow-inner border border-slate-800">
-                        <div className="whitespace-nowrap">P&lt;IND{(doc.assignedMember?.name || 'SHARMA').replace(/\s+/g, '<')}&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
-                        <div className="whitespace-nowrap">{(doc.documentNumber || 'Z4819201').replace(/[^a-zA-Z0-9]/g, '')}&lt;4IND7808142M2403112&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;06</div>
-                      </div>
-                    </div>
-
-                    {/* Card Bottom Footer */}
-                    <div className="bg-slate-100 dark:bg-[#141414] px-3 py-1.5 flex items-center justify-between text-slate-500 dark:text-neutral-400 border-t border-slate-200 dark:border-[#262626] shrink-0">
-                      <span className="font-mono text-[9px] flex items-center gap-1 text-emerald-700 dark:text-[#3ECF8E] font-semibold">
-                        <Lock size={11} />
-                        Zero-Knowledge Local Buffer
-                      </span>
-                      <span className="font-mono text-[9px]">
-                        SHA: {doc.sha256Hash ? doc.sha256Hash.substring(0, 8) : 'VERIFIED'}
-                      </span>
-                    </div>
-                  </div>
+                    );
+                  })()
                 )}
               </div>
             )}
           </div>
 
           {/* Quick Action Floating Dock at Bottom of Viewer */}
-          <div className="p-2 sm:p-2.5 bg-slate-50/90 dark:bg-[#141414]/90 border-t border-slate-100 dark:border-[#262626] flex items-center justify-between gap-1.5 sm:gap-2 shrink-0">
+          <div className="p-2 sm:p-2.5 bg-slate-50/90 dark:bg-[#182030]/90 border-t border-slate-100 dark:border-[#1E293B] flex items-center justify-between gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
               onClick={handleDownloadDocument}
               disabled={isDownloading}
-              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors cursor-pointer disabled:opacity-50"
+              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#121622] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#1E293B] transition-colors cursor-pointer disabled:opacity-50"
             >
-              {isDownloading ? <Loader2 size={13} className="animate-spin text-[#10B981]" /> : <Download size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />}
+              {isDownloading ? <Loader2 size={13} className="animate-spin text-sky-500" /> : <Download size={13} className="text-sky-500 dark:text-sky-400" />}
               <span className="hidden sm:inline">Export Copy</span>
               <span className="sm:hidden">Export</span>
             </button>
@@ -1888,26 +2081,26 @@ export default function DocumentPreviewPage() {
               type="button"
               onClick={handleWhatsAppShare}
               disabled={sharingLoading}
-              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] text-xs font-bold border border-emerald-200 dark:border-emerald-500/30 transition-colors cursor-pointer"
+              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#222c42] text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200/90 dark:border-[#1E293B] shadow-2xs transition-colors cursor-pointer"
               title="Share 24-hr view link via WhatsApp"
             >
-              <MessageCircle size={13} className="text-emerald-600 dark:text-[#3ECF8E]" />
+              <MessageCircle size={13} className="text-[#25D366]" />
               <span className="hidden sm:inline">WhatsApp</span>
               <span className="sm:hidden">WA</span>
             </button>
             <button
               type="button"
               onClick={() => handleShareSafely()}
-              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors cursor-pointer"
+              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-[#121622] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#1E293B] transition-colors cursor-pointer"
             >
-              <Share2 size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+              <Share2 size={13} className="text-sky-500 dark:text-sky-400" />
               <span className="hidden sm:inline">24h Safe Link</span>
               <span className="sm:hidden">24h Link</span>
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="hidden sm:inline-flex flex-1 items-center justify-center gap-1 px-2 py-2 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#2E2E2E] transition-colors cursor-pointer"
+              className="hidden sm:inline-flex flex-1 items-center justify-center gap-1 px-2 py-2 rounded-xl bg-white dark:bg-[#121622] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-200 text-xs font-bold border border-slate-200 dark:border-[#1E293B] transition-colors cursor-pointer"
             >
               <Printer size={13} className="text-slate-500 dark:text-neutral-400" />
               <span>Print</span>
@@ -1919,6 +2112,47 @@ export default function DocumentPreviewPage() {
         <div className={`lg:col-span-5 xl:col-span-5 h-full min-h-0 space-y-2.5 lg:overflow-y-auto lg:pr-1 custom-scrollbar ${
           mobileTab === 'DETAILS' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
         }`}>
+          {/* Top Priority Bento: Physical Paper Locator Card (Almirah / Locker Tag - #1 Family Need) */}
+          <div className="bg-amber-50/80 dark:bg-amber-500/10 rounded-2xl p-3 sm:p-3.5 border border-amber-200/90 dark:border-amber-500/30 shadow-xs space-y-2 transition-colors shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold text-base shadow-2xs border border-amber-300/50 shrink-0">
+                  🗄️
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs sm:text-sm text-amber-950 dark:text-amber-200 flex items-center gap-1.5 flex-wrap">
+                    <span>Physical Paper Locator</span>
+                    <span className="text-[10px] font-normal text-amber-800/80 dark:text-amber-400/80">(असली कागज़ कहाँ है?)</span>
+                  </h3>
+                  <p className="text-[10px] text-amber-800/80 dark:text-amber-400/80">Home almirah / Bank locker location</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenEdit}
+                className="py-1 px-2.5 rounded-lg bg-white dark:bg-[#121622] border border-amber-200 dark:border-amber-500/30 text-xs font-bold text-amber-900 dark:text-amber-300 hover:bg-amber-50 flex items-center gap-1 cursor-pointer shadow-2xs transition-all active:scale-95 shrink-0"
+              >
+                <Edit3 size={12} />
+                <span>{doc.notes ? 'Change' : '+ Add Location'}</span>
+              </button>
+            </div>
+            {doc.notes ? (
+              <div className="p-2.5 rounded-xl bg-white dark:bg-[#121622] border border-amber-200/80 dark:border-amber-500/30 text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-relaxed select-text shadow-2xs flex items-center gap-2">
+                <MapPin size={15} className="text-amber-600 shrink-0" />
+                <span>{doc.notes}</span>
+              </div>
+            ) : (
+              <div
+                onClick={handleOpenEdit}
+                className="p-2.5 rounded-xl bg-white/70 dark:bg-[#121622]/60 border border-dashed border-amber-300/80 dark:border-amber-500/30 text-center cursor-pointer hover:bg-white dark:hover:bg-[#18181B] transition-colors"
+              >
+                <p className="text-xs text-amber-900/80 dark:text-amber-300/80 font-medium">
+                  📍 Tap here to save which almirah or locker holds the original paper copy.
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Intelligence Bento 0: Smart Statutory Expiry & Official Renewal Sentinel */}
           {(() => {
             if (!doc.expiryDate) return null;
@@ -1936,13 +2170,13 @@ export default function DocumentPreviewPage() {
               ? 'from-red-500/15 via-red-500/5 to-rose-500/10 border-red-300/80 dark:border-red-500/30'
               : isExpiringSoon
               ? 'from-amber-500/15 via-orange-500/5 to-yellow-500/10 border-amber-300/80 dark:border-amber-500/30'
-              : 'from-emerald-500/10 via-teal-500/5 to-emerald-500/5 border-emerald-200/80 dark:border-[#3ECF8E]/20';
+              : 'from-sky-500/10 via-indigo-500/5 to-blue-500/5 border-sky-200/80 dark:border-sky-500/20';
 
             const statusBadgeColor = isExpired
               ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/30'
               : isExpiringSoon
               ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-500/30'
-              : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] border-emerald-200 dark:border-emerald-500/30';
+              : 'bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-500/30';
 
             return (
               <div className={`bg-gradient-to-br ${cardGradient} rounded-2xl p-3 sm:p-3.5 border shadow-xs space-y-2.5 transition-colors shrink-0`}>
@@ -1954,7 +2188,7 @@ export default function DocumentPreviewPage() {
                         ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-red-300/50'
                         : isExpiringSoon
                         ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300/50'
-                        : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] border-emerald-300/50'
+                        : 'bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 border-sky-300/50'
                     }`}>
                       <Clock size={15} />
                     </div>
@@ -1983,7 +2217,7 @@ export default function DocumentPreviewPage() {
                 </div>
 
                 {/* Expiry Banner */}
-                <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#18181B]/80 border border-slate-200/60 dark:border-[#262626] flex items-center justify-between gap-2">
+                <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#121622]/80 border border-slate-200/60 dark:border-[#1E293B] flex items-center justify-between gap-2">
                   <div>
                     <span className="text-[9px] uppercase font-bold text-slate-400 block">Validity Due Date</span>
                     <span className="font-mono font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
@@ -1992,7 +2226,7 @@ export default function DocumentPreviewPage() {
                   </div>
                   <div className="text-right">
                     <span className="text-[9px] uppercase font-bold text-slate-400 block">Official Portal</span>
-                    <span className="text-[11px] font-bold text-[#10B981] dark:text-[#3ECF8E] truncate block max-w-[140px]">
+                    <span className="text-[11px] font-bold text-sky-500 dark:text-sky-400 truncate block max-w-[140px]">
                       {renewalInfo.portalName}
                     </span>
                   </div>
@@ -2005,7 +2239,7 @@ export default function DocumentPreviewPage() {
                     href={renewalInfo.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-2 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white shadow-md shadow-sky-500/25 border border-sky-400/30 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                   >
                     <span>{renewalInfo.actionLabel}</span>
                     <ExternalLink size={13} />
@@ -2016,10 +2250,10 @@ export default function DocumentPreviewPage() {
                     <button
                       type="button"
                       onClick={() => handleWhatsAppExpiryAlert(renewalInfo)}
-                      className="py-1.5 px-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-emerald-500/30 text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="py-1.5 px-2 rounded-xl bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#222c42] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#1E293B] text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
                       title="Send pre-filled expiry reminder to family on WhatsApp"
                     >
-                      <MessageCircle size={12} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                      <MessageCircle size={12} className="text-[#25D366]" />
                       <span>WhatsApp Alert</span>
                     </button>
 
@@ -2085,7 +2319,7 @@ export default function DocumentPreviewPage() {
               : null;
 
             return (
-              <div className="bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-emerald-500/10 rounded-2xl p-3 sm:p-3.5 border border-blue-300/60 dark:border-blue-500/30 shadow-xs space-y-2.5 transition-colors shrink-0">
+              <div className="bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-sky-500/10 rounded-2xl p-3 sm:p-3.5 border border-blue-300/60 dark:border-blue-500/30 shadow-xs space-y-2.5 transition-colors shrink-0">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -2108,7 +2342,7 @@ export default function DocumentPreviewPage() {
 
                 {/* Executive Summary Takeaways (if present) */}
                 {bullets && (
-                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#18181B]/80 border border-blue-200/70 dark:border-blue-500/20 space-y-1">
+                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#121622]/80 border border-blue-200/70 dark:border-blue-500/20 space-y-1">
                     <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300">
                       <Sparkles size={11} className="text-blue-500" />
                       <span>Executive Summary (सार)</span>
@@ -2116,7 +2350,7 @@ export default function DocumentPreviewPage() {
                     <ul className="space-y-1 text-xs text-slate-800 dark:text-neutral-200">
                       {bullets.map((b, i) => (
                         <li key={i} className="flex items-start gap-1.5 leading-snug">
-                          <span className="text-[#10B981] dark:text-[#3ECF8E] font-bold text-xs shrink-0 mt-0.5">✓</span>
+                          <span className="text-sky-500 dark:text-sky-400 font-bold text-xs shrink-0 mt-0.5">✓</span>
                           <span>{b}</span>
                         </li>
                       ))}
@@ -2127,7 +2361,7 @@ export default function DocumentPreviewPage() {
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {/* Cardholder Legal Name */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-blue-200/50 dark:border-[#262626] flex items-center justify-between">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-blue-200/50 dark:border-[#1E293B] flex items-center justify-between">
                     <div className="min-w-0 pr-1">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Cardholder / धारक का नाम</span>
                       <span className="font-bold text-slate-900 dark:text-white truncate block text-[13px]">
@@ -2138,16 +2372,16 @@ export default function DocumentPreviewPage() {
                       <button
                         type="button"
                         onClick={() => handleCopySnippet(holder, 'Cardholder Name')}
-                        className="p-1 rounded bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 text-slate-700 dark:text-neutral-300 cursor-pointer shrink-0"
+                        className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-[#1E293B] cursor-pointer shrink-0 transition-all active:scale-95"
                         title="Copy Holder Name"
                       >
-                        {copiedSnippet === holder ? <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={12} />}
+                        {copiedSnippet === holder ? <Check size={12} className="text-sky-500 dark:text-sky-400" /> : <Copy size={12} />}
                       </button>
                     )}
                   </div>
 
                   {/* Father / Husband / Spouse Name */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-blue-200/50 dark:border-[#262626] flex items-center justify-between">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-blue-200/50 dark:border-[#1E293B] flex items-center justify-between">
                     <div className="min-w-0 pr-1">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Father / पिता या पति</span>
                       <span className="font-semibold text-slate-900 dark:text-white truncate block text-[13px]">
@@ -2158,19 +2392,19 @@ export default function DocumentPreviewPage() {
                       <button
                         type="button"
                         onClick={() => handleCopySnippet(fatherOrSpouse, "Father's Name")}
-                        className="p-1 rounded bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 text-slate-700 dark:text-neutral-300 cursor-pointer shrink-0"
+                        className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-[#1E293B] cursor-pointer shrink-0 transition-all active:scale-95"
                         title="Copy Father's Name"
                       >
-                        {copiedSnippet === fatherOrSpouse ? <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={12} />}
+                        {copiedSnippet === fatherOrSpouse ? <Check size={12} className="text-sky-500 dark:text-sky-400" /> : <Copy size={12} />}
                       </button>
                     )}
                   </div>
 
                   {/* Document ID Number */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-blue-200/50 dark:border-[#262626] flex items-center justify-between">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-blue-200/50 dark:border-[#1E293B] flex items-center justify-between">
                     <div className="min-w-0 pr-1">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">ID / Card Number</span>
-                      <span className="font-mono font-bold text-emerald-700 dark:text-[#3ECF8E] truncate block text-[13px]">
+                      <span className="font-mono font-bold text-sky-600 dark:text-sky-400 truncate block text-[13px]">
                         {docNum || 'N/A'}
                       </span>
                     </div>
@@ -2178,20 +2412,20 @@ export default function DocumentPreviewPage() {
                       <button
                         type="button"
                         onClick={() => handleCopySnippet(docNum, 'ID Number')}
-                        className="p-1 rounded bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 text-slate-700 dark:text-neutral-300 cursor-pointer shrink-0"
+                        className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-[#1E293B] cursor-pointer shrink-0 transition-all active:scale-95"
                         title="Copy ID Number"
                       >
-                        {copiedSnippet === docNum ? <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={12} />}
+                        {copiedSnippet === docNum ? <Check size={12} className="text-sky-500 dark:text-sky-400" /> : <Copy size={12} />}
                       </button>
                     )}
                   </div>
 
                   {/* Date of Birth & Age */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-blue-200/50 dark:border-[#262626]">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-blue-200/50 dark:border-[#1E293B]">
                     <div className="flex items-center justify-between">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Date of Birth (DOB)</span>
                       {ageStr && (
-                        <span className="text-[9px] font-bold text-emerald-600 dark:text-[#3ECF8E]">
+                        <span className="text-[9px] font-bold text-sky-600 dark:text-sky-400">
                           {ageStr}
                         </span>
                       )}
@@ -2203,18 +2437,22 @@ export default function DocumentPreviewPage() {
                 </div>
 
                 {/* Assigned Member Footer */}
-                <div className="p-2 rounded-xl bg-white/70 dark:bg-black/30 border border-blue-200/40 dark:border-[#262626] flex items-center justify-between text-xs">
+                <div className="p-2 rounded-xl bg-white/70 dark:bg-black/30 border border-blue-200/40 dark:border-[#1E293B] flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <span className="text-slate-500 dark:text-slate-400 text-[11px]">Vault Folder:</span>
                     <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
                       <span>{doc.assignedMember?.name || 'Whole Family'}</span>
-                      <CheckCircle2 size={12} className="text-emerald-500" />
+                      <CheckCircle2 size={12} className="text-sky-500" />
                     </span>
                   </div>
                   {doc.assignedMember?._id && (
                     <button
                       type="button"
-                      onClick={() => navigate(`/vault/members/${doc.assignedMember._id}`)}
+                      onClick={() => {
+    const mId = (doc.assignedMember?._id || doc.assignedMemberId?._id || doc.assignedMemberId || doc.memberId)?.toString();
+    if (mId) navigate(`/family/${mId}`);
+    else navigate('/family');
+  }}
                       className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <span>Member Profile</span>
@@ -2250,7 +2488,7 @@ export default function DocumentPreviewPage() {
               : null;
 
             return (
-              <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-emerald-500/10 rounded-2xl p-3 sm:p-3.5 border border-amber-300/60 dark:border-amber-500/30 shadow-xs space-y-2.5 transition-colors shrink-0">
+              <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-orange-500/10 rounded-2xl p-3 sm:p-3.5 border border-amber-300/60 dark:border-amber-500/30 shadow-xs space-y-2.5 transition-colors shrink-0">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -2273,7 +2511,7 @@ export default function DocumentPreviewPage() {
 
                 {/* 3-Bullet Executive Summary (if present) */}
                 {bullets && (
-                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#18181B]/80 border border-amber-200/70 dark:border-amber-500/20 space-y-1">
+                  <div className="p-2.5 rounded-xl bg-white/80 dark:bg-[#121622]/80 border border-amber-200/70 dark:border-amber-500/20 space-y-1">
                     <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
                       <Sparkles size={11} className="text-amber-500" />
                       <span>Executive Summary (सार)</span>
@@ -2281,7 +2519,7 @@ export default function DocumentPreviewPage() {
                     <ul className="space-y-1 text-xs text-slate-800 dark:text-neutral-200">
                       {bullets.map((b, i) => (
                         <li key={i} className="flex items-start gap-1.5 leading-snug">
-                          <span className="text-[#10B981] dark:text-[#3ECF8E] font-bold text-xs shrink-0 mt-0.5">✓</span>
+                          <span className="text-sky-500 dark:text-sky-400 font-bold text-xs shrink-0 mt-0.5">✓</span>
                           <span>{b}</span>
                         </li>
                       ))}
@@ -2292,10 +2530,10 @@ export default function DocumentPreviewPage() {
                 {/* Key Deed Metrics Grid */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {/* Khasra / Khatauni Number */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626] flex items-center justify-between">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-amber-200/50 dark:border-[#1E293B] flex items-center justify-between">
                     <div className="min-w-0 pr-1">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Khasra / खसरा नं.</span>
-                      <span className="font-mono font-bold text-emerald-700 dark:text-[#3ECF8E] truncate block text-[13px]">
+                      <span className="font-mono font-bold text-amber-800 dark:text-amber-300 truncate block text-[13px]">
                         {prop.khasraNumber || doc.documentNumber || 'N/A'}
                       </span>
                     </div>
@@ -2303,16 +2541,16 @@ export default function DocumentPreviewPage() {
                       <button
                         type="button"
                         onClick={() => handleCopySnippet(prop.khasraNumber || doc.documentNumber, 'Khasra Number')}
-                        className="p-1 rounded bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 text-slate-700 dark:text-neutral-300 cursor-pointer shrink-0"
+                        className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-[#1E293B] cursor-pointer shrink-0 transition-all active:scale-95"
                         title="Copy Khasra Number"
                       >
-                        {copiedSnippet === (prop.khasraNumber || doc.documentNumber) ? <Check size={12} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={12} />}
+                        {copiedSnippet === (prop.khasraNumber || doc.documentNumber) ? <Check size={12} className="text-sky-500 dark:text-sky-400" /> : <Copy size={12} />}
                       </button>
                     )}
                   </div>
 
                   {/* Rakba / Area */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626]">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-amber-200/50 dark:border-[#1E293B]">
                     <span className="text-[9px] uppercase font-bold text-slate-400 block">Rakba / Area (रकबा)</span>
                     <span className="font-semibold text-slate-900 dark:text-white truncate block text-[13px]">
                       {prop.area || 'As per deed'}
@@ -2320,7 +2558,7 @@ export default function DocumentPreviewPage() {
                   </div>
 
                   {/* Owner (Krayakarta) */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626]">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-amber-200/50 dark:border-[#1E293B]">
                     <span className="text-[9px] uppercase font-bold text-slate-400 block">Owner / क्रेता (खरीदार)</span>
                     <span className="font-semibold text-slate-900 dark:text-white truncate block">
                       {prop.ownerName || doc.assignedMember?.name || 'Self / Family'}
@@ -2328,7 +2566,7 @@ export default function DocumentPreviewPage() {
                   </div>
 
                   {/* Seller (Vikreta) */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626]">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-amber-200/50 dark:border-[#1E293B]">
                     <span className="text-[9px] uppercase font-bold text-slate-400 block">Seller / विक्रेता</span>
                     <span className="font-semibold text-slate-900 dark:text-white truncate block">
                       {prop.sellerName || 'Recorded in deed'}
@@ -2337,7 +2575,7 @@ export default function DocumentPreviewPage() {
 
                   {/* Plot / Flat No */}
                   {prop.plotOrHouseNumber && (
-                    <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626]">
+                    <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-amber-200/50 dark:border-[#1E293B]">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Plot / Flat No.</span>
                       <span className="font-semibold text-slate-900 dark:text-white truncate block">
                         {prop.plotOrHouseNumber}
@@ -2347,7 +2585,7 @@ export default function DocumentPreviewPage() {
 
                   {/* Locality / Mauza */}
                   {prop.locality && (
-                    <div className={`p-2 rounded-xl bg-white dark:bg-[#18181B] border border-amber-200/50 dark:border-[#262626] ${!prop.plotOrHouseNumber ? 'col-span-2' : ''}`}>
+                    <div className={`p-2 rounded-xl bg-white dark:bg-[#121622] border border-amber-200/50 dark:border-[#1E293B] ${!prop.plotOrHouseNumber ? 'col-span-2' : ''}`}>
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Mauza / Locality (मौजा)</span>
                       <span className="font-semibold text-slate-900 dark:text-white truncate block">
                         {prop.locality}
@@ -2358,7 +2596,7 @@ export default function DocumentPreviewPage() {
 
                 {/* 4-Direction Chauhaddi (चौहद्दी) Compass Map Widget */}
                 {hasChauhaddi && (
-                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#141414] border border-amber-200/70 dark:border-[#262626] space-y-2">
+                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#182030] border border-amber-200/70 dark:border-[#1E293B] space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1">
                         <MapPin size={11} className="text-amber-600 dark:text-amber-400" />
@@ -2371,7 +2609,7 @@ export default function DocumentPreviewPage() {
                       {/* North (Uttar) */}
                       <div className="p-1.5 rounded-lg bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20">
                         <div className="flex items-center gap-1 font-bold text-[10px] text-amber-900 dark:text-amber-300">
-                          <ArrowUp size={11} className="text-emerald-600 dark:text-[#3ECF8E]" />
+                          <ArrowUp size={11} className="text-amber-600 dark:text-amber-400" />
                           <span>Uttar (उत्तर / North)</span>
                         </div>
                         <div className="text-slate-800 dark:text-neutral-200 font-medium pl-4 truncate" title={c.north}>
@@ -2382,7 +2620,7 @@ export default function DocumentPreviewPage() {
                       {/* East (Purav) */}
                       <div className="p-1.5 rounded-lg bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20">
                         <div className="flex items-center gap-1 font-bold text-[10px] text-amber-900 dark:text-amber-300">
-                          <ArrowRight size={11} className="text-emerald-600 dark:text-[#3ECF8E]" />
+                          <ArrowRight size={11} className="text-amber-600 dark:text-amber-400" />
                           <span>Purav (पूरब / East)</span>
                         </div>
                         <div className="text-slate-800 dark:text-neutral-200 font-medium pl-4 truncate" title={c.east}>
@@ -2393,7 +2631,7 @@ export default function DocumentPreviewPage() {
                       {/* West (Paschim) */}
                       <div className="p-1.5 rounded-lg bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20">
                         <div className="flex items-center gap-1 font-bold text-[10px] text-amber-900 dark:text-amber-300">
-                          <ArrowLeft size={11} className="text-emerald-600 dark:text-[#3ECF8E]" />
+                          <ArrowLeft size={11} className="text-amber-600 dark:text-amber-400" />
                           <span>Paschim (पश्चिम / West)</span>
                         </div>
                         <div className="text-slate-800 dark:text-neutral-200 font-medium pl-4 truncate" title={c.west}>
@@ -2404,7 +2642,7 @@ export default function DocumentPreviewPage() {
                       {/* South (Dakshin) */}
                       <div className="p-1.5 rounded-lg bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20">
                         <div className="flex items-center gap-1 font-bold text-[10px] text-amber-900 dark:text-amber-300">
-                          <ArrowDown size={11} className="text-emerald-600 dark:text-[#3ECF8E]" />
+                          <ArrowDown size={11} className="text-amber-600 dark:text-amber-400" />
                           <span>Dakshin (दक्षिण / South)</span>
                         </div>
                         <div className="text-slate-800 dark:text-neutral-200 font-medium pl-4 truncate" title={c.south}>
@@ -2436,11 +2674,11 @@ export default function DocumentPreviewPage() {
             const caNum = util.consumerNumber || doc.documentNumber || '';
 
             return (
-              <div className="bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 rounded-2xl p-3 sm:p-3.5 border border-emerald-300/60 dark:border-[#3ECF8E]/30 shadow-xs space-y-2.5 transition-colors shrink-0">
+              <div className="bg-gradient-to-br from-sky-500/10 via-indigo-500/5 to-blue-500/10 rounded-2xl p-3 sm:p-3.5 border border-sky-300/60 dark:border-sky-500/30 shadow-xs space-y-2.5 transition-colors shrink-0">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] flex items-center justify-center font-bold text-xs border border-emerald-300/50 dark:border-[#3ECF8E]/30">
+                    <div className="w-7 h-7 rounded-lg bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-xs border border-sky-300/50 dark:border-sky-500/30">
                       <Zap size={15} />
                     </div>
                     <div>
@@ -2452,13 +2690,13 @@ export default function DocumentPreviewPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-900 dark:text-[#3ECF8E] text-[10px] font-bold border border-emerald-300/60 dark:border-[#3ECF8E]/30">
+                  <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-900 dark:text-sky-300 text-[10px] font-bold border border-sky-300/60 dark:border-sky-500/30">
                     {util.serviceProvider || 'BBPS / Bill'}
                   </span>
                 </div>
 
                 {/* Hero Consumer / CA Number Banner */}
-                <div className="p-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-emerald-200/60 dark:border-[#262626] flex items-center justify-between shadow-2xs">
+                <div className="p-2.5 rounded-xl bg-white dark:bg-[#121622] border border-sky-200/60 dark:border-[#1E293B] flex items-center justify-between shadow-2xs">
                   <div className="min-w-0 pr-2">
                     <span className="text-[9px] uppercase font-bold text-slate-400 block">
                       Consumer / CA Number (उपभोक्ता संख्या)
@@ -2471,7 +2709,7 @@ export default function DocumentPreviewPage() {
                     <button
                       type="button"
                       onClick={() => handleCopySnippet(caNum, 'Consumer / CA Number')}
-                      className="px-2.5 py-1.5 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 text-white dark:text-[#121212] font-bold text-xs flex items-center gap-1 shadow-xs transition-colors cursor-pointer shrink-0"
+                      className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white shadow-md shadow-sky-500/25 border border-sky-400/30 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer shrink-0 active:scale-95"
                       title="1-Tap Copy CA Number"
                     >
                       {copiedSnippet === caNum ? <Check size={13} /> : <Copy size={13} />}
@@ -2483,15 +2721,15 @@ export default function DocumentPreviewPage() {
                 {/* Bill Amount & Due Date Strip */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {/* Bill Amount */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/60 dark:border-[#262626]">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-slate-200/60 dark:border-[#1E293B]">
                     <span className="text-[9px] uppercase font-bold text-slate-400 block">Bill Amount (देय राशि)</span>
-                    <span className="font-extrabold text-emerald-700 dark:text-[#3ECF8E] text-sm truncate block">
+                    <span className="font-extrabold text-sky-600 dark:text-sky-400 text-sm truncate block">
                       {util.billAmount || '₹--'}
                     </span>
                   </div>
 
                   {/* Due Date & Pill */}
-                  <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/60 dark:border-[#262626]">
+                  <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-slate-200/60 dark:border-[#1E293B]">
                     <div className="flex items-center justify-between">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Due Date (अंतिम तिथि)</span>
                       {dueStatus && (
@@ -2507,7 +2745,7 @@ export default function DocumentPreviewPage() {
 
                   {/* Meter No. */}
                   {util.meterNumber && (
-                    <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/60 dark:border-[#262626]">
+                    <div className="p-2 rounded-xl bg-white dark:bg-[#121622] border border-slate-200/60 dark:border-[#1E293B]">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Meter No. (मीटर सं.)</span>
                       <span className="font-mono text-xs font-semibold text-slate-800 dark:text-neutral-200 truncate block">
                         {util.meterNumber}
@@ -2516,7 +2754,7 @@ export default function DocumentPreviewPage() {
                   )}
 
                   {/* Registered Name */}
-                  <div className={`p-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200/60 dark:border-[#262626] ${!util.meterNumber ? 'col-span-2' : ''}`}>
+                  <div className={`p-2 rounded-xl bg-white dark:bg-[#121622] border border-slate-200/60 dark:border-[#1E293B] ${!util.meterNumber ? 'col-span-2' : ''}`}>
                     <span className="text-[9px] uppercase font-bold text-slate-400 block">Consumer Name (नाम)</span>
                     <span className="text-xs font-semibold text-slate-800 dark:text-neutral-200 truncate block">
                       {util.registeredName || doc.assignedMember?.name || 'Self'}
@@ -2560,7 +2798,7 @@ export default function DocumentPreviewPage() {
                   )}
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#18181B] border border-rose-200/60 dark:border-rose-500/20 space-y-1.5 text-xs">
+                <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#121622] border border-rose-200/60 dark:border-rose-500/20 space-y-1.5 text-xs">
                   {med.doctorName && (
                     <div>
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Doctor</span>
@@ -2574,15 +2812,15 @@ export default function DocumentPreviewPage() {
                     </div>
                   )}
                   {med.medicines && (
-                    <div className="pt-1 border-t border-slate-100 dark:border-[#262626]">
+                    <div className="pt-1 border-t border-slate-100 dark:border-[#1E293B]">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] uppercase font-bold text-emerald-700 dark:text-[#3ECF8E] block">
+                        <span className="text-[9px] uppercase font-bold text-sky-600 dark:text-sky-400 block">
                           Prescribed Medicines (दवाई)
                         </span>
                         <button
                           type="button"
                           onClick={() => handleCopySnippet(med.medicines, 'Prescribed Medicines')}
-                          className="text-[10px] text-emerald-700 dark:text-[#3ECF8E] font-bold hover:underline flex items-center gap-0.5 cursor-pointer"
+                          className="text-[10px] text-sky-600 dark:text-sky-400 font-bold hover:underline flex items-center gap-0.5 cursor-pointer"
                         >
                           {copiedSnippet === med.medicines ? <Check size={10} /> : <Copy size={10} />}
                           <span>{copiedSnippet === med.medicines ? 'Copied' : 'Copy'}</span>
@@ -2631,7 +2869,7 @@ export default function DocumentPreviewPage() {
                   )}
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#18181B] border border-indigo-200/60 dark:border-indigo-500/20 grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#121622] border border-indigo-200/60 dark:border-indigo-500/20 grid grid-cols-2 gap-2 text-xs">
                   {acad.institution && (
                     <div className="col-span-2">
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Institution / University</span>
@@ -2653,7 +2891,7 @@ export default function DocumentPreviewPage() {
                   {acad.marksOrGrade && (
                     <div>
                       <span className="text-[9px] uppercase font-bold text-slate-400 block">Marks / CGPA</span>
-                      <span className="font-bold text-emerald-700 dark:text-[#3ECF8E] block">{acad.marksOrGrade}</span>
+                      <span className="font-bold text-sky-600 dark:text-sky-400 block">{acad.marksOrGrade}</span>
                     </div>
                   )}
                   {acad.certificateTitle && (
@@ -2667,42 +2905,8 @@ export default function DocumentPreviewPage() {
             );
           })()}
 
-          {/* Bento 1: Physical Paper Locator Card (Almirah / Locker Tag) */}
-          <div className="bg-amber-50/70 dark:bg-amber-500/10 rounded-2xl p-3 sm:p-3.5 border border-amber-200/80 dark:border-amber-500/25 shadow-xs space-y-1.5 transition-colors shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
-                  🗄️
-                </div>
-                <div>
-                  <h3 className="font-bold text-xs text-amber-950 dark:text-amber-200">
-                    Physical Paper Locator
-                  </h3>
-                  <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80">Home almirah / bank locker</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleOpenEdit}
-                className="text-[11px] font-bold text-amber-800 dark:text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <Edit3 size={11} />
-                <span>{doc.notes ? 'Edit' : '+ Add'}</span>
-              </button>
-            </div>
-            {doc.notes ? (
-              <div className="p-2 rounded-xl bg-white/90 dark:bg-[#18181B] border border-amber-200/60 dark:border-amber-500/20 text-xs font-semibold text-slate-800 dark:text-neutral-200 leading-snug select-text">
-                {doc.notes}
-              </div>
-            ) : (
-              <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 italic">
-                No physical location saved. Tap "+ Add" to record which almirah holds the original copy.
-              </p>
-            )}
-          </div>
-
           {/* Bento 2: 4-Digit MPIN Protection Card with PhonePe/GPay Style Toggle Switch */}
-          <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-2 transition-colors shrink-0">
+          <div className="bg-white dark:bg-[#121622] rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 dark:border-[#1E293B] shadow-xs space-y-2 transition-colors shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
@@ -2721,7 +2925,7 @@ export default function DocumentPreviewPage() {
               {/* Modern PhonePe / iOS Style Animated Toggle Switch */}
               <div className="flex items-center gap-2">
                 {isTogglingMpin ? (
-                  <Loader2 size={15} className="animate-spin text-[#10B981] dark:text-[#3ECF8E]" />
+                  <Loader2 size={15} className="animate-spin text-sky-500 dark:text-sky-400" />
                 ) : (
                   <button
                     type="button"
@@ -2731,7 +2935,7 @@ export default function DocumentPreviewPage() {
                     onClick={handleToggleMpinProtection}
                     className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                       (doc.isMpinProtected || doc.isSensitive)
-                        ? 'bg-[#10B981] dark:bg-[#3ECF8E]'
+                        ? 'bg-sky-500'
                         : 'bg-slate-200 dark:bg-[#333]'
                     }`}
                     title={(doc.isMpinProtected || doc.isSensitive) ? 'Click to turn OFF MPIN lock' : 'Click to turn ON MPIN lock'}
@@ -2747,7 +2951,7 @@ export default function DocumentPreviewPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-[#262626] text-[11px]">
+            <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-[#1E293B] text-[11px]">
               <span className="font-semibold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
                 <span className={`w-1.5 h-1.5 rounded-full ${
                   (doc.isMpinProtected || doc.isSensitive) ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'
@@ -2755,7 +2959,7 @@ export default function DocumentPreviewPage() {
                 <span>{(doc.isMpinProtected || doc.isSensitive) ? 'Status: 🔒 Locked with MPIN' : 'Status: 🔓 Standard Access'}</span>
               </span>
               {mpinFeedback && (
-                <span className="text-[10px] font-bold text-[#10B981] dark:text-[#3ECF8E] animate-fadeIn">
+                <span className="text-[10px] font-bold text-sky-500 dark:text-sky-400 animate-fadeIn">
                   {mpinFeedback}
                 </span>
               )}
@@ -2763,18 +2967,18 @@ export default function DocumentPreviewPage() {
           </div>
 
           {/* Bento 3: Who Can View Dropdown & Access Control */}
-          <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-2 transition-colors shrink-0">
+          <div className="bg-white dark:bg-[#121622] rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 dark:border-[#1E293B] shadow-xs space-y-2 transition-colors shrink-0">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
-                <Eye size={14} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                <Eye size={14} className="text-sky-500 dark:text-sky-400" />
                 <span>Who Can View</span>
               </h3>
               <div className="flex items-center gap-1.5">
                 {savingPermissions && (
-                  <span className="text-[10px] text-[#10B981] dark:text-[#3ECF8E] font-bold animate-pulse">Saving...</span>
+                  <span className="text-[10px] text-sky-500 dark:text-sky-400 font-bold animate-pulse">Saving...</span>
                 )}
                 {permissionFeedback && (
-                  <span className="text-[10px] text-emerald-600 dark:text-[#3ECF8E] font-bold bg-emerald-50 dark:bg-[#3ECF8E]/10 px-1.5 py-0.2 rounded-full border border-emerald-200 dark:border-[#3ECF8E]/20">
+                  <span className="text-[10px] text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.2 rounded-full border border-sky-200 dark:border-sky-500/20">
                     {permissionFeedback}
                   </span>
                 )}
@@ -2786,12 +2990,12 @@ export default function DocumentPreviewPage() {
                 type="button"
                 disabled={savingPermissions}
                 onClick={() => setIsWhoCanViewOpen(!isWhoCanViewOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] hover:bg-slate-100 dark:hover:bg-[#1A1A1A] text-left transition-all cursor-pointer shadow-2xs"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] hover:bg-slate-100 dark:hover:bg-[#1A1A1A] text-left transition-all cursor-pointer shadow-2xs"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <div className={`p-1 rounded-md shrink-0 ${
                     getDropdownSummary().isAll
-                      ? 'bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E]'
+                      ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400'
                       : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400'
                   }`}>
                     {getDropdownSummary().isAll ? <Users size={13} /> : <Eye size={13} />}
@@ -2810,17 +3014,17 @@ export default function DocumentPreviewPage() {
 
               {/* Dropdown Menu */}
               {isWhoCanViewOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white dark:bg-[#1C1C1C] rounded-2xl border border-slate-200 dark:border-[#2E2E2E] shadow-2xl p-2 space-y-1 animate-fadeIn max-h-56 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white dark:bg-[#121622] rounded-2xl border border-slate-200 dark:border-[#1E293B] shadow-2xl p-2 space-y-1 animate-fadeIn max-h-56 overflow-y-auto">
                   <div
                     onClick={handleSelectAll}
                     className={`flex items-center justify-between p-2 rounded-xl transition-all cursor-pointer ${
                       whoCanViewList.includes('ALL')
-                        ? 'bg-emerald-50/80 dark:bg-[#3ECF8E]/15 text-emerald-950 dark:text-white'
+                        ? 'bg-sky-50/80 dark:bg-sky-500/15 text-sky-950 dark:text-white'
                         : 'hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] flex items-center justify-center shrink-0">
+                      <div className="w-6 h-6 rounded-lg bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                         <Users size={13} />
                       </div>
                       <div>
@@ -2832,11 +3036,11 @@ export default function DocumentPreviewPage() {
                       type="checkbox"
                       checked={whoCanViewList.includes('ALL')}
                       readOnly
-                      className="w-3.5 h-3.5 rounded text-[#10B981] dark:text-[#3ECF8E] border-slate-300 focus:ring-[#3ECF8E] cursor-pointer"
+                      className="w-3.5 h-3.5 rounded text-sky-500 border-slate-300 focus:ring-sky-500 cursor-pointer"
                     />
                   </div>
 
-                  <div className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500 border-t border-slate-100 dark:border-[#262626] mt-1 pt-1.5">
+                  <div className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500 border-t border-slate-100 dark:border-[#1E293B] mt-1 pt-1.5">
                     Or check specific members:
                   </div>
 
@@ -2849,7 +3053,7 @@ export default function DocumentPreviewPage() {
                         onClick={() => handleToggleMember(mId)}
                         className={`flex items-center justify-between p-2 rounded-xl transition-all cursor-pointer ${
                           isChecked
-                            ? 'bg-emerald-50/80 dark:bg-[#3ECF8E]/15 text-emerald-950 dark:text-white'
+                            ? 'bg-sky-50/80 dark:bg-sky-500/15 text-sky-950 dark:text-white'
                             : 'hover:bg-slate-50 dark:hover:bg-[#262626] text-slate-700 dark:text-neutral-300'
                         }`}
                       >
@@ -2870,7 +3074,7 @@ export default function DocumentPreviewPage() {
                           type="checkbox"
                           checked={isChecked}
                           readOnly
-                          className="w-3.5 h-3.5 rounded text-[#10B981] dark:text-[#3ECF8E] border-slate-300 focus:ring-[#3ECF8E] cursor-pointer shrink-0"
+                          className="w-3.5 h-3.5 rounded text-sky-500 border-slate-300 focus:ring-sky-500 cursor-pointer shrink-0"
                         />
                       </div>
                     );
@@ -2881,42 +3085,42 @@ export default function DocumentPreviewPage() {
           </div>
 
           {/* Bento 4: Document Metadata & Cryptographic Proof Card */}
-          <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-2 transition-colors shrink-0">
+          <div className="bg-white dark:bg-[#121622] rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 dark:border-[#1E293B] shadow-xs space-y-2 transition-colors shrink-0">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Info size={14} className="text-slate-500 dark:text-neutral-400" />
                 <span>Document Details</span>
               </h3>
-              <span className="px-2 py-0.2 rounded-full bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] font-mono text-[9px] font-bold">
+              <span className="px-2 py-0.2 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 font-mono text-[9px] font-bold">
                 AES-256 GCM
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-              <div className="border-b border-slate-100 dark:border-[#262626] pb-1">
+              <div className="border-b border-slate-100 dark:border-[#1E293B] pb-1">
                 <span className="text-[10px] text-slate-400 block">Category:</span>
                 <span className="font-bold text-slate-900 dark:text-white truncate block">{doc.category}</span>
               </div>
-              <div className="border-b border-slate-100 dark:border-[#262626] pb-1">
+              <div className="border-b border-slate-100 dark:border-[#1E293B] pb-1">
                 <span className="text-[10px] text-slate-400 block">Expiry:</span>
                 <span className="font-semibold text-slate-800 dark:text-neutral-300 truncate block">
                   {doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString() : 'No Expiry'}
                 </span>
               </div>
-              <div className="border-b border-slate-100 dark:border-[#262626] pb-1">
+              <div className="border-b border-slate-100 dark:border-[#1E293B] pb-1">
                 <span className="text-[10px] text-slate-400 block">Uploaded On:</span>
                 <span className="font-semibold text-slate-800 dark:text-neutral-300 block">
                   {new Date(doc.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              <div className="border-b border-slate-100 dark:border-[#262626] pb-1">
+              <div className="border-b border-slate-100 dark:border-[#1E293B] pb-1">
                 <span className="text-[10px] text-slate-400 block">Storage:</span>
-                <span className="font-bold text-emerald-700 dark:text-[#3ECF8E] block">Encrypted</span>
+                <span className="font-bold text-sky-600 dark:text-sky-400 block">Encrypted</span>
               </div>
             </div>
 
             {/* SHA-256 Hash Digest */}
-            <div className="pt-1 flex items-center justify-between gap-1 text-[10px] font-mono text-slate-400 dark:text-neutral-500 bg-slate-50 dark:bg-[#141414] p-1.5 rounded-lg border border-slate-100 dark:border-[#262626]">
+            <div className="pt-1 flex items-center justify-between gap-1 text-[10px] font-mono text-slate-400 dark:text-neutral-500 bg-slate-50 dark:bg-[#182030] p-1.5 rounded-lg border border-slate-100 dark:border-[#1E293B]">
               <span className="truncate">
                 SHA: {doc.sha256Hash ? `${doc.sha256Hash.substring(0, 16)}...` : '3af2f380295bbe...'}
               </span>
@@ -2926,7 +3130,7 @@ export default function DocumentPreviewPage() {
                   navigator.clipboard.writeText(doc.sha256Hash || '3af2f380295bbe97769e402ec71dad29fe46610f01d4d57d6a4b060474560f57');
                   toast.success('SHA-256 hash copied to clipboard');
                 }}
-                className="text-emerald-700 dark:text-[#3ECF8E] font-bold hover:underline shrink-0"
+                className="text-sky-600 dark:text-sky-400 font-bold hover:underline shrink-0"
               >
                 Copy
               </button>
@@ -2934,10 +3138,10 @@ export default function DocumentPreviewPage() {
           </div>
 
           {/* Bento 5: Recent Activity (Section 65B Audit Trail) */}
-          <div className="bg-white dark:bg-[#1C1C1C] rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 dark:border-[#262626] shadow-xs space-y-2 transition-colors shrink-0">
+          <div className="bg-white dark:bg-[#121622] rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 dark:border-[#1E293B] shadow-xs space-y-2 transition-colors shrink-0">
             <h3 className="font-bold text-xs text-slate-900 dark:text-white flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <Clock size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                <Clock size={13} className="text-sky-500 dark:text-sky-400" />
                 <span>Recent Activity</span>
               </span>
               <span className="text-[10px] font-mono text-slate-400 dark:text-neutral-500">{auditTrail.length} events</span>
@@ -2948,8 +3152,8 @@ export default function DocumentPreviewPage() {
                 <div className="text-slate-400 dark:text-neutral-500 py-2 text-center text-[11px]">No activity recorded yet</div>
               ) : (
                 auditTrail.slice(0, 3).map((log) => (
-                  <div key={log._id} className="flex items-start gap-2 pb-1.5 border-b border-slate-100 dark:border-[#262626] last:border-0 last:pb-0 text-[11px]">
-                    <CheckCircle2 size={13} className="text-[#10B981] dark:text-[#3ECF8E] mt-0.5 shrink-0" />
+                  <div key={log._id} className="flex items-start gap-2 pb-1.5 border-b border-slate-100 dark:border-[#1E293B] last:border-0 last:pb-0 text-[11px]">
+                    <CheckCircle2 size={13} className="text-sky-500 dark:text-sky-400 mt-0.5 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="font-medium text-slate-800 dark:text-neutral-200 truncate">
                         {log.performerName || 'User'} — {log.action === 'UPLOAD' ? 'Uploaded document' : log.action === 'VIEW' ? 'Viewed document' : log.action}
@@ -2973,7 +3177,7 @@ export default function DocumentPreviewPage() {
           onClick={() => setShareModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
+            className="relative w-full max-w-md bg-white dark:bg-[#121622] border-t md:border border-slate-200 dark:border-[#1E293B] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile Drag Handle Pill */}
@@ -2982,9 +3186,9 @@ export default function DocumentPreviewPage() {
             </div>
 
             {/* Fixed Header */}
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#27272A] shrink-0">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#1E293B] shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center border border-emerald-100 dark:border-[#3ECF8E]/20 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-100 dark:border-sky-500/20 shrink-0">
                   <Share2 size={18} />
                 </div>
                 <div>
@@ -3024,8 +3228,8 @@ export default function DocumentPreviewPage() {
                       disabled={sharingLoading}
                       className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                         shareDuration === tier.value
-                          ? 'border-[#10B981] dark:border-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] font-bold shadow-xs'
-                          : 'border-slate-200 dark:border-[#27272A] bg-slate-50 dark:bg-[#141414] text-slate-700 dark:text-neutral-300 hover:border-slate-300'
+                          ? 'border-sky-500 dark:border-sky-400 bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 font-bold shadow-xs'
+                          : 'border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-slate-700 dark:text-neutral-300 hover:border-slate-300'
                       }`}
                     >
                       <div className="text-xs font-bold">{tier.label}</div>
@@ -3036,8 +3240,8 @@ export default function DocumentPreviewPage() {
               </div>
 
               {/* Exact Auto-Expiry Timestamp Preview */}
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#27272A] text-xs flex items-center gap-2.5">
-                <Clock size={16} className="text-[#10B981] dark:text-[#3ECF8E] shrink-0" />
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#182030] border border-slate-200/80 dark:border-[#1E293B] text-xs flex items-center gap-2.5">
+                <Clock size={16} className="text-sky-500 dark:text-sky-400 shrink-0" />
                 <div className="min-w-0">
                   <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block">Auto-Expiry Timestamp:</span>
                   <span className="text-xs font-semibold text-slate-800 dark:text-neutral-200">
@@ -3053,23 +3257,23 @@ export default function DocumentPreviewPage() {
                 </div>
               </div>
 
-              <div className="p-3.5 bg-slate-50 dark:bg-[#141414] rounded-2xl border border-slate-200 dark:border-[#27272A] space-y-2">
+              <div className="p-3.5 bg-slate-50 dark:bg-[#182030] rounded-2xl border border-slate-200 dark:border-[#1E293B] space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-neutral-500 tracking-wider">
                     Secure View-Only Link:
                   </span>
                   {sharingLoading && (
-                    <span className="text-[10px] text-[#10B981] dark:text-[#3ECF8E] font-bold animate-pulse">Generating...</span>
+                    <span className="text-[10px] text-sky-500 dark:text-sky-400 font-bold animate-pulse">Generating...</span>
                   )}
                 </div>
-                <div className="font-mono text-xs text-slate-800 dark:text-neutral-200 break-all select-all bg-white dark:bg-[#18181B] p-2.5 rounded-xl border border-slate-200 dark:border-[#27272A]">
+                <div className="font-mono text-xs text-slate-800 dark:text-neutral-200 break-all select-all bg-white dark:bg-[#121622] p-2.5 rounded-xl border border-slate-200 dark:border-[#1E293B]">
                   {shareLink}
                 </div>
               </div>
             </div>
 
             {/* Fixed Footer */}
-            <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-between gap-2.5 shrink-0 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+            <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#182030] border-t border-slate-100 dark:border-[#1E293B] flex flex-col-reverse sm:flex-row items-center sm:justify-between gap-2.5 shrink-0 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
               <div>
                 {doc.shareLink?.token && (
                   <button
@@ -3084,13 +3288,13 @@ export default function DocumentPreviewPage() {
               <div className="flex flex-col-reverse sm:flex-row items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => setShareModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs cursor-pointer text-center"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs cursor-pointer text-center"
                 >
                   Close
                 </button>
                 <button
                   onClick={handleCopyShareLink}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer text-center"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white shadow-md shadow-sky-500/25 font-bold text-xs shadow-md shadow-sky-500/20 transition-all cursor-pointer text-center"
                 >
                   {copiedShareLink ? <Check size={14} /> : <Copy size={14} />}
                   <span>{copiedShareLink ? 'Link Copied!' : 'Copy Link'}</span>
@@ -3109,7 +3313,7 @@ export default function DocumentPreviewPage() {
           onClick={() => setIsDeleteModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-md bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
+            className="relative w-full max-w-md bg-white dark:bg-[#121622] border-t md:border border-slate-200 dark:border-[#1E293B] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile Drag Handle Pill */}
@@ -3118,7 +3322,7 @@ export default function DocumentPreviewPage() {
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#27272A] shrink-0">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#1E293B] shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40 flex items-center justify-center shrink-0">
                   <Trash2 size={20} />
@@ -3150,11 +3354,11 @@ export default function DocumentPreviewPage() {
             </div>
 
             {/* Fixed Footer */}
-            <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
+            <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#182030] border-t border-slate-100 dark:border-[#1E293B] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>
@@ -3191,16 +3395,16 @@ export default function DocumentPreviewPage() {
           onClick={() => setIsEditModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-lg bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden transition-all"
+            className="relative w-full max-w-lg bg-white dark:bg-[#121622] border-t md:border border-slate-200 dark:border-[#1E293B] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="md:hidden flex justify-center pt-2.5 pb-1 shrink-0">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-neutral-600" />
             </div>
 
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#27272A] shrink-0">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#1E293B] shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center border border-emerald-100 dark:border-[#3ECF8E]/20 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-100 dark:border-sky-500/20 shrink-0">
                   <Edit3 size={18} />
                 </div>
                 <div>
@@ -3221,7 +3425,7 @@ export default function DocumentPreviewPage() {
               {/* Document Title */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
-                  <FileText size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                  <FileText size={13} className="text-sky-500 dark:text-sky-400" />
                   <span>Document Title</span>
                 </label>
                 <input
@@ -3230,7 +3434,7 @@ export default function DocumentPreviewPage() {
                   value={editFormData.title}
                   onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
                   placeholder="e.g. Papa's Aadhaar Card, Honda City RC"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
                 />
               </div>
 
@@ -3238,13 +3442,13 @@ export default function DocumentPreviewPage() {
                 {/* Assigned Member */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
-                    <Users size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                    <Users size={13} className="text-sky-500 dark:text-sky-400" />
                     <span>Assigned Family Member</span>
                   </label>
                   <select
                     value={editFormData.assignedMemberId}
                     onChange={(e) => setEditFormData({ ...editFormData, assignedMemberId: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
                   >
                     <option value="">Whole Family / Common Document</option>
                     {members.map((m) => (
@@ -3258,13 +3462,13 @@ export default function DocumentPreviewPage() {
                 {/* Category */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
-                    <Box size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                    <Box size={13} className="text-sky-500 dark:text-sky-400" />
                     <span>Category</span>
                   </label>
                   <select
                     value={editFormData.category}
                     onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
                   >
                     <option value="ID Cards">ID Cards (Aadhaar, PAN, Voter ID, Passport)</option>
                     <option value="Medical & Health">Medical & Health (Insurance, Reports, Prescriptions)</option>
@@ -3281,7 +3485,7 @@ export default function DocumentPreviewPage() {
               {/* Document Number */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
-                  <Hash size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                  <Hash size={13} className="text-sky-500 dark:text-sky-400" />
                   <span>Document ID Number</span>
                 </label>
                 <input
@@ -3289,7 +3493,7 @@ export default function DocumentPreviewPage() {
                   value={editFormData.documentNumber}
                   onChange={(e) => setEditFormData({ ...editFormData, documentNumber: e.target.value })}
                   placeholder="e.g. 5489 1234 9876 / ABCDE1234F"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
                 />
               </div>
 
@@ -3298,7 +3502,7 @@ export default function DocumentPreviewPage() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
-                      <Calendar size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                      <Calendar size={13} className="text-sky-500 dark:text-sky-400" />
                       <span>Issue Date (Optional)</span>
                     </label>
                     {editFormData.issueDate && (
@@ -3315,7 +3519,7 @@ export default function DocumentPreviewPage() {
                     type="date"
                     value={editFormData.issueDate}
                     onChange={(e) => setEditFormData({ ...editFormData, issueDate: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
                   />
                 </div>
 
@@ -3323,7 +3527,7 @@ export default function DocumentPreviewPage() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center gap-1.5">
-                      <Clock size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                      <Clock size={13} className="text-sky-500 dark:text-sky-400" />
                       <span>Expiry Date (Optional)</span>
                     </label>
                     {editFormData.expiryDate && (
@@ -3340,13 +3544,13 @@ export default function DocumentPreviewPage() {
                     type="date"
                     value={editFormData.expiryDate}
                     onChange={(e) => setEditFormData({ ...editFormData, expiryDate: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
                   />
                 </div>
               </div>
 
               {/* Security MPIN Toggle */}
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#141414] border border-slate-200 dark:border-[#2E2E2E] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#182030] border border-slate-200 dark:border-[#1E293B] flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                     editFormData.isMpinProtected
@@ -3364,7 +3568,7 @@ export default function DocumentPreviewPage() {
                   type="button"
                   onClick={() => setEditFormData({ ...editFormData, isMpinProtected: !editFormData.isMpinProtected })}
                   className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${
-                    editFormData.isMpinProtected ? 'bg-[#10B981] dark:bg-[#3ECF8E]' : 'bg-slate-300 dark:bg-slate-700'
+                    editFormData.isMpinProtected ? 'bg-sky-500' : 'bg-slate-300 dark:bg-slate-700'
                   }`}
                 >
                   <span
@@ -3380,14 +3584,14 @@ export default function DocumentPreviewPage() {
                 <label className="text-xs font-bold text-slate-700 dark:text-neutral-300 flex items-center justify-between">
                   <span>Replace Scan / Document File (Optional)</span>
                   {replacementFile && (
-                    <span className="text-[10px] text-emerald-600 dark:text-[#3ECF8E] font-bold">New file chosen</span>
+                    <span className="text-[10px] text-sky-600 dark:text-sky-400 font-bold">New file chosen</span>
                   )}
                 </label>
-                <div className="p-2.5 rounded-xl border border-dashed border-slate-300 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs flex items-center justify-between gap-2">
+                <div className="p-2.5 rounded-xl border border-dashed border-slate-300 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-xs flex items-center justify-between gap-2">
                   <span className="text-slate-500 dark:text-neutral-400 truncate max-w-[200px] text-[11px]">
                     {replacementFile ? replacementFile.name : `Current: ${doc?.originalFileName || 'Uploaded file'}`}
                   </span>
-                  <label className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#262626] border border-slate-200 dark:border-[#333] text-slate-700 dark:text-neutral-200 font-bold text-[11px] hover:bg-slate-50 dark:hover:bg-[#333] cursor-pointer shrink-0">
+                  <label className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#262626] border border-slate-200 dark:border-[#1E293B] text-slate-700 dark:text-neutral-200 font-bold text-[11px] hover:bg-slate-50 dark:hover:bg-[#333] cursor-pointer shrink-0">
                     <span>{replacementFile ? 'Change' : 'Choose New File'}</span>
                     <input
                       type="file"
@@ -3414,25 +3618,25 @@ export default function DocumentPreviewPage() {
                   value={editFormData.notes}
                   onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
                   placeholder="e.g. Master Bedroom Godrej Almirah, Top Locker, Blue Plastic Folder #2"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#141414] text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] dark:focus:border-[#3ECF8E]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#182030] text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
                 />
                 <p className="text-[10px] text-slate-400 dark:text-neutral-500">
                   Section 65B compliant audit trail will record this modification.
                 </p>
               </div>
 
-              <div className="px-1 pt-2 pb-1 flex justify-end gap-2 border-t border-slate-100 dark:border-[#27272A] pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
+              <div className="px-1 pt-2 pb-1 flex justify-end gap-2 border-t border-slate-100 dark:border-[#1E293B] pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white shadow-md shadow-sky-500/25 border border-sky-400/30 font-bold text-xs transition-all cursor-pointer active:scale-95"
                 >
                   {savingEdit ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                   <span>{savingEdit ? 'Saving...' : 'Save Changes'}</span>
@@ -3444,48 +3648,56 @@ export default function DocumentPreviewPage() {
         document.body
       )}
 
-      {/* Mobile Sticky Bottom Action Bar with iPhone 11 & Mobile S (320px) Safe Area Support */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-md border-t border-slate-200/80 dark:border-[#27272A] p-2 sm:p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg">
-        <div className="flex items-center gap-1.5 max-w-lg mx-auto">
-          <button
-            type="button"
-            onClick={handleOpenEdit}
-            className="flex-1 py-2.5 px-1 rounded-xl bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 dark:hover:bg-[#333] text-slate-800 dark:text-neutral-200 font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
-          >
-            <Edit3 size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
-            <span className="truncate">Edit</span>
-          </button>
-          {doc.documentNumber && (
-            <button
-              type="button"
-              onClick={handleCopyNumber}
-              className="flex-1 py-2.5 px-1 rounded-xl bg-slate-100 dark:bg-[#262626] hover:bg-slate-200 dark:hover:bg-[#333] text-slate-800 dark:text-neutral-200 font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
-            >
-              {copiedNumber ? <Check size={13} className="text-[#10B981] dark:text-[#3ECF8E]" /> : <Copy size={13} />}
-              <span className="truncate">{copiedNumber ? 'Copied' : 'Copy ID'}</span>
-            </button>
-          )}
+      {/* Mobile Sticky Bottom Action Bar with iPhone & Mobile Safe Area Support */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#121622]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-[#1E293B] p-2.5 sm:p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl">
+        <div className="flex items-center gap-2 max-w-lg mx-auto">
+          {/* WhatsApp Share - Primary for Indian Families */}
           <button
             type="button"
             onClick={handleWhatsAppShare}
             disabled={sharingLoading}
-            className="flex-1 py-2.5 px-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs flex items-center justify-center gap-1 border border-emerald-200 dark:border-emerald-500/30 transition-colors cursor-pointer"
+            className="flex-1 py-3 px-2 rounded-xl bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#222c42] text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200/90 dark:border-[#1E293B] shadow-2xs transition-all cursor-pointer active:scale-95"
             title="Share on WhatsApp"
           >
-            <MessageCircle size={14} className="text-emerald-600 dark:text-[#3ECF8E]" />
+            <MessageCircle size={16} className="text-[#25D366] shrink-0" />
             <span className="truncate">WhatsApp</span>
           </button>
+
+          {/* Download Original / Smart Card */}
           <button
             type="button"
             onClick={handleDownloadDocument}
             disabled={isDownloading}
-            className="flex-1 py-2.5 px-1 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            className="flex-1 py-3 px-2 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white shadow-md shadow-sky-500/25 border border-sky-400/30 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            title="Download document image or Smart Card"
           >
-            {isDownloading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
-            <span className="truncate">{isDownloading ? 'Downloading...' : 'Download'}</span>
+            {isDownloading ? <Loader2 size={16} className="animate-spin shrink-0" /> : <Download size={16} className="shrink-0" />}
+            <span className="truncate">{isDownloading ? 'Saving...' : 'Download'}</span>
+          </button>
+
+          {/* 24h Safe Expiring Share Link */}
+          <button
+            type="button"
+            onClick={() => handleShareSafely()}
+            className="flex-1 py-3 px-2 rounded-xl bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#222c42] text-slate-800 dark:text-neutral-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200/90 dark:border-[#1E293B] shadow-2xs transition-all cursor-pointer active:scale-95"
+            title="Generate Safe Share Link"
+          >
+            <Share2 size={15} className="text-sky-500 dark:text-sky-400 shrink-0" />
+            <span className="truncate">Safe Link</span>
+          </button>
+
+          {/* Quick Edit Details & Almari Notes */}
+          <button
+            type="button"
+            onClick={handleOpenEdit}
+            className="py-3 px-3 rounded-xl bg-slate-100 dark:bg-[#182030] hover:bg-slate-200 dark:hover:bg-[#222c42] text-slate-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center transition-all cursor-pointer active:scale-95 border border-slate-200/90 dark:border-[#1E293B] shadow-2xs"
+            title="Edit details or Almari location"
+          >
+            <Edit3 size={15} />
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 }

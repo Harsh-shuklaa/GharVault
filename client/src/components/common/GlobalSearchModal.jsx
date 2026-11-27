@@ -240,8 +240,8 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
               onClick={() => setQuery(chip.query)}
               className={`px-2.5 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                 query.toLowerCase() === chip.query.toLowerCase()
-                  ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-2xs'
-                  : 'bg-slate-100 dark:bg-[#222226] text-slate-600 dark:text-neutral-300 hover:bg-slate-200 dark:hover:bg-[#28282E]'
+                  ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-xs border border-sky-400/30'
+                  : 'bg-slate-100 dark:bg-[#182030] text-slate-600 dark:text-neutral-300 hover:bg-slate-200 dark:hover:bg-[#202b40] border border-slate-200/90 dark:border-[#1E293B]'
               }`}
             >
               {chip.label}

@@ -320,7 +320,7 @@ export default function SettingsPage() {
                 onClick={() => switchTab(tab.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shrink-0 transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-sm shadow-[#3ECF8E]/25'
+                    ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-md shadow-sky-500/20 border border-sky-400/30'
                     : 'bg-white dark:bg-[#1C1C1C] border border-slate-200/80 dark:border-[#262626] text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -461,7 +461,7 @@ export default function SettingsPage() {
                       `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name || user?.name || 'User')}&background=3ECF8E&color=121212`
                     }
                     alt={formData.name || user?.name}
-                    className="w-16 h-16 rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-xs"
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-xs"
                   />
                   {isUploadingAvatar && (
                     <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center">
@@ -633,7 +633,7 @@ export default function SettingsPage() {
                   <button
                     type="submit"
                     disabled={isSavingProfile}
-                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
                   >
                     {isSavingProfile ? (
                       <>
@@ -743,7 +743,7 @@ export default function SettingsPage() {
                           <button
                             type="submit"
                             disabled={isSavingFamilyName || !familyNameInput.trim()}
-                            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-[#3ECF8E]/25 disabled:opacity-50"
+                            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-sky-500/25 border border-sky-400/30 active:scale-95 disabled:opacity-50"
                           >
                             {isSavingFamilyName ? (
                               <>
@@ -797,7 +797,7 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={handleCopyCode}
-                      className="px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-800 dark:text-sky-400 border border-slate-200/90 dark:border-[#1E293B] font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-2xs"
                     >
                       {copiedCode ? <Check size={14} /> : <Copy size={14} />}
                       <span>{copiedCode ? 'Copied!' : 'Copy Invite Code'}</span>
@@ -855,7 +855,7 @@ export default function SettingsPage() {
                     <button
                       type="submit"
                       disabled={isSavingMpin || newMpin.length !== 4}
-                      className="px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs transition-colors cursor-pointer disabled:opacity-50 shadow-sm"
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs transition-all cursor-pointer disabled:opacity-50 shadow-md shadow-sky-500/25 border border-sky-400/30 active:scale-95"
                     >
                       {isSavingMpin ? 'Updating...' : 'Set New MPIN'}
                     </button>
@@ -1163,7 +1163,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={handleDownloadBackup}
                   disabled={downloadingBackup}
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm shadow-[#3ECF8E]/25 disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-sky-500/25 border border-sky-400/30 active:scale-95 disabled:opacity-50"
                 >
                   <Download size={15} />
                   <span>{downloadingBackup ? 'Generating Backup...' : 'Download Vault Backup (JSON)'}</span>
@@ -1210,7 +1210,7 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={triggerNativeInstall}
-                      className="px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-[#3ECF8E]/25 transition-all shrink-0 active:scale-95"
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all shrink-0 active:scale-95"
                     >
                       <Download size={15} />
                       <span>Install on This Phone</span>
@@ -1255,7 +1255,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={requestPushPermission}
                         disabled={pushLoading}
-                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-emerald-600 dark:bg-[#3ECF8E] dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer active:scale-95"
                       >
                         <Bell size={14} />
                         <span>{pushLoading ? 'Connecting...' : 'Allow Notifications'}</span>

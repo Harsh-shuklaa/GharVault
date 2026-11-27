@@ -86,7 +86,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
+        className="relative w-full max-w-2xl bg-white dark:bg-[#182030] border-t md:border border-slate-200 dark:border-[#1E293B] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Handle Pill */}
@@ -144,7 +144,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                 return (
                   <div
                     key={memberKey}
-                    className="p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#27272A] hover:border-red-400 dark:hover:border-red-500/40 transition-colors space-y-3"
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-[#121622] border border-slate-200/80 dark:border-[#1E293B] hover:border-red-400 dark:hover:border-red-500/40 transition-colors space-y-3"
                   >
                     <div className="flex items-center justify-between gap-3 min-w-0">
                       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -155,7 +155,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                             `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'Member')}&background=3ECF8E&color=121212`
                           }
                           alt={member.name}
-                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover ring-2 ring-white dark:ring-[#27272A] shadow-xs shrink-0"
+                          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover ring-2 ring-white dark:ring-[#27272A] shadow-xs shrink-0"
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
@@ -170,7 +170,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                               <div className="flex items-center gap-1.5 shrink-0">
                                 <a
                                   href={`tel:${member.phone}`}
-                                  className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 px-2 py-0.5 rounded font-bold transition-colors"
+                                  className="inline-flex items-center gap-1 text-[10px] text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-500/15 hover:bg-sky-100 dark:hover:bg-sky-500/25 px-2 py-0.5 rounded-lg border border-sky-300/60 dark:border-sky-500/30 font-bold transition-all active:scale-95"
                                   title="Call phone number"
                                 >
                                   <Phone size={10} />
@@ -184,7 +184,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                                       `${member.name}'s phone number copied!`
                                     )
                                   }
-                                  className="text-[11px] text-[#10B981] dark:text-[#3ECF8E] hover:underline font-semibold cursor-pointer"
+                                  className="text-[11px] text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
                                 >
                                   {copiedKey === memberKey + '-phone' ? 'Copied' : 'Copy'}
                                 </button>
@@ -204,8 +204,8 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                     </div>
 
                     {/* Medical Insurance & Emergency Contact Line */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-200/70 dark:border-[#27272A] text-xs">
-                      <div className="bg-white dark:bg-[#18181B] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#27272A]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-200/70 dark:border-[#1E293B] text-xs">
+                      <div className="bg-white dark:bg-[#182030] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#1E293B]">
                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block mb-0.5">
                           Health Insurance / Policy #
                         </span>
@@ -220,7 +220,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                                   'Policy number copied!'
                                 )
                               }
-                              className="text-[11px] text-[#10B981] dark:text-[#3ECF8E] hover:underline font-semibold ml-2 shrink-0 cursor-pointer"
+                              className="text-[11px] text-sky-600 dark:text-sky-400 hover:underline font-semibold ml-2 shrink-0 cursor-pointer"
                             >
                               {copiedKey === memberKey + '-insurance' ? 'Copied' : 'Copy'}
                             </button>
@@ -228,7 +228,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                         </div>
                       </div>
 
-                      <div className="bg-white dark:bg-[#18181B] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#27272A]">
+                      <div className="bg-white dark:bg-[#182030] p-2.5 rounded-xl border border-slate-200/60 dark:border-[#1E293B]">
                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 block mb-0.5">
                           Emergency Contact Phone
                         </span>
@@ -237,7 +237,7 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
                           {member.emergencyContactPhone && (
                             <a
                               href={`tel:${member.emergencyContactPhone}`}
-                              className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-[#3ECF8E] bg-emerald-50 dark:bg-[#3ECF8E]/10 px-2 py-0.5 rounded font-bold hover:bg-emerald-100"
+                              className="inline-flex items-center gap-1 text-[10px] text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-500/15 hover:bg-sky-100 dark:hover:bg-sky-500/25 px-2 py-0.5 rounded-lg border border-sky-300/60 dark:border-sky-500/30 font-bold transition-all active:scale-95"
                             >
                               <Phone size={10} />
                               <span>Call</span>
@@ -266,20 +266,20 @@ export default function EmergencyCardModal({ isOpen, onClose }) {
         </div>
 
         {/* Fixed Footer with One-Tap Copy All */}
-        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
+        <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#121622] border-t border-slate-100 dark:border-[#1E293B] flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
           <span className="text-xs text-slate-500 dark:text-neutral-400 hidden sm:inline">
             Keep readily accessible during hospital admission.
           </span>
           <div className="flex flex-col-reverse sm:flex-row items-center gap-2 w-full sm:w-auto">
             <button
               onClick={onClose}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl border border-slate-300 dark:border-[#27272A] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl border border-slate-300 dark:border-[#1E293B] text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-[#27272A] font-bold text-xs transition-colors cursor-pointer text-center"
             >
               Close
             </button>
             <button
               onClick={copyAllSummary}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer text-center"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-red-500/25 border border-red-500/30 cursor-pointer text-center active:scale-95"
             >
               {copiedKey === 'all' ? <Check size={14} /> : <Copy size={14} />}
               <span>{copiedKey === 'all' ? 'Copied All Directives' : 'Copy All Emergency Details'}</span>

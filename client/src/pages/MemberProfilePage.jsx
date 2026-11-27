@@ -207,8 +207,8 @@ export default function MemberProfilePage() {
         type: 'vehicle',
         label: text.includes('driving') || text.includes('license') ? 'Driving License' : 'Vehicle RC',
         strip: 'from-emerald-600 via-teal-600 to-emerald-700',
-        tagStyle: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-[#3ECF8E] border-emerald-200/80 dark:border-[#3ECF8E]/30',
-        iconBoxBg: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-[#3ECF8E] border-emerald-200/80 dark:border-[#3ECF8E]/30',
+        tagStyle: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-sky-400 border-emerald-200/80 dark:border-sky-500/30',
+        iconBoxBg: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-sky-400 border-emerald-200/80 dark:border-sky-500/30',
         badgeEmoji: '🚗',
       };
     }
@@ -226,8 +226,8 @@ export default function MemberProfilePage() {
       type: 'general',
       label: doc.category || 'Document',
       strip: 'from-[#10B981] to-[#3ECF8E]',
-      tagStyle: 'bg-slate-100 dark:bg-[#202024] text-slate-700 dark:text-neutral-300 border-slate-200 dark:border-[#2E2E32]',
-      iconBoxBg: 'bg-emerald-100/70 dark:bg-[#3ECF8E]/15 text-emerald-700 dark:text-[#3ECF8E] border-emerald-200/60 dark:border-[#3ECF8E]/25',
+      tagStyle: 'bg-slate-100 dark:bg-[#182030] text-slate-700 dark:text-neutral-300 border-slate-200 dark:border-[#1E293B]',
+      iconBoxBg: 'bg-emerald-100/70 dark:bg-sky-500/15 text-emerald-700 dark:text-sky-400 border-emerald-200/60 dark:border-sky-500/30',
       badgeEmoji: '📑',
     };
   };
@@ -313,13 +313,13 @@ export default function MemberProfilePage() {
   if (!member) {
     return (
       <div className="max-w-xl mx-auto py-16 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-[#1E1E1E] flex items-center justify-center mx-auto text-slate-400 dark:text-neutral-500">
+        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-[#121622] flex items-center justify-center mx-auto text-slate-400 dark:text-neutral-500">
           <AlertCircle className="w-8 h-8" />
         </div>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Family Member Not Found</h2>
         <Link
           to="/family"
-          className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-[#3ECF8E] font-bold hover:underline"
+          className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-sky-400 font-bold hover:underline"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Family Directory</span>
@@ -348,7 +348,7 @@ export default function MemberProfilePage() {
       demographicBadge = {
         label: 'Adult Member',
         icon: '🧑',
-        style: 'bg-slate-100 dark:bg-[#262626] text-slate-700 dark:text-neutral-300 border-slate-200 dark:border-[#333]',
+        style: 'bg-slate-100 dark:bg-[#182030] text-slate-700 dark:text-neutral-300 border-slate-200 dark:border-[#1E293B]',
       };
     }
   }
@@ -627,12 +627,18 @@ export default function MemberProfilePage() {
   });
 
   return (
-    <div className="max-w-[1380px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="relative min-h-[calc(100vh-4rem)] bg-[#F8FAFC] dark:bg-[#090A0F] text-slate-900 dark:text-[#F8FAFC] transition-colors">
+      {/* Background Texture & Ambient Top Glow matching Document Preview */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.03] dark:opacity-[0.06] text-slate-900 dark:text-white"
+        aria-hidden="true"
+      />
+      <div className="relative z-10 max-w-[1380px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Top Breadcrumb & Back Link */}
       <div className="flex items-center justify-between gap-4">
         <Link
           to="/family"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-[#3ECF8E] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-neutral-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Family Directory</span>
@@ -644,9 +650,9 @@ export default function MemberProfilePage() {
       </div>
 
       {/* ================= HERO CARD: DIGITAL FAMILY PASSPORT ================= */}
-      <div className="relative bg-white dark:bg-[#18181B] rounded-3xl border border-slate-200/80 dark:border-[#262626] p-5 sm:p-7 shadow-sm transition-colors overflow-hidden">
+      <div className="relative bg-white dark:bg-[#121622] rounded-3xl border border-slate-200/80 dark:border-[#1E293B] p-5 sm:p-7 shadow-sm transition-colors overflow-hidden">
         {/* Subtle decorative accent gradient */}
-        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-emerald-500 via-[#3ECF8E] to-teal-400" />
+        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600" />
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-1">
           {/* Left Info: Avatar + Details */}
@@ -658,18 +664,18 @@ export default function MemberProfilePage() {
                   `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}`
                 }
                 alt={member.name}
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl object-cover ring-4 ring-slate-100 dark:ring-[#262626] shadow-md"
+                className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl object-cover ring-3 sm:ring-4 ring-slate-100 dark:ring-[#1E293B] shadow-md"
               />
               {isVaultAdmin ? (
                 <span
-                  className="absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center ring-2 ring-white dark:ring-[#18181B] shadow-sm"
+                  className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-amber-500 text-white flex items-center justify-center ring-2 ring-white dark:ring-[#121622] shadow-sm"
                   title="Head of Family Vault"
                 >
-                  <Crown size={15} />
+                  <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
                 </span>
               ) : (
                 <span
-                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center ring-2 ring-white dark:ring-[#18181B] shadow-2xs"
+                  className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#10B981] dark:bg-sky-500 text-white dark:text-[#121212] flex items-center justify-center ring-1.5 ring-white dark:ring-[#121622] shadow-2xs"
                   title="Active Member"
                 >
                   <UserCheck size={11} strokeWidth={3} />
@@ -693,8 +699,8 @@ export default function MemberProfilePage() {
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider shrink-0 ${
                       member.role === 'ADMIN'
-                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-[#3ECF8E] border border-emerald-200 dark:border-emerald-800/40'
-                        : 'bg-slate-100 dark:bg-[#262626] text-slate-700 dark:text-neutral-300'
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-sky-400 border border-emerald-200 dark:border-emerald-800/40'
+                        : 'bg-slate-100 dark:bg-[#182030] text-slate-700 dark:text-neutral-300'
                     }`}
                   >
                     {member.role === 'ADMIN' ? 'Vault Admin' : 'Family Member'}
@@ -729,7 +735,7 @@ export default function MemberProfilePage() {
                   <>
                     <span>•</span>
                     <span className="flex items-center gap-1">
-                      <Calendar size={13} className="text-[#10B981] dark:text-[#3ECF8E]" />
+                      <Calendar size={13} className="text-sky-600 dark:text-sky-400" />
                       <span>
                         DOB: {new Date(member.dateOfBirth).toLocaleDateString()}{' '}
                         {age !== null && <strong className="text-slate-800 dark:text-neutral-200">({age} yrs)</strong>}
@@ -752,7 +758,7 @@ export default function MemberProfilePage() {
                 {member.phone && (
                   <a
                     href={`tel:${member.phone}`}
-                    className="flex items-center gap-1.5 font-mono text-slate-700 dark:text-neutral-300 hover:text-emerald-600 dark:hover:text-[#3ECF8E] transition-colors"
+                    className="flex items-center gap-1.5 font-mono text-slate-700 dark:text-neutral-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500 shrink-0" />
                     <span>{member.phone}</span>
@@ -764,7 +770,7 @@ export default function MemberProfilePage() {
                     href={getWhatsAppUrl(member.phone, member.name)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-[#3ECF8E] font-bold text-[11px] transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-50 dark:bg-sky-500/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-700 dark:text-sky-400 font-bold text-[11px] transition-colors"
                     title="Send WhatsApp Message"
                   >
                     <MessageCircle size={13} />
@@ -790,9 +796,9 @@ export default function MemberProfilePage() {
             <button
               type="button"
               onClick={() => setIsEditModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#262626] bg-white dark:bg-[#141414] hover:bg-slate-50 dark:hover:bg-[#202024] text-slate-700 dark:text-neutral-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#1E293B] bg-white dark:bg-[#0B0F19] hover:bg-slate-50 dark:hover:bg-[#202024] text-slate-700 dark:text-neutral-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
             >
-              <Edit3 className="w-3.5 h-3.5 text-[#10B981] dark:text-[#3ECF8E]" />
+              <Edit3 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
               <span>Edit</span>
             </button>
 
@@ -800,7 +806,7 @@ export default function MemberProfilePage() {
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="px-3 py-2 rounded-xl border border-red-200/80 dark:border-red-900/40 bg-white dark:bg-[#141414] hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-2 rounded-xl border border-red-200/80 dark:border-red-900/40 bg-white dark:bg-[#0B0F19] hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                 title={isSelf ? 'Leave Family Vault' : 'Remove Member'}
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -810,7 +816,7 @@ export default function MemberProfilePage() {
 
             <Link
               to={`/vault/upload?member=${member._id}`}
-              className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] dark:bg-[#3ECF8E] dark:hover:bg-[#34b27b] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>+ Upload Doc</span>
@@ -822,7 +828,7 @@ export default function MemberProfilePage() {
       {/* ================= 4 COMPACT OVERVIEW METRICS ================= */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Metric 1: Total Docs */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#262626] shadow-2xs transition-colors flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200/80 dark:border-[#1E293B] shadow-2xs transition-colors flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
               Assigned Docs
@@ -831,13 +837,13 @@ export default function MemberProfilePage() {
               {assignedDocs.length}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-sky-500/10 text-emerald-600 dark:text-sky-400 flex items-center justify-center">
             <FolderOpen size={18} />
           </div>
         </div>
 
         {/* Metric 2: Total Storage */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#262626] shadow-2xs transition-colors flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200/80 dark:border-[#1E293B] shadow-2xs transition-colors flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
               Vault Storage
@@ -852,7 +858,7 @@ export default function MemberProfilePage() {
         </div>
 
         {/* Metric 3: MPIN Protected */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#262626] shadow-2xs transition-colors flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200/80 dark:border-[#1E293B] shadow-2xs transition-colors flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
               MPIN Locked
@@ -867,7 +873,7 @@ export default function MemberProfilePage() {
         </div>
 
         {/* Metric 4: Expiring Soon */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-slate-200/80 dark:border-[#262626] shadow-2xs transition-colors flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#121622] border border-slate-200/80 dark:border-[#1E293B] shadow-2xs transition-colors flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
               Expiring Soon
@@ -876,21 +882,21 @@ export default function MemberProfilePage() {
               {expiringDocsCount}
             </div>
           </div>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${expiringDocsCount > 0 ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-slate-100 dark:bg-[#262626] text-slate-400'}`}>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${expiringDocsCount > 0 ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-slate-100 dark:bg-[#182030] text-slate-400'}`}>
             <Clock size={18} />
           </div>
         </div>
       </div>
 
       {/* ================= SMART INDIAN KYC & READINESS CHECKLIST ================= */}
-      <div className="bg-white dark:bg-[#18181B] rounded-3xl border border-slate-200/80 dark:border-[#262626] p-5 sm:p-6 shadow-sm space-y-4 transition-colors">
+      <div className="bg-white dark:bg-[#121622] rounded-3xl border border-slate-200/80 dark:border-[#1E293B] p-5 sm:p-6 shadow-sm space-y-4 transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
                 Essential KYC & Paperwork Checklist
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-sky-500/10 text-emerald-700 dark:text-sky-400">
                 {kycPercentage}% Ready
               </span>
             </div>
@@ -899,11 +905,11 @@ export default function MemberProfilePage() {
             </p>
           </div>
 
-          <div className="w-full sm:w-48 bg-slate-100 dark:bg-[#262626] h-2.5 rounded-full overflow-hidden shrink-0">
+          <div className="w-full sm:w-48 bg-slate-100 dark:bg-[#182030] h-2.5 rounded-full overflow-hidden shrink-0">
             <div
               className={`h-full transition-all duration-500 rounded-full ${
                 kycPercentage === 100
-                  ? 'bg-emerald-500 dark:bg-[#3ECF8E]'
+                  ? 'bg-emerald-500 dark:bg-sky-500'
                   : kycPercentage >= 50
                   ? 'bg-emerald-400'
                   : 'bg-amber-500'
@@ -920,8 +926,8 @@ export default function MemberProfilePage() {
               key={item.id}
               className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${
                 item.status
-                  ? 'bg-emerald-50/50 dark:bg-[#3ECF8E]/5 border-emerald-200/80 dark:border-[#3ECF8E]/25'
-                  : 'bg-slate-50 dark:bg-[#141414] border-slate-200 dark:border-[#262626] border-dashed'
+                  ? 'bg-emerald-50/50 dark:bg-sky-500/5 border-emerald-200/80 dark:border-sky-500/30'
+                  : 'bg-slate-50 dark:bg-[#0B0F19] border-slate-200 dark:border-[#1E293B] border-dashed'
               }`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -938,7 +944,7 @@ export default function MemberProfilePage() {
                 </div>
 
                 {item.status ? (
-                  <span className="p-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-[#3ECF8E]/20 dark:text-[#3ECF8E] shrink-0">
+                  <span className="p-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-sky-500/20 dark:text-sky-400 shrink-0">
                     <Check size={12} strokeWidth={3} />
                   </span>
                 ) : (
@@ -949,26 +955,26 @@ export default function MemberProfilePage() {
               </div>
 
               {item.status ? (
-                <div className="flex items-center justify-between text-xs pt-1 border-t border-emerald-100 dark:border-[#3ECF8E]/15">
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-emerald-100 dark:border-sky-500/20">
                   <span className="text-[11px] font-mono font-bold text-slate-700 dark:text-neutral-300 truncate max-w-[130px]">
                     {item.doc?.documentNumber ? `•••• ${item.doc.documentNumber.slice(-4)}` : item.value || 'Attached'}
                   </span>
                   {item.doc ? (
                     <Link
                       to={`/vault/documents/${item.doc._id}`}
-                      className="text-[11px] font-bold text-emerald-700 dark:text-[#3ECF8E] hover:underline inline-flex items-center gap-0.5"
+                      className="text-[11px] font-bold text-emerald-700 dark:text-sky-400 hover:underline inline-flex items-center gap-0.5"
                     >
                       <span>View</span>
                       <ChevronRight size={12} />
                     </Link>
                   ) : (
-                    <span className="text-[10px] text-emerald-600 dark:text-[#3ECF8E] font-bold">Policy Set</span>
+                    <span className="text-[10px] text-emerald-600 dark:text-sky-400 font-bold">Policy Set</span>
                   )}
                 </div>
               ) : (
                 <Link
                   to={`/vault/upload?member=${member._id}&title=${encodeURIComponent(item.uploadTitle)}&category=${encodeURIComponent(item.uploadCategory)}`}
-                  className="w-full py-1.5 px-2.5 rounded-xl bg-white dark:bg-[#202024] hover:bg-slate-100 dark:hover:bg-[#262626] border border-slate-200 dark:border-[#333] text-slate-700 dark:text-neutral-200 font-bold text-[11px] text-center transition-colors inline-flex items-center justify-center gap-1 shadow-2xs"
+                  className="w-full py-1.5 px-2.5 rounded-xl bg-white dark:bg-[#182030] hover:bg-slate-100 dark:hover:bg-[#262626] border border-slate-200 dark:border-[#1E293B] text-slate-700 dark:text-neutral-200 font-bold text-[11px] text-center transition-colors inline-flex items-center justify-center gap-1 shadow-2xs"
                 >
                   <Plus size={12} />
                   <span>+ Link {item.name}</span>
@@ -1043,7 +1049,7 @@ export default function MemberProfilePage() {
           <button
             type="button"
             onClick={() => window.print()}
-            className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#1C1C1C] hover:bg-slate-50 dark:hover:bg-[#262626] border border-red-200 dark:border-red-900/40 text-slate-800 dark:text-neutral-200 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#121622] hover:bg-slate-50 dark:hover:bg-[#262626] border border-red-200 dark:border-red-900/40 text-slate-800 dark:text-neutral-200 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
             title="Print Medical Emergency Slip"
           >
             <Printer size={13} />
@@ -1065,12 +1071,12 @@ export default function MemberProfilePage() {
       {/* ================= SPLIT BODY: PERSONAL VAULT BINDERS & RECENT ACTIVITY ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 8 Cols: Member's Document Binders */}
-        <div className="lg:col-span-8 bg-white dark:bg-[#18181B] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-[#262626] shadow-sm space-y-5 transition-colors">
+        <div className="lg:col-span-8 bg-white dark:bg-[#121622] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-[#1E293B] shadow-sm space-y-5 transition-colors">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                 <span>{member.name}'s Vault Binders</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#262626] text-slate-600 dark:text-neutral-300">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#182030] text-slate-600 dark:text-neutral-300">
                   {assignedDocs.length}
                 </span>
               </h2>
@@ -1081,7 +1087,7 @@ export default function MemberProfilePage() {
 
             <Link
               to={`/vault/upload?member=${member._id}`}
-              className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs transition-colors inline-flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-800 dark:text-sky-400 border border-slate-200/90 dark:border-[#1E293B] font-bold text-xs transition-all inline-flex items-center gap-1 self-start sm:self-auto cursor-pointer active:scale-95 shadow-2xs"
             >
               <Plus size={13} />
               <span>Add Document</span>
@@ -1097,16 +1103,16 @@ export default function MemberProfilePage() {
                 onClick={() => setActiveCategory(tab.id)}
                 className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                   activeCategory === tab.id
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-black font-bold shadow-xs'
-                    : 'bg-slate-100 dark:bg-[#202024] text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white font-bold shadow-md shadow-sky-500/20 border border-sky-400/30'
+                    : 'bg-slate-100 dark:bg-[#182030] text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-[#1E293B]'
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full ${
                     activeCategory === tab.id
-                      ? 'bg-white/20 dark:bg-black/20 text-white dark:text-black font-bold'
-                      : 'bg-slate-200/80 dark:bg-[#2c2c30] text-slate-500 dark:text-neutral-400'
+                      ? 'bg-white/20 text-white font-bold'
+                      : 'bg-slate-200/80 dark:bg-[#222c42] text-slate-500 dark:text-neutral-400'
                   }`}
                 >
                   {tab.count}
@@ -1118,17 +1124,17 @@ export default function MemberProfilePage() {
           {/* Documents List */}
           <div className="space-y-3">
             {filteredDocs.length === 0 ? (
-              <div className="p-10 text-center rounded-2xl border border-dashed border-slate-200 dark:border-[#262626] space-y-3">
+              <div className="p-10 text-center rounded-2xl border border-dashed border-slate-200 dark:border-[#1E293B] space-y-3">
                 <FolderOpen className="w-10 h-10 text-slate-300 dark:text-neutral-600 mx-auto" />
                 <p className="text-xs text-slate-500 dark:text-neutral-400 font-medium">
                   No documents found for {member.name} under {activeCategory}.
                 </p>
                 <Link
                   to={`/vault/upload?member=${member._id}`}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs transition-all shadow-md shadow-sky-500/25 border border-sky-400/30 active:scale-95 cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Upload First Document</span>
+                  <Plus size={13} />
+                  <span>Upload Document</span>
                 </Link>
               </div>
             ) : (
@@ -1140,7 +1146,7 @@ export default function MemberProfilePage() {
                 return (
                   <div
                     key={doc._id}
-                    className="relative overflow-hidden p-4 rounded-2xl bg-slate-50/70 dark:bg-[#141414] hover:bg-slate-100/80 dark:hover:bg-[#1f1f23] border border-slate-200/80 dark:border-[#262626] transition-all space-y-3 group"
+                    className="relative overflow-hidden p-4 rounded-2xl bg-slate-50/70 dark:bg-[#0B0F19] hover:bg-slate-100/80 dark:hover:bg-[#1f1f23] border border-slate-200/80 dark:border-[#1E293B] transition-all space-y-3 group"
                   >
                     {/* Realistic Indian colored accent top strip */}
                     <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r ${visual.strip}`} />
@@ -1202,7 +1208,7 @@ export default function MemberProfilePage() {
 
                     {/* ID Number Bar with Privacy Mask & 1-Tap Copy */}
                     {doc.documentNumber && (
-                      <div className="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-[#1C1C1C] border border-slate-200/80 dark:border-[#262626] flex items-center justify-between gap-2 shadow-2xs">
+                      <div className="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-[#121622] border border-slate-200/80 dark:border-[#1E293B] flex items-center justify-between gap-2 shadow-2xs">
                         <div className="min-w-0 flex-1 truncate">
                           <div className="flex items-center gap-1.5 mb-0.5">
                             <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-neutral-500 block">
@@ -1225,21 +1231,21 @@ export default function MemberProfilePage() {
                         <button
                           type="button"
                           onClick={(e) => handleCopyNumber(doc.documentNumber, doc.title, e)}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] text-[11px] font-bold flex items-center gap-1 transition-colors shrink-0 cursor-pointer active:scale-95 shadow-2xs"
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-800 dark:text-sky-400 border border-slate-200/90 dark:border-[#1E293B] text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer active:scale-95 shadow-2xs"
                           title="Copy ID number"
                         >
-                          {copiedNumber === doc.documentNumber ? <Check size={11} /> : <Copy size={11} />}
+                          {copiedNumber === doc.documentNumber ? <Check size={11} className="text-sky-500" /> : <Copy size={11} />}
                           <span>{copiedNumber === doc.documentNumber ? 'Copied' : 'Copy'}</span>
                         </button>
                       </div>
                     )}
 
                     {/* Footer Actions */}
-                    <div className="flex items-center justify-between pt-1 text-xs border-t border-slate-200/60 dark:border-[#262626]">
+                    <div className="flex items-center justify-between pt-1 text-xs border-t border-slate-200/60 dark:border-[#1E293B]">
                       <button
                         type="button"
                         onClick={(e) => handleShareSafely(doc._id, e)}
-                        className="text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-[#3ECF8E] font-semibold flex items-center gap-1.5 cursor-pointer py-1"
+                        className="text-slate-500 dark:text-neutral-400 hover:text-sky-600 dark:hover:text-sky-400 font-semibold flex items-center gap-1.5 cursor-pointer py-1"
                         title="Share Safely (24-hour expiring link)"
                       >
                         <Share2 size={13} />
@@ -1248,7 +1254,7 @@ export default function MemberProfilePage() {
 
                       <Link
                         to={`/vault/documents/${doc._id}`}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#3ECF8E]/10 hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 text-emerald-800 dark:text-[#3ECF8E] font-bold text-xs inline-flex items-center gap-1"
+                        className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs inline-flex items-center gap-1 shadow-xs border border-sky-400/30 transition-all active:scale-95"
                       >
                         <span>View Document</span>
                         <ChevronRight size={13} />
@@ -1263,9 +1269,9 @@ export default function MemberProfilePage() {
 
         {/* Right 4 Cols: Recent Activity & Audit Directives */}
         <div className="lg:col-span-4 space-y-5">
-          <div className="bg-white dark:bg-[#18181B] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-[#262626] shadow-sm space-y-4 transition-colors">
+          <div className="bg-white dark:bg-[#121622] rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-[#1E293B] shadow-sm space-y-4 transition-colors">
             <h3 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-              <Clock className="w-4 h-4 text-emerald-600 dark:text-[#3ECF8E]" />
+              <Clock className="w-4 h-4 text-emerald-600 dark:text-sky-400" />
               <span>Recent Activity</span>
             </h3>
 
@@ -1278,9 +1284,9 @@ export default function MemberProfilePage() {
                 recentActivity.map((log) => (
                   <div
                     key={log._id}
-                    className="flex items-start gap-2.5 pb-2.5 border-b border-slate-100 dark:border-[#262626] last:border-0 last:pb-0"
+                    className="flex items-start gap-2.5 pb-2.5 border-b border-slate-100 dark:border-[#1E293B] last:border-0 last:pb-0"
                   >
-                    <Shield className="w-3.5 h-3.5 text-emerald-600 dark:text-[#3ECF8E] shrink-0 mt-0.5" />
+                    <Shield className="w-3.5 h-3.5 text-emerald-600 dark:text-sky-400 shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <div className="font-medium text-slate-800 dark:text-neutral-200 leading-snug">
                         {log.action === 'UPLOAD'
@@ -1303,9 +1309,9 @@ export default function MemberProfilePage() {
           </div>
 
           {/* Quick Sharing & Emergency Pass Card */}
-          <div className="p-4 sm:p-5 rounded-3xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#262626] space-y-3">
+          <div className="p-4 sm:p-5 rounded-3xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-[#1E293B] space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-              <ShieldCheck size={16} className="text-[#10B981] dark:text-[#3ECF8E]" />
+              <ShieldCheck size={16} className="text-sky-600 dark:text-sky-400" />
               <span>Family Privacy Shield</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed">
@@ -1338,6 +1344,7 @@ export default function MemberProfilePage() {
           navigate('/family');
         }}
       />
+    </div>
     </div>
   );
 }

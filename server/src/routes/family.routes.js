@@ -625,6 +625,9 @@ router.post('/members', async (req, res) => {
       allergies = '',
       isEmergencyContact = false,
       role = 'MEMBER',
+      relativeTo = null,
+      fatherOrSpouseName = '',
+      spouseName = '',
     } = req.body;
 
     const finalDob = dateOfBirth || dob || '';
@@ -717,6 +720,9 @@ router.post('/members', async (req, res) => {
           email: cleanEmail,
           avatar,
           relationship,
+          relativeTo: relativeTo || undefined,
+          fatherOrSpouseName: fatherOrSpouseName || '',
+          spouseName: spouseName || '',
           phone,
           bloodGroup,
           dateOfBirth: finalDob,
@@ -747,6 +753,9 @@ router.post('/members', async (req, res) => {
         email: cleanEmail,
         avatar,
         relationship,
+        relativeTo: relativeTo || null,
+        fatherOrSpouseName: fatherOrSpouseName || '',
+        spouseName: spouseName || '',
         phone,
         bloodGroup,
         dateOfBirth: finalDob,
@@ -870,6 +879,9 @@ router.put('/members/:id', async (req, res) => {
       isEmergencyContact,
       avatar,
       role,
+      relativeTo,
+      fatherOrSpouseName,
+      spouseName,
     } = req.body;
 
     let existingMember = null;
@@ -916,6 +928,9 @@ router.put('/members/:id', async (req, res) => {
     if (isEmergencyContact !== undefined) updates.isEmergencyContact = Boolean(isEmergencyContact);
     if (avatar !== undefined) updates.avatar = avatar.trim();
     if (role?.trim()) updates.role = role.trim();
+    if (relativeTo !== undefined) updates.relativeTo = relativeTo || null;
+    if (fatherOrSpouseName !== undefined) updates.fatherOrSpouseName = fatherOrSpouseName.trim();
+    if (spouseName !== undefined) updates.spouseName = spouseName.trim();
 
     let member = null;
     if (isConnected && mongoose.Types.ObjectId.isValid(req.params.id)) {

@@ -31,6 +31,16 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  fatherOrSpouseName: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  spouseName: {
+    type: String,
+    default: '',
+    trim: true,
+  },
   familyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Family',
@@ -85,6 +95,6 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+}, { strict: false });
 
 export default mongoose.models.User || mongoose.model('User', userSchema);

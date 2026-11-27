@@ -1116,3 +1116,21 @@ html.dark[data-dark-style="obsidian"] .dark\:border-\[\#27272A\] {
 .animate-tag-pop {
   animation: tagPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ==========================================================================
+   Unified GharVault Button Design System
+   Cohesive cyber-slate & modern sky-indigo gradient buttons
+   ========================================================================== */
+@layer components {
+  .btn-vault-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-vault-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-800 dark:text-neutral-200 font-semibold text-xs border border-slate-200/90 dark:border-[#1E293B] shadow-2xs transition-all cursor-pointer active:scale-95 disabled:opacity-50;
+  }
+
+  .btn-vault-tab-active {
+    @apply bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-md shadow-sky-500/20 border border-sky-400/30 font-bold;
+  }
+}

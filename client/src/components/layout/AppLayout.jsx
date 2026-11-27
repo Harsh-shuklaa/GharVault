@@ -187,9 +187,7 @@ export default function AppLayout() {
         title={!isHovered ? item.name : undefined}
         className={`group/item flex items-center h-9 px-2.5 rounded-md transition-all select-none ${
           active
-            ? (isBlue
-                ? 'bg-blue-50 text-blue-700 font-semibold shadow-xs dark:bg-blue-600/20 dark:text-blue-300 dark:border dark:border-blue-500/35'
-                : 'bg-emerald-50 text-emerald-700 font-medium shadow-xs dark:bg-[#262626] dark:text-white')
+            ? 'bg-sky-50 text-sky-700 font-semibold shadow-xs dark:bg-sky-500/15 dark:text-sky-300 dark:border dark:border-sky-500/30'
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-normal dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6] dark:hover:bg-white/[0.04]'
         }`}
       >
@@ -199,7 +197,7 @@ export default function AppLayout() {
             strokeWidth={1.75}
             className={`transition-colors ${
               active
-                ? (isBlue ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-[#3ECF8E]')
+                ? 'text-sky-600 dark:text-sky-400'
                 : 'text-slate-500 group-hover/item:text-slate-900 dark:text-[#9CA3AF] dark:group-hover/item:text-[#F3F4F6]'
             }`}
           />
@@ -212,7 +210,7 @@ export default function AppLayout() {
               : 'opacity-0 max-w-0 ml-0 pointer-events-none'
           } ${
             active
-              ? (isBlue ? 'text-blue-700 dark:text-blue-200 font-semibold' : 'text-emerald-700 dark:text-white font-medium')
+              ? 'text-sky-700 dark:text-sky-200 font-semibold'
               : 'text-slate-600 group-hover/item:text-slate-900 dark:text-[#9CA3AF] dark:group-hover/item:text-[#F3F4F6] font-normal'
           }`}
         >
@@ -230,11 +228,7 @@ export default function AppLayout() {
                 Alert
               </span>
             ) : (
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-medium ${
-                isBlue
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-[#3ECF8E]/10 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/20'
-              }`}>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30">
                 {item.badge}
               </span>
             )}
@@ -268,13 +262,7 @@ export default function AppLayout() {
                   <span className="font-headline font-extrabold text-sm tracking-tight text-slate-900 dark:text-white">
                     Dastavej
                   </span>
-                  <span
-                    className={`text-[8px] font-mono uppercase px-1.5 py-0.5 rounded font-bold tracking-wider ${
-                      isBlue
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400 border border-blue-200/80 dark:border-blue-500/30'
-                        : 'bg-emerald-100 text-emerald-800 dark:bg-[#3ECF8E]/15 dark:text-[#3ECF8E] border border-emerald-200/80 dark:border-[#3ECF8E]/30'
-                    }`}
-                  >
+                  <span className="text-[8px] font-mono uppercase px-1.5 py-0.5 rounded font-bold tracking-wider bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400 border border-sky-200/80 dark:border-sky-500/30">
                     Vault
                   </span>
                 </div>
@@ -350,7 +338,7 @@ export default function AppLayout() {
               title={!isHovered ? 'Settings' : undefined}
               className={`group/item flex items-center h-9 px-2.5 rounded-md transition-colors select-none ${
                 location.pathname === '/settings'
-                  ? 'bg-emerald-50 text-emerald-700 font-medium dark:bg-[#262626] dark:text-white'
+                  ? 'bg-sky-50 text-sky-700 font-semibold dark:bg-sky-500/15 dark:text-sky-300 dark:border dark:border-sky-500/30'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6] dark:hover:bg-white/[0.04] font-normal'
               }`}
             >
@@ -428,8 +416,8 @@ export default function AppLayout() {
               <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate block max-w-[200px] lg:max-w-none">
                 {family?.name || 'My Family Vault'}
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-[#3ECF8E] font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#3ECF8E] animate-pulse"></span>
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-sky-600 dark:text-sky-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
                 <span>Private & Encrypted</span>
               </span>
             </div>
@@ -440,7 +428,7 @@ export default function AppLayout() {
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className={`md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 ${isBlue ? 'hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-500/15 dark:hover:text-blue-400' : 'hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-[#3ECF8E]/10 dark:hover:text-[#3ECF8E]'} text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#262626] transition-all cursor-pointer active:scale-95 shadow-2xs`}
+              className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-sky-50 hover:text-sky-700 dark:bg-[#182030] dark:hover:bg-sky-500/15 dark:hover:text-sky-400 text-slate-500 dark:text-neutral-400 flex items-center justify-center border border-slate-200 dark:border-[#1E293B] transition-all cursor-pointer active:scale-95 shadow-2xs"
               title="Search Vault (Aadhaar, PAN, policies)"
             >
               <Search size={15} />
@@ -449,10 +437,10 @@ export default function AppLayout() {
             {/* Desktop Search Bar */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className={`hidden md:flex w-full h-10 px-3.5 bg-slate-100/90 hover:bg-slate-100 dark:bg-[#18181B] dark:hover:bg-[#202024] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200/90 dark:border-[#262626] ${isBlue ? 'hover:border-blue-500/50 dark:hover:border-blue-400/40' : 'hover:border-emerald-500/50 dark:hover:border-[#3ECF8E]/40'} transition-all cursor-pointer shadow-2xs group`}
+              className="hidden md:flex w-full h-10 px-3.5 bg-slate-100/90 hover:bg-slate-100 dark:bg-[#182030]/90 dark:hover:bg-[#1E293B] rounded-xl text-xs text-slate-500 dark:text-neutral-400 items-center justify-between border border-slate-200/90 dark:border-[#1E293B] hover:border-sky-500/50 dark:hover:border-sky-400/40 transition-all cursor-pointer shadow-2xs group"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <Search size={15} className={`text-slate-400 dark:text-neutral-500 ${isBlue ? 'group-hover:text-blue-600 dark:group-hover:text-blue-400' : 'group-hover:text-emerald-600 dark:group-hover:text-[#3ECF8E]'} shrink-0 transition-colors`} />
+                <Search size={15} className="text-slate-400 dark:text-neutral-500 group-hover:text-sky-600 dark:group-hover:text-sky-400 shrink-0 transition-colors" />
                 <span className="truncate text-xs font-medium">Search Aadhaar, PAN, insurance, flat deed...</span>
               </div>
               <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-[#262626] text-slate-600 dark:text-neutral-400 font-mono text-[10px] border border-slate-200 dark:border-[#333338] shadow-2xs">
@@ -478,20 +466,18 @@ export default function AppLayout() {
               </span>
             </button>
 
-            {/* Theme Accent Toggle: Emerald Green vs Stitch Royal Blue */}
+            {/* Theme Accent Toggle: Stitch Royal Blue / Theme */}
             <button
               type="button"
               onClick={toggleAccentColor}
-              title={`Active: ${isBlue ? 'Stitch Royal Blue' : 'Emerald Green'}. Click to switch theme accent.`}
+              title={`Active: ${isBlue ? 'Stitch Royal Blue' : 'Theme Blue'}. Click to switch theme accent.`}
               className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs group"
             >
               <span
-                className={`w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-[#141414] shadow-xs transition-transform group-hover:scale-110 shrink-0 ${
-                  isBlue ? 'swatch-blue' : 'swatch-emerald'
-                }`}
+                className="w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-[#141414] shadow-xs transition-transform group-hover:scale-110 shrink-0 swatch-blue"
               />
               <span className="text-[11px] font-bold text-slate-700 dark:text-neutral-300">
-                {isBlue ? 'Blue' : 'Green'}
+                Theme
               </span>
             </button>
 
@@ -500,7 +486,7 @@ export default function AppLayout() {
               type="button"
               onClick={toggleTheme}
               title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 ${isBlue ? 'dark:text-blue-400' : 'dark:text-[#3ECF8E]'} flex items-center justify-center transition-all cursor-pointer shadow-2xs`}
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 dark:border-[#262626] bg-slate-50 dark:bg-[#1C1C1C] hover:bg-slate-100 dark:hover:bg-[#262626] text-slate-600 dark:text-sky-400 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
             >
               {isDark ? <Sun size={15} strokeWidth={2} /> : <Moon size={15} strokeWidth={2} />}
             </button>
@@ -520,7 +506,7 @@ export default function AppLayout() {
               >
                 <Bell size={15} strokeWidth={1.8} />
                 {unreadNotifCount > 0 ? (
-                  <span className={`absolute -top-1 -right-1 px-1.5 py-0.2 min-w-[17px] h-[17px] rounded-full ${isBlue ? 'bg-blue-600' : 'bg-emerald-500'} text-white font-bold text-[9px] flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#141414] animate-pulse`}>
+                  <span className="absolute -top-1 -right-1 px-1.5 py-0.2 min-w-[17px] h-[17px] rounded-full bg-sky-500 text-white font-bold text-[9px] flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#141414] animate-pulse">
                     {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
                   </span>
                 ) : (
@@ -562,7 +548,7 @@ export default function AppLayout() {
                 type="button"
                 onClick={triggerNativeInstall}
                 title="Install Dastavej App on Phone"
-                className={`md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border ${isBlue ? 'border-blue-300 dark:border-blue-500/30 bg-blue-50/90 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400' : 'border-emerald-300 dark:border-[#3ECF8E]/30 bg-emerald-50/90 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E]'} flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95`}
+                className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-sky-300 dark:border-sky-500/30 bg-sky-50/90 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
               >
                 <Download size={15} strokeWidth={2.2} />
               </button>
@@ -574,7 +560,7 @@ export default function AppLayout() {
                 type="button"
                 onClick={triggerNativeInstall}
                 title="Install Dastavej App"
-                className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-[#3ECF8E]/10 dark:hover:bg-[#3ECF8E]/20 dark:text-[#3ECF8E] dark:border-[#3ECF8E]/30 text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-98"
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200/90 dark:bg-[#182030] dark:hover:bg-[#222c42] dark:text-sky-400 dark:border-[#1E293B] text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-98"
               >
                 <Smartphone size={15} />
                 <span>Install App</span>
@@ -594,7 +580,7 @@ export default function AppLayout() {
             {/* Desktop Upload Document CTA */}
             <Link
               to="/vault/upload"
-              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-xs transition-all cursor-pointer"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer active:scale-95"
             >
               <Plus size={16} strokeWidth={2.5} />
               <span>Upload</span>
@@ -604,9 +590,9 @@ export default function AppLayout() {
 
         {/* Mobile Floating Quick-Install Banner */}
         {!isStandalone && !isBannerDismissed && (
-          <div className="md:hidden fixed top-[calc(3.85rem+env(safe-area-inset-top,0px))] inset-x-2 sm:inset-x-4 z-30 p-2 sm:p-2.5 rounded-2xl bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-md border border-emerald-300/80 dark:border-[#3ECF8E]/30 shadow-lg flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2">
+          <div className="md:hidden fixed top-[calc(3.85rem+env(safe-area-inset-top,0px))] inset-x-2 sm:inset-x-4 z-30 p-2 sm:p-2.5 rounded-2xl bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-md border border-slate-200 dark:border-[#1E293B] shadow-lg flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={triggerNativeInstall}>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-sky-500/25">
                 <Smartphone size={15} />
               </div>
               <div className="min-w-0">
@@ -618,7 +604,7 @@ export default function AppLayout() {
               <button
                 type="button"
                 onClick={triggerNativeInstall}
-                className="px-2.5 py-1 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-[11px] shadow-xs cursor-pointer active:scale-95 transition-all"
+                className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-[11px] shadow-sm shadow-sky-500/20 border border-sky-400/30 cursor-pointer active:scale-95 transition-all"
               >
                 Install
               </button>
@@ -649,7 +635,7 @@ export default function AppLayout() {
           to="/dashboard"
           className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/dashboard'
-              ? (isBlue ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-[#10B981] dark:text-[#3ECF8E]')
+              ? 'text-sky-600 dark:text-sky-400 font-semibold'
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
@@ -662,7 +648,7 @@ export default function AppLayout() {
           to="/vault"
           className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/vault'
-              ? (isBlue ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-[#10B981] dark:text-[#3ECF8E]')
+              ? 'text-sky-600 dark:text-sky-400 font-semibold'
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
@@ -674,11 +660,7 @@ export default function AppLayout() {
         <div className="relative -top-3 sm:-top-3.5 flex items-center justify-center shrink-0 px-1">
           <Link
             to="/vault/upload"
-            className={`w-12 h-12 sm:w-[50px] sm:h-[50px] rounded-full flex items-center justify-center active:scale-95 transition-all ${
-              isBlue
-                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/35 ring-4 ring-white dark:ring-[#0F172A]'
-                : 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] shadow-lg shadow-emerald-500/30 dark:shadow-[#3ECF8E]/30 ring-4 ring-white dark:ring-[#141414]'
-            }`}
+            className="w-12 h-12 sm:w-[50px] sm:h-[50px] rounded-full flex items-center justify-center active:scale-95 transition-all bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white shadow-lg shadow-sky-500/35 ring-4 ring-white dark:ring-[#121622] border border-sky-400/30"
             title="Upload Document"
           >
             <Plus size={24} strokeWidth={2.8} />
@@ -690,7 +672,7 @@ export default function AppLayout() {
           to="/family"
           className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname.startsWith('/family')
-              ? (isBlue ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-[#10B981] dark:text-[#3ECF8E]')
+              ? 'text-sky-600 dark:text-sky-400 font-semibold'
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >
@@ -703,7 +685,7 @@ export default function AppLayout() {
           to="/settings"
           className={`flex-1 min-w-0 max-w-[64px] flex flex-col items-center justify-center py-0.5 transition-colors ${
             location.pathname === '/settings'
-              ? (isBlue ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-[#10B981] dark:text-[#3ECF8E]')
+              ? 'text-sky-600 dark:text-sky-400 font-semibold'
               : 'text-slate-500 dark:text-neutral-400'
           }`}
         >

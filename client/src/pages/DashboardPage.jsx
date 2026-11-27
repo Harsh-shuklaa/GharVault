@@ -1432,10 +1432,10 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={handleWhatsAppInvite}
-                  className="px-2.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-800 dark:text-neutral-200 border border-slate-200/90 dark:border-[#1E293B] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs"
                   title="Invite via WhatsApp"
                 >
-                  <MessageCircle size={13} />
+                  <MessageCircle size={13} className="text-[#25D366]" />
                   <span>WhatsApp</span>
                 </button>
               </div>

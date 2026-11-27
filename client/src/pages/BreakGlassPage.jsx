@@ -411,7 +411,7 @@ export default function BreakGlassPage() {
             onClick={() => setActiveTab('quorum')}
             className={`min-h-[42px] px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === 'quorum'
-                ? 'bg-slate-900 text-white dark:bg-[#3ECF8E] dark:text-[#121212] shadow-sm'
+                ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-md shadow-sky-500/20 border border-sky-400/30'
                 : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1C1C1C]'
             }`}
           >
@@ -434,7 +434,7 @@ export default function BreakGlassPage() {
             onClick={() => setActiveTab('guardians')}
             className={`min-h-[42px] px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === 'guardians'
-                ? 'bg-slate-900 text-white dark:bg-[#3ECF8E] dark:text-[#121212] shadow-sm'
+                ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-md shadow-sky-500/20 border border-sky-400/30'
                 : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1C1C1C]'
             }`}
           >
@@ -451,7 +451,7 @@ export default function BreakGlassPage() {
             onClick={() => setActiveTab('logs')}
             className={`min-h-[42px] px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === 'logs'
-                ? 'bg-slate-900 text-white dark:bg-[#3ECF8E] dark:text-[#121212] shadow-sm'
+                ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 text-white shadow-md shadow-sky-500/20 border border-sky-400/30'
                 : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1C1C1C]'
             }`}
           >
@@ -482,7 +482,7 @@ export default function BreakGlassPage() {
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Link
                     to="/vault"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 active:scale-95 transition-all cursor-pointer"
                   >
                     <span>Browse Unsealed Vault</span>
                     <ArrowRight size={14} />
@@ -738,7 +738,7 @@ export default function BreakGlassPage() {
             <button
               type="button"
               onClick={() => setIsQuorumModalOpen(true)}
-              className="min-h-[42px] px-5 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all inline-flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              className="min-h-[42px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all inline-flex items-center justify-center gap-2 cursor-pointer shrink-0 active:scale-95"
             >
               <Plus size={15} strokeWidth={2.5} />
               <span>Initiate Quorum Request</span>
@@ -859,7 +859,7 @@ export default function BreakGlassPage() {
                       {isApproved ? (
                         <Link
                           to={`/vault?search=${encodeURIComponent(reqItem.documentTitle || '')}`}
-                          className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-700 dark:text-[#3ECF8E] font-bold text-xs hover:bg-emerald-100 dark:hover:bg-[#3ECF8E]/20 transition-colors"
+                          className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#182030] dark:hover:bg-[#222c42] text-slate-800 dark:text-sky-400 border border-slate-200/90 dark:border-[#1E293B] font-bold text-xs transition-all active:scale-95 shadow-2xs"
                         >
                           <FileText size={14} />
                           <span>View Unlocked Document</span>
@@ -873,7 +873,7 @@ export default function BreakGlassPage() {
                           type="button"
                           disabled={signingId === reqItem._id}
                           onClick={() => handleSignQuorum(reqItem._id)}
-                          className="w-full py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                         >
                           <Fingerprint size={15} />
                           <span>
@@ -931,7 +931,7 @@ export default function BreakGlassPage() {
                           `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(contact.name)}`
                         }
                         alt={contact.name}
-                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-slate-100 dark:ring-[#262626]"
+                        className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover ring-2 ring-slate-100 dark:ring-[#262626]"
                       />
                       <div>
                         <h3 className="font-bold text-base text-slate-900 dark:text-white">{contact.name}</h3>

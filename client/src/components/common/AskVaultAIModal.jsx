@@ -784,7 +784,7 @@ export default function AskVaultAIModal({ isOpen, onClose }) {
                 title="Send Message"
                 className={`w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                   query.trim() && !loading
-                    ? 'bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] hover:opacity-90 active:scale-95 shadow-md shadow-[#3ECF8E]/25'
+                    ? 'bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white active:scale-95 shadow-md shadow-sky-500/25 border border-sky-400/30'
                     : 'bg-neutral-200 dark:bg-[#202020] text-neutral-400 dark:text-neutral-600 cursor-not-allowed'
                 }`}
               >

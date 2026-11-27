@@ -29,6 +29,11 @@ import {
   AlertTriangle,
   Layers,
   GitFork,
+  GraduationCap,
+  Scale,
+  ExternalLink,
+  Zap,
+  RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -198,9 +203,11 @@ export default function DocumentUploadPage() {
   const indianPresets = [
     { id: 'aadhaar', label: 'Aadhaar Card', emoji: '🪪', category: 'ID Cards', defaultTitle: 'Aadhaar Card', twoSidedRecommended: true },
     { id: 'pan', label: 'PAN Card', emoji: '💳', category: 'ID Cards', defaultTitle: 'PAN Card', twoSidedRecommended: false },
+    { id: 'education', label: 'Marksheet / Degree', emoji: '🎓', category: 'Education', defaultTitle: 'Marksheet / Degree', twoSidedRecommended: false },
     { id: 'vehicle', label: 'Vehicle RC / DL', emoji: '🚗', category: 'Other', defaultTitle: 'Driving License / RC', twoSidedRecommended: true },
     { id: 'mediclaim', label: 'Health Insurance', emoji: '🏥', category: 'Medical & Health', defaultTitle: 'Health Insurance Policy', twoSidedRecommended: false },
     { id: 'property', label: 'Property Deed', emoji: '📜', category: 'Bank & Property', defaultTitle: 'Property Sale Deed', twoSidedRecommended: false },
+    { id: 'legal', label: 'Legal Affidavit / Will', emoji: '⚖️', category: 'Legal', defaultTitle: 'Legal Affidavit / Agreement', twoSidedRecommended: false },
     { id: 'passport', label: 'Passport', emoji: '✈️', category: 'ID Cards', defaultTitle: 'Indian Passport', twoSidedRecommended: false },
   ];
 
@@ -208,6 +215,8 @@ export default function DocumentUploadPage() {
     { id: 'ID Cards', label: 'ID Cards', icon: CreditCard },
     { id: 'Medical & Health', label: 'Medical & Health', icon: HeartPulse },
     { id: 'Bank & Property', label: 'Bank & Property', icon: Landmark },
+    { id: 'Education', label: 'Education', icon: GraduationCap },
+    { id: 'Legal', label: 'Legal', icon: Scale },
     { id: 'Other', label: 'Other & Vehicle', icon: Folder },
   ];
 
@@ -311,7 +320,7 @@ export default function DocumentUploadPage() {
   };
 
   // Check duplicate document
-  const checkDuplicateDoc = async (inputFile, title) => {
+  const checkDuplicateDoc = async (inputFile, title, extraParams = {}) => {
     try {
       const sha = await computeFileSha256(inputFile);
       if (!sha) return;
@@ -319,6 +328,10 @@ export default function DocumentUploadPage() {
         fileSha256: sha,
         fileName: inputFile?.name || '',
         title: title || formData.title,
+        documentNumber: extraParams.documentNumber !== undefined ? extraParams.documentNumber : formData.documentNumber,
+        category: extraParams.category !== undefined ? extraParams.category : formData.category,
+        assignedMemberId: extraParams.assignedMemberId !== undefined ? extraParams.assignedMemberId : formData.assignedMemberId,
+        ocrExtractedData: extraParams.ocrExtractedData !== undefined ? extraParams.ocrExtractedData : aiScanResult,
       });
       if (res?.isDuplicate && res?.duplicateWarning) {
         setDetectedDuplicate(res.duplicateWarning);
@@ -352,7 +365,11 @@ export default function DocumentUploadPage() {
           targetCategory = 'Medical & Health';
         } else if (/id card|identity|aadhaar|pan|passport|license|voter/i.test(rawCat + ' ' + rawType)) {
           targetCategory = 'ID Cards';
-        } else if (/bank|property|financial|deed|registry/i.test(rawCat + ' ' + rawType)) {
+        } else if (/education|academic|marksheet|degree|diploma|school|college|university|cbse|aktu|semester/i.test(rawCat + ' ' + rawType)) {
+          targetCategory = 'Education';
+        } else if (/legal|affidavit|agreement|will|stamp|court|deed/i.test(rawCat + ' ' + rawType)) {
+          targetCategory = 'Legal';
+        } else if (/bank|property|financial|deed|registry|khasra/i.test(rawCat + ' ' + rawType)) {
           targetCategory = 'Bank & Property';
         }
 
@@ -379,10 +396,18 @@ export default function DocumentUploadPage() {
           const needsDob = Boolean(detectedDob && (!currentTargetMember.dateOfBirth || currentTargetMember.dateOfBirth === ''));
           const needsBg = Boolean(detectedBloodGroup && (!currentTargetMember.bloodGroup || currentTargetMember.bloodGroup === ''));
 
-          // Check if detected father matches someone in family
+          // Check if user already has a parent linked or already has father name in profile
+          const alreadyHasParent = Boolean(
+            currentTargetMember.relativeTo ||
+            (currentTargetMember.fatherOrSpouseName && currentTargetMember.fatherOrSpouseName.trim().length > 0)
+          );
+
           let matchedParent = null;
           let newParentName = null;
-          if (detectedFather && detectedFather.length >= 3) {
+          let needsParent = false;
+
+          // ONLY evaluate parent link if member DOES NOT ALREADY have a parent set in profile!
+          if (!alreadyHasParent && detectedFather && detectedFather.length >= 3) {
             const fatherLower = detectedFather.toLowerCase();
             const foundParent = members.find((m) => {
               const mName = (m.name || '').toLowerCase().trim();
@@ -390,35 +415,68 @@ export default function DocumentUploadPage() {
             });
             if (foundParent) {
               matchedParent = foundParent;
+              needsParent = true;
             } else {
               newParentName = detectedFather;
+              needsParent = true;
             }
           }
 
-          if (needsDob || needsBg || matchedParent || newParentName) {
+          // STRICT CHECK: ONLY show popup if something is GENUINELY missing from member's profile!
+          if (needsDob || needsBg || needsParent) {
             setDetectedProfileSync({
               memberId: currentTargetMember._id,
               memberName: currentTargetMember.name,
-              dob: detectedDob,
-              bloodGroup: detectedBloodGroup,
-              fatherOrSpouseName: detectedFather,
-              matchedParent,
-              newParentName,
+              dob: needsDob ? detectedDob : null,
+              bloodGroup: needsBg ? detectedBloodGroup : null,
+              fatherOrSpouseName: needsParent ? detectedFather : null,
+              matchedParent: needsParent ? matchedParent : null,
+              newParentName: needsParent ? newParentName : null,
               needsDob,
               needsBg,
+              needsParent,
             });
+          } else {
+            setDetectedProfileSync(null); // Everything is already saved in profile! Zero annoying popup!
+          }
+        }
+
+        // Smart Title for Education Marksheets (Turns generic "Result Cum Detailed..." into "BCA - 6th Semester Marksheet (Harsh)")
+        let resolvedTitle = data.suggestedTitle;
+        const isAcademic = targetCategory === 'Education' ||
+          /result\s*cum|detailed\s*marks|statement\s*of\s*marks|marksheet|dmc|grade\s*card/i.test(`${data.docType} ${resolvedTitle}`);
+
+        if (isAcademic) {
+          const rawCtx = `${data.docType} ${resolvedTitle} ${fileToScan?.name || ''} ${data.academicDetails?.semesterOrYear || ''}`.toLowerCase();
+          const semM = rawCtx.match(/\b(sem(?:ester)?\s*([0-9]+|[ivx]+)|([0-9]+)(?:st|nd|rd|th)\s*sem(?:ester)?|sixth|fifth|fourth|third|second|first|final\s*sem(?:ester)?)\b/i);
+          const courseM = rawCtx.match(/\b(bca|mca|b\.?tech|m\.?tech|bba|mba|b\.?sc|m\.?sc|b\.?com|ba|ma|cbse)\b/i);
+
+          const semText = data.academicDetails?.semesterOrYear || (semM ? semM[0].replace(/\b\w/g, l => l.toUpperCase()) : 'Semester');
+          const courseText = data.academicDetails?.courseOrDegree || (courseM ? courseM[0].toUpperCase() : '');
+          const studentFirst = currentTargetMember?.name ? currentTargetMember.name.split(' ')[0] : (data.holderName ? data.holderName.split(' ')[0] : '');
+
+          if (courseText && semText) {
+            resolvedTitle = `${courseText} - ${semText} Marksheet${studentFirst ? ' (' + studentFirst + ')' : ''}`;
+          } else if (semText) {
+            resolvedTitle = `${semText} Marksheet${studentFirst ? ' (' + studentFirst + ')' : ''}`;
           }
         }
 
         setFormData((prev) => ({
           ...prev,
-          title: (data.suggestedTitle && data.suggestedTitle !== 'Document') ? data.suggestedTitle : (data.docType || prev.title),
+          title: (resolvedTitle && resolvedTitle !== 'Document') ? resolvedTitle : (data.docType || prev.title),
           documentNumber: data.docNumber ? data.docNumber.trim() : prev.documentNumber,
           holderName: data.holderName ? data.holderName.trim() : prev.holderName,
           fatherOrSpouseName: detectedFather || prev.fatherOrSpouseName,
           category: targetCategory,
           assignedMemberId: effectiveMemberId,
         }));
+
+        if (data.duplicateWarning?.isDuplicate) {
+          setDetectedDuplicate(data.duplicateWarning);
+        } else {
+          setDetectedDuplicate(null);
+        }
 
         toast.success(`✨ Auto-detected: ${data.docType || 'Document'} (${data.docNumber || 'Details extracted'})`);
       }
@@ -502,7 +560,8 @@ export default function DocumentUploadPage() {
       if (!formData.title) {
         setFormData((prev) => ({ ...prev, title: cleanName }));
       }
-      checkDuplicateDoc(cleanFile, cleanName);
+      // Exact file SHA-256 check before AI; full composite check runs after AI extracts category & semester
+      checkDuplicateDoc(cleanFile, '', { category: formData.category });
       // Scan clean cropped single file
       triggerAIScan(cleanFile);
     }
@@ -619,24 +678,28 @@ export default function DocumentUploadPage() {
       const updates = {};
       if (detectedProfileSync.dob) updates.dateOfBirth = detectedProfileSync.dob;
       if (detectedProfileSync.bloodGroup) updates.bloodGroup = detectedProfileSync.bloodGroup;
+      if (detectedProfileSync.fatherOrSpouseName) updates.fatherOrSpouseName = detectedProfileSync.fatherOrSpouseName;
+
       if (detectedProfileSync.matchedParent) {
         updates.relativeTo = (detectedProfileSync.matchedParent._id || detectedProfileSync.matchedParent.id).toString();
-      }
-
-      await api.updateMember(detectedProfileSync.memberId, updates);
-
-      // If father is not yet in family, add him as Father/Parent in Family Tree!
-      if (!detectedProfileSync.matchedParent && detectedProfileSync.fatherOrSpouseName) {
+      } else if (detectedProfileSync.fatherOrSpouseName) {
+        // If father is not yet in family, add him as Father/Parent in Family Tree!
         try {
-          await api.addMember({
+          const addRes = await api.addMember({
             name: detectedProfileSync.fatherOrSpouseName,
             relationship: 'Father',
           });
+          const newParent = addRes?.member || addRes?.data || addRes;
+          if (newParent?._id || newParent?.id) {
+            updates.relativeTo = (newParent._id || newParent.id).toString();
+          }
           toast.success(`✨ "${detectedProfileSync.fatherOrSpouseName}" family tree me add ho gaye!`);
         } catch (addErr) {
           console.warn('Could not auto-add parent to family:', addErr);
         }
       }
+
+      await api.updateMember(detectedProfileSync.memberId, updates);
 
       // Refresh members
       const res = await api.getMembers();
@@ -713,13 +776,53 @@ export default function DocumentUploadPage() {
     } catch (err) {
       console.error('Upload error:', err);
       if (err.status === 409 || err.data?.isDuplicate) {
-        setError(err.data?.error || 'Document already exists in your vault.');
+        const dupWarning = err.data?.duplicateWarning || {
+          message: err.data?.error || 'Document already exists in your vault.',
+          existingDocId: err.data?.duplicateWarning?.existingDocId,
+          existingDocTitle: err.data?.duplicateWarning?.existingDocTitle,
+          assignedMemberName: err.data?.duplicateWarning?.assignedMemberName,
+          uploadDate: err.data?.duplicateWarning?.uploadDate,
+          matchType: err.data?.duplicateWarning?.matchType || 'ID_NUMBER',
+        };
+        setDetectedDuplicate(dupWarning);
+        setError('');
+        toast.error('Duplicate detected: Please choose to Upload Anyway, View, or Discard.');
       } else {
         setError(err.message || 'Failed to save document. Please try again.');
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Discard current document and return to fresh upload/dropzone screen
+  const handleDiscardAndUploadAnother = () => {
+    setFile(null);
+    setPreviewUrl(null);
+    setFrontFile(null);
+    setFrontPreview(null);
+    setBackFile(null);
+    setBackPreview(null);
+    setAiScanResult(null);
+    setDetectedDuplicate(null);
+    setError('');
+    setDetectedProfileSync(null);
+    setFormData({
+      title: '',
+      category: 'ID Cards',
+      assignedMemberId: '',
+      documentNumber: '',
+      holderName: '',
+      fatherOrSpouseName: '',
+      expiryDate: '',
+      notes: '',
+      isMpinProtected: false,
+    });
+    const primaryInput = document.getElementById('primary-file-input');
+    if (primaryInput) primaryInput.value = '';
+    const cameraInput = document.getElementById('camera-input');
+    if (cameraInput) cameraInput.value = '';
+    toast.info('Document discarded. Ready to upload another.');
   };
 
   // Has file been uploaded?
@@ -908,20 +1011,126 @@ export default function DocumentUploadPage() {
           </div>
         )}
 
-        {/* Duplicate Warning */}
+        {/* Interactive Duplicate Resolution Card (Mobile-First 3-Action Gateway) */}
         {detectedDuplicate && (
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertTriangle size={15} className="shrink-0" />
-              <span>{detectedDuplicate.message}</span>
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-amber-300/90 dark:border-amber-500/40 bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-rose-500/10 p-3.5 sm:p-5 shadow-lg shadow-amber-500/5 space-y-3 animate-fadeIn">
+            {/* Top Tri-Tone Accent Ribbon */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-orange-400 to-rose-500" />
+
+            {/* Header: Warning Badge + Title + Dismiss */}
+            <div className="flex items-start justify-between gap-2 pt-0.5">
+              <div className="flex items-start gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 border border-amber-300/60 dark:border-amber-500/30 shadow-xs mt-0.5">
+                  <AlertTriangle size={18} className="animate-pulse" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                      Duplicate Document Detected
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-300/50">
+                      {detectedDuplicate.matchType === 'EXACT_FILE'
+                        ? 'Exact File'
+                        : detectedDuplicate.matchType === 'ID_NUMBER'
+                        ? 'Matching ID'
+                        : 'Similar Record'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-900/85 dark:text-amber-300/85 mt-0.5 leading-snug">
+                    {detectedDuplicate.message}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setDetectedDuplicate(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer shrink-0"
+                title="Dismiss warning"
+              >
+                <X size={15} />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setDetectedDuplicate(null)}
-              className="text-[11px] font-bold underline cursor-pointer"
-            >
-              Dismiss
-            </button>
+
+            {/* Existing Document Summary Pill (If available) */}
+            {detectedDuplicate.existingDocTitle && (
+              <div className="p-2.5 rounded-xl bg-white/85 dark:bg-[#141414]/90 border border-amber-200/70 dark:border-[#262626] flex items-center justify-between gap-2 text-xs shadow-2xs">
+                <div className="min-w-0 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <FileText size={13} />
+                  </div>
+                  <div className="truncate">
+                    <span className="font-bold text-slate-900 dark:text-white truncate block text-xs">
+                      {detectedDuplicate.existingDocTitle}
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-neutral-400 flex items-center gap-1 truncate">
+                      <span>Folder: <b className="text-slate-700 dark:text-neutral-300">{detectedDuplicate.assignedMemberName || 'Family Member'}</b></span>
+                      {detectedDuplicate.uploadDate && <span>• Uploaded: {detectedDuplicate.uploadDate}</span>}
+                    </span>
+                  </div>
+                </div>
+
+                {detectedDuplicate.existingDocId && (
+                  <button
+                    type="button"
+                    onClick={() => window.open(`/vault/documents/${detectedDuplicate.existingDocId}`, '_blank')}
+                    className="px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-500/10 hover:bg-sky-100 dark:hover:bg-sky-500/20 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/30 text-[11px] font-bold flex items-center gap-1 shrink-0 cursor-pointer transition-colors shadow-2xs"
+                    title="Open existing document in new tab to compare"
+                  >
+                    <span>View</span>
+                    <ExternalLink size={11} />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* 3 Mobile-Optimized Big Touch-Friendly Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5">
+              {/* Option 1: Upload Anyway */}
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={loading}
+                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer active:scale-95"
+                title="Bypass duplicate check and save document to vault"
+              >
+                <Zap size={14} className="fill-current" />
+                <span>Upload Anyway</span>
+              </button>
+
+              {/* Option 2: View Existing Document */}
+              {detectedDuplicate.existingDocId ? (
+                <button
+                  type="button"
+                  onClick={() => window.open(`/vault/documents/${detectedDuplicate.existingDocId}`, '_blank')}
+                  className="w-full py-2.5 px-3 rounded-xl bg-white dark:bg-[#182030] hover:bg-slate-100 dark:hover:bg-[#222c42] text-slate-800 dark:text-neutral-200 border border-slate-200 dark:border-[#1E293B] text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer active:scale-95"
+                  title="Open existing document in a new tab"
+                >
+                  <Eye size={14} className="text-sky-500" />
+                  <span>View Existing</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => navigate('/vault')}
+                  className="w-full py-2.5 px-3 rounded-xl bg-white dark:bg-[#182030] hover:bg-slate-100 dark:hover:bg-[#222c42] text-slate-800 dark:text-neutral-200 border border-slate-200 dark:border-[#1E293B] text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer active:scale-95"
+                >
+                  <Folder size={14} className="text-amber-500" />
+                  <span>Open Vault</span>
+                </button>
+              )}
+
+              {/* Option 3: Discard & Upload Another */}
+              <button
+                type="button"
+                onClick={handleDiscardAndUploadAnother}
+                className="w-full py-2.5 px-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                title="Discard this document and choose another file"
+              >
+                <RotateCcw size={14} />
+                <span>Discard & Change</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -1234,7 +1443,7 @@ export default function DocumentUploadPage() {
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                     Category (कैटेगरी)
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5">
                     {categories.map((c) => {
                       const isSelected = formData.category === c.id;
                       const Icon = c.icon;
@@ -1329,7 +1538,7 @@ export default function DocumentUploadPage() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full py-3.5 px-4 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition-all cursor-pointer active:scale-98"
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 disabled:opacity-50 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer active:scale-98"
                 >
                   {loading ? (
                     <>

@@ -173,7 +173,7 @@ export default function AskVaultAIFloatingButton({ onClick }) {
           title="Ask Vault AI (Click to chat, or drag to move away from buttons)"
           className="flex items-center gap-2 px-2.5 py-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-[#151D2E] transition-colors cursor-pointer text-slate-900 dark:text-white"
         >
-          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#38BDF8] to-[#10B981] text-black flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-400 via-indigo-500 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
             <Sparkles size={12} strokeWidth={2.2} />
           </div>
           {!isCompact && (

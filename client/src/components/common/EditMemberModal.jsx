@@ -4,8 +4,11 @@ import { X, User, Camera, AlertCircle, Check, ShieldAlert } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
 
-export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdated }) {
+export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdated, familyMembers = [] }) {
   const { toast } = useToast();
+  const eligibleSpouses = (familyMembers || []).filter(
+    (m) => (m._id || m.id)?.toString() !== (member?._id || member?.id)?.toString()
+  );
   const [formData, setFormData] = useState({
     name: '',
     relationship: 'Family Member',
@@ -19,6 +22,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
     allergies: '',
     isEmergencyContact: false,
     avatar: '',
+    fatherOrSpouseName: '',
+    spouseName: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -61,6 +66,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
         allergies: member.allergies || '',
         isEmergencyContact: Boolean(member.isEmergencyContact),
         avatar: member.avatar || '',
+        fatherOrSpouseName: member.fatherOrSpouseName || '',
+        spouseName: member.spouseName || '',
       });
       setError('');
     }
@@ -71,13 +78,18 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
   const relationshipOptions = [
     'Father',
     'Mother',
+    'Chacha',
+    'Chachi',
+    'Tauji',
+    'Taiji',
     'Spouse',
     'Son',
     'Daughter',
-    'Grandfather',
-    'Grandmother',
     'Brother',
     'Sister',
+    'Cousin',
+    'Grandfather',
+    'Grandmother',
     'Uncle',
     'Aunt',
     'Self',
@@ -155,7 +167,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-xl bg-white dark:bg-[#18181B] border-t md:border border-slate-200 dark:border-[#27272A] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
+        className="relative w-full max-w-xl bg-white dark:bg-[#182030] border-t md:border border-slate-200 dark:border-[#1E293B] rounded-t-2xl md:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-[85vh] overflow-hidden transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Handle Pill */}
@@ -164,9 +176,9 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
         </div>
 
         {/* Fixed Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#27272A] shrink-0">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-[#1E293B] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-[#3ECF8E]/10 text-emerald-600 dark:text-[#3ECF8E] flex items-center justify-center border border-emerald-100 dark:border-[#3ECF8E]/20 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-sky-500/10 text-emerald-600 dark:text-sky-400 flex items-center justify-center border border-emerald-100 dark:border-sky-500/20 shrink-0">
               <User size={20} />
             </div>
             <div>
@@ -199,7 +211,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
             )}
 
           {/* Avatar Upload Banner */}
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-[#141414] border border-slate-200/80 dark:border-[#27272A] flex items-center justify-between gap-3">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-[#121622] border border-slate-200/80 dark:border-[#1E293B] flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <div className="relative shrink-0">
                 <img
@@ -208,16 +220,16 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name || 'Member')}&background=3ECF8E&color=121212`
                   }
                   alt={formData.name}
-                  className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-xs"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-xs"
                 />
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingAvatar}
-                  className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-[#10B981] dark:bg-[#3ECF8E] text-white dark:text-[#121212] flex items-center justify-center shadow-sm hover:scale-105 transition-all cursor-pointer"
+                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-md bg-[#10B981] dark:bg-sky-500 text-white dark:text-[#121212] flex items-center justify-center shadow-sm hover:scale-105 transition-all cursor-pointer"
                   title="Upload profile photo"
                 >
-                  <Camera size={13} strokeWidth={2.2} />
+                  <Camera size={11} strokeWidth={2.2} />
                 </button>
               </div>
               <div className="min-w-0">
@@ -242,7 +254,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#18181B] hover:bg-slate-50 dark:hover:bg-[#27272A] text-slate-700 dark:text-neutral-300 text-xs font-bold transition-colors cursor-pointer shrink-0"
+              className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#182030] hover:bg-slate-50 dark:hover:bg-[#27272A] text-slate-700 dark:text-neutral-300 text-xs font-bold transition-colors cursor-pointer shrink-0"
             >
               {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
             </button>
@@ -259,7 +271,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
                 placeholder="e.g. Ramesh Sharma"
               />
             </div>
@@ -271,7 +283,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
               <select
                 value={formData.relationship}
                 onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
               >
                 {relationshipOptions.map((rel) => (
                   <option key={rel} value={rel}>
@@ -292,7 +304,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                 type="date"
                 value={formData.dateOfBirth}
                 onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
               />
             </div>
 
@@ -303,7 +315,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
               <select
                 value={formData.bloodGroup}
                 onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
               >
                 <option value="">Select Blood Group</option>
                 {bloodGroups.filter(Boolean).map((bg) => (
@@ -312,6 +324,74 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          {/* Row 2.5: Smart Family Tree Linkage */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-3 rounded-xl bg-slate-50 dark:bg-[#141824] border border-slate-200 dark:border-[#1E293B]">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
+                Father's Name (Pita)
+              </label>
+              <input
+                type="text"
+                value={formData.fatherOrSpouseName}
+                onChange={(e) => setFormData({ ...formData, fatherOrSpouseName: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                placeholder="e.g. Ramesh Sharma, Suresh..."
+              />
+              <span className="text-[10px] text-slate-400">Pita ki branch me jodne ke liye</span>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span>Spouse (Pati / Patni)</span>
+                <span className="text-[10px] text-pink-500 font-normal">💍 Couple Link</span>
+              </label>
+              {eligibleSpouses.length > 0 ? (
+                <div className="space-y-1.5">
+                  <select
+                    value={eligibleSpouses.some((m) => m.name === formData.spouseName) ? formData.spouseName : (formData.spouseName ? '__custom__' : '')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '__custom__') return;
+                      const matched = eligibleSpouses.find((m) => m.name === val);
+                      setFormData((prev) => ({
+                        ...prev,
+                        spouseName: val,
+                        relativeTo: matched ? (matched._id || matched.id) : prev.relativeTo,
+                      }));
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
+                  >
+                    <option value="">-- Select from Family Members --</option>
+                    {eligibleSpouses.map((m) => (
+                      <option key={m._id || m.id} value={m.name}>
+                        {m.name} ({m.relationship || 'Member'})
+                      </option>
+                    ))}
+                    <option value="__custom__">Custom / Type Other Name...</option>
+                  </select>
+                  {(!eligibleSpouses.some((m) => m.name === formData.spouseName) || !formData.spouseName) && (
+                    <input
+                      type="text"
+                      value={formData.spouseName}
+                      onChange={(e) => setFormData({ ...formData, spouseName: e.target.value })}
+                      placeholder="Or type spouse name..."
+                      className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#0B0F19] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                    />
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={formData.spouseName}
+                  onChange={(e) => setFormData({ ...formData, spouseName: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                  placeholder="e.g. Sunita, Pooja..."
+                />
+              )}
+              <span className="text-[10px] text-slate-400">💍 Tree me dono ki couple jodi banegi</span>
             </div>
           </div>
 
@@ -326,7 +406,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="+91 98765 43210"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white font-mono focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white font-mono focus:outline-none"
               />
             </div>
 
@@ -339,7 +419,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                 value={formData.emergencyContactPhone}
                 onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
                 placeholder="+91 98765 00000"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white font-mono focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white font-mono focus:outline-none"
               />
             </div>
           </div>
@@ -355,7 +435,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                 value={formData.healthInsurancePolicy}
                 onChange={(e) => setFormData({ ...formData, healthInsurancePolicy: e.target.value })}
                 placeholder="e.g. Star Health #SH1029384"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
               />
             </div>
 
@@ -368,7 +448,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="member@example.com"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
               />
             </div>
           </div>
@@ -386,18 +466,18 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
               value={formData.allergies}
               onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
               placeholder="e.g. Severe Penicillin allergy, Type-2 Diabetic, Asthmatic"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] bg-white dark:bg-[#141414] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-medium text-slate-900 dark:text-white focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] bg-white dark:bg-[#121622] focus:border-[#10B981] dark:focus:border-[#3ECF8E] text-xs font-medium text-slate-900 dark:text-white focus:outline-none"
             />
           </div>
 
           {/* Emergency Nominee Checkbox */}
           <div className="pt-1">
-            <label className="flex items-start gap-3 p-3.5 rounded-2xl border border-slate-200 dark:border-[#27272A] bg-slate-50 dark:bg-[#141414] cursor-pointer">
+            <label className="flex items-start gap-3 p-3.5 rounded-2xl border border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#121622] cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.isEmergencyContact}
                 onChange={(e) => setFormData({ ...formData, isEmergencyContact: e.target.checked })}
-                className="mt-0.5 rounded text-[#10B981] dark:text-[#3ECF8E] border-slate-300 dark:border-[#27272A] focus:ring-[#3ECF8E]"
+                className="mt-0.5 rounded text-sky-600 dark:text-sky-400 border-slate-300 dark:border-[#1E293B] focus:ring-[#3ECF8E]"
               />
               <div>
                 <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -413,18 +493,18 @@ export default function EditMemberModal({ isOpen, onClose, member, onMemberUpdat
           </div>
 
           {/* Fixed Footer */}
-          <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#141414] border-t border-slate-100 dark:border-[#27272A] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
+          <div className="px-4 sm:px-6 py-3.5 bg-slate-50 dark:bg-[#121622] border-t border-slate-100 dark:border-[#1E293B] flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-2.5 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,20px))]">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#27272A] hover:bg-slate-100 dark:hover:bg-[#27272A] text-slate-700 dark:text-neutral-300 font-bold text-xs transition-colors cursor-pointer text-center"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E293B] hover:bg-slate-100 dark:hover:bg-[#27272A] text-slate-700 dark:text-neutral-300 font-bold text-xs transition-colors cursor-pointer text-center"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#10B981] dark:bg-[#3ECF8E] hover:bg-emerald-600 dark:hover:bg-[#34B27B] text-white dark:text-[#121212] font-bold text-xs shadow-md shadow-[#3ECF8E]/20 transition-all cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-blue-600 hover:from-sky-400 hover:via-indigo-400 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-sky-500/25 border border-sky-400/30 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
             >
               <Check size={15} strokeWidth={2.5} />
               <span>{loading ? 'Saving Profile...' : 'Save Changes'}</span>
